@@ -522,7 +522,7 @@ func isUnsupported(c *matcher.InputCard) bool {
 		c.Contains("Fallen Empires: Wyvern Misprints") ||
 		c.Contains("Ultra-Pro Puzzle") ||
 		c.Contains("Player Cards") || // scg pro players
-		c.Contains("Foreign White Border") || // for REV and 4ED
+		(c.Contains("Foreign White Border") && (c.Contains("Fourth") || c.Contains("4th"))) ||
 		c.Contains("Filler Cards") || // Misprints from mkm and ct
 		c.Contains("Salvat") || // Salvat-Hachette 2005/2011
 		c.Contains("Redemption Program") || // PRES

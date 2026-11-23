@@ -103,7 +103,7 @@ func (Rules) CandidateSets(b *matcher.Backend, inCard *matcher.InputCard, printi
 // printed in, which a listing reaches by naming it or the set it goes with.
 func isLanguageSet(code string) bool {
 	for _, ls := range languageSets {
-		if ls.code == code || ls.code+ls.tag == code {
+		if ls.code == code || (ls.base == code && code != "3ED") {
 			return true
 		}
 	}

@@ -86,9 +86,9 @@ func TestSecretLairNumberOverStaleCardNumber(t *testing.T) {
 }
 
 // TestForeignBlackBorder pins foreign Revised and 4th Edition listings, whose
-// title alone says the border: a black-bordered listing lands on the set its
-// language was printed in, its land letter intact, and a white-bordered one,
-// which the catalog does not carry, is refused.
+// title alone says the border: a listing lands on the set its language was
+// printed in with that border, its land letter intact, and one naming no
+// border, or a border the catalog does not carry, is refused.
 func TestForeignBlackBorder(t *testing.T) {
 	b := realDatastore(t)
 	for _, tt := range []struct {
@@ -99,7 +99,11 @@ func TestForeignBlackBorder(t *testing.T) {
 		{"Control Magic (BB 1994)", "Revised", "German", "FBBDE", "52"},
 		{"Island (A Purple) (BB 1994)", "Revised", "Italian", "FBB", "295"},
 		{"Island (C Dark Purple) (BB 1994)", "Revised", "French", "FBBFR", "297"},
-		{"Control Magic (WB)", "Revised", "Italian", "", ""},
+		{"Control Magic (WB)", "Revised", "Italian", "FWB", "52"},
+		{"Control Magic (WB)", "Revised", "French", "FWBFR", "52"},
+		{"Island (A Purple) (WB)", "Revised", "German", "FWBDE", "295"},
+		{"Control Magic", "Revised", "German", "", ""},
+		{"Control Magic (WB)", "4th Edition", "Italian", "", ""},
 		{"Strip Mine (BB)", "4th Edition", "Korean", "4BBKO", "363"},
 		{"Strip Mine", "4th Edition", "Chinese Traditional", "4BBZHT", "363"},
 		{"Strip Mine (BB)", "4th Edition", "Portuguese", "4BBPT", "363"},

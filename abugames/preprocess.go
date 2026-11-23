@@ -335,15 +335,17 @@ var eternalNonfoil = map[string]string{
 }
 
 // foreignBorder files a foreign Revised or 4th Edition listing under the
-// black-bordered set it was printed in. ABU lists both borders under one
-// edition and only the title says which, "(BB 1994)" or "(WB)"; 4th Edition
-// was printed in Korean and Chinese black-bordered alone.
+// bordered set it was printed in. ABU lists both borders under one edition
+// and only the title says which, "(BB 1994)" or "(WB)"; 4th Edition was
+// printed in Korean and Chinese black-bordered alone.
 func foreignBorder(edition, variation, lang string) (string, string) {
 	fields := strings.Fields(variation)
 	blackBordered := slices.Contains(fields, "BB")
 	switch {
 	case edition == "Revised" && blackBordered:
 		edition = "Foreign Black Border"
+	case edition == "Revised" && slices.Contains(fields, "WB"):
+		edition = "Foreign White Border"
 	case edition == "4th Edition" && !slices.Contains(fields, "WB") &&
 		(blackBordered || lang == "Korean" || lang == "Chinese Traditional"):
 		edition = "Fourth Edition Foreign Black Border"
@@ -351,7 +353,7 @@ func foreignBorder(edition, variation, lang string) (string, string) {
 		return edition, variation
 	}
 	fields = slices.DeleteFunc(fields, func(field string) bool {
-		return field == "BB" || field == "1994"
+		return field == "BB" || field == "WB" || field == "1994"
 	})
 	return edition, strings.Join(fields, " ")
 }
@@ -562,6 +564,10 @@ func preprocess(b *matcher.Backend, card *ABUCard) (*matcher.InputCard, error) {
 		listed := edition
 		edition, variation = foreignBorder(edition, variation, lang)
 		bordered = edition != listed
+		// Neither border is this listing's when its title names none
+		if edition == "Revised" {
+			return nil, errForeignListing
+		}
 	}
 
 	// Cleanup variation as necessary
@@ -846,10 +852,9 @@ func preprocess(b *matcher.Backend, card *ABUCard) (*matcher.InputCard, error) {
 
 	// This storefront calls the black-bordered Fourth Edition BB, where the
 	// catalog files it as the Japanese printing, and WB the white-bordered
-	// one. There is no white-bordered printing in any language but English -
-	// the catalog holds 4ED in English and white and 4BB in black - so a
-	// foreign one names a card that was never made, and the matcher already
-	// knows to refuse it under that name.
+	// one. The catalog holds 4ED in English and white and 4BB in black, so a
+	// foreign white-bordered one has no printing in it, and the matcher
+	// refuses it under that name.
 	if matcher.Contains(edition, "4th Edition") {
 		switch variation {
 		case "BB":

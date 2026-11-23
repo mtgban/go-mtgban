@@ -1287,26 +1287,29 @@ func (ap *AllPrintings) newBackend() *matcher.Backend {
 	// tokenProducts takes that product as its id, before any is filed
 	adoptOwnTokenProducts(ap.Data)
 
-	duplicate(ap.Data, "Legends Italian", "LEG", "ITA", "1995-09-01")
-	duplicate(ap.Data, "The Dark Italian", "DRK", "ITA", "1995-08-01")
-	duplicate(ap.Data, "Alternate Fourth Edition", "4ED", "ALT", "1995-04-01")
+	duplicate(ap.Data, "Legends Italian", "LEG", "LEGITA", "ITA", "1995-09-01")
+	duplicate(ap.Data, "The Dark Italian", "DRK", "DRKITA", "ITA", "1995-08-01")
+	duplicate(ap.Data, "Alternate Fourth Edition", "4ED", "4EDALT", "ALT", "1995-04-01")
 	allSets = append(allSets, "LEGITA", "DRKITA", "4EDALT")
 	for _, ls := range languageSets {
-		base := ap.Data[ls.code]
+		base := ap.Data[ls.base]
 		if base == nil {
 			continue
 		}
-		duplicate(ap.Data, ls.name, ls.code, ls.tag, base.ReleaseDate)
-		allSets = append(allSets, ls.code+ls.tag)
+		duplicate(ap.Data, ls.name, ls.base, ls.code, ls.tag, base.ReleaseDate)
+		// mtgjson has an FWB of its own, holding its sealed products alone
+		if !slices.Contains(allSets, ls.code) {
+			allSets = append(allSets, ls.code)
+		}
 	}
 
 	if ap.Data["SLD"] != nil {
-		sldDupes := duplicateCards(ap.Data, "SLD", "JPN", sldJPNLangDupes)
+		sldDupes := duplicateCards(ap.Data, "SLD", "SLD", "JPN", sldJPNLangDupes)
 		ap.Data["SLD"].Cards = append(ap.Data["SLD"].Cards, sldDupes...)
 	}
 
 	if ap.Data["PURL"] != nil {
-		purlDupes := duplicateCards(ap.Data, "PURL", "JPN", []string{"1"})
+		purlDupes := duplicateCards(ap.Data, "PURL", "PURL", "JPN", []string{"1"})
 		ap.Data["PURL"].Cards = append(ap.Data["PURL"].Cards, purlDupes...)
 	}
 
@@ -1757,18 +1760,24 @@ var langs = map[string]string{
 }
 
 // Duplicate an entire set of cards, using a custom code and a different language
-func duplicate(sets map[string]*Set, name, code, tag, date string) {
-	if sets[code] == nil {
+func duplicate(sets map[string]*Set, name, base, code, tag, date string) {
+	if sets[base] == nil {
 		return
 	}
 
 	// Copy base set information
-	dup := *sets[code]
+	dup := *sets[base]
+
+	// The sealed products mtgjson files under the code stay its own
+	var sealedProducts []SealedProduct
+	if sets[code] != nil {
+		sealedProducts = sets[code].SealedProduct
+	}
 
 	// Update with new info
 	dup.Name = name
-	dup.Code = code + tag
-	dup.ParentCode = code
+	dup.Code = code
+	dup.ParentCode = base
 	dup.ReleaseDate = date
 	dup.ReleaseDateTime, _ = time.Parse("2006-01-02", date)
 
@@ -1780,39 +1789,39 @@ func duplicate(sets map[string]*Set, name, code, tag, date string) {
 
 	var languageSet bool
 	for _, ls := range languageSets {
-		if ls.code+ls.tag == dup.Code {
+		if ls.code == dup.Code {
 			languageSet = true
 		}
 	}
 
 	// Rework printings information
-	for i := range sets[code].Cards {
+	for i := range sets[base].Cards {
 		// The base card's entry in its own language names the card, so a
 		// language set's copy finds its way back to it
 		if languageSet {
-			nameOwnLanguage(&sets[code].Cards[i])
+			nameOwnLanguage(&sets[base].Cards[i])
 		}
 		// Skip misprints from main sets
-		if strings.HasSuffix(sets[code].Cards[i].Number, SuffixVariant) {
+		if strings.HasSuffix(sets[base].Cards[i].Number, SuffixVariant) {
 			continue
 		}
 		// A language set holds only the cards printed in its language
-		if languageSet && !printedInOther(sets[code].Cards[i], langs[tag]) {
+		if languageSet && !printedInOther(sets[base].Cards[i], langs[tag]) {
 			continue
 		}
 
 		// A same-name card met earlier already gave every card of this name
 		// the printings below
-		if slices.Contains(sets[code].Cards[i].Printings, dup.Code) {
-			numbers = append(numbers, sets[code].Cards[i].Number)
+		if slices.Contains(sets[base].Cards[i].Printings, dup.Code) {
+			numbers = append(numbers, sets[base].Cards[i].Number)
 			continue
 		}
 
 		// Update printings for the original set, keeping them sorted by
 		// date like every other card's: the site lists them in this order
-		printings := append(sets[code].Cards[i].Printings, dup.Code)
+		printings := append(sets[base].Cards[i].Printings, dup.Code)
 		sortPrintings(sets, printings)
-		sets[code].Cards[i].Printings = printings
+		sets[base].Cards[i].Printings = printings
 
 		// Loop through all other sets mentioned
 		for _, setCode := range printings {
@@ -1832,35 +1841,40 @@ func duplicate(sets map[string]*Set, name, code, tag, date string) {
 			for j := range sets[setCode].Cards {
 				// Name match, can't break after the first because there could
 				// be other variants
-				if sets[setCode].Cards[j].Name == sets[code].Cards[i].Name {
+				if sets[setCode].Cards[j].Name == sets[base].Cards[i].Name {
 					sets[setCode].Cards[j].Printings = printings
 				}
 			}
 		}
 
-		numbers = append(numbers, sets[code].Cards[i].Number)
+		numbers = append(numbers, sets[base].Cards[i].Number)
 	}
 
 	// Duplicate cards
-	dup.Cards = duplicateCards(sets, code, tag, numbers)
+	dup.Cards = duplicateCards(sets, base, code, tag, numbers)
 
 	// dup is a shallow copy, so everything not replaced above still points at
 	// the source set's slices. Sealed products, tokens and decks belong to the
 	// printing that actually shipped them; shared, their uuids are counted
 	// under both sets and the edition recorded for one flips between runs.
-	dup.SealedProduct = nil
+	dup.SealedProduct = sealedProducts
 	dup.Tokens = nil
 	dup.Decks = nil
 	dup.Booster = nil
 
 	// Cardmarket sells a whole-set copy as an expansion of its own, with its
-	// own products (Legends Italian), so it keeps none of the original's
+	// own products (Legends Italian), so it keeps none of the original's.
+	// Every vendor sells the foreign white borders apart from Revised.
 	for i := range dup.Cards {
 		altIdentifiers := map[string]string{}
 		for k, v := range dup.Cards[i].Identifiers {
 			switch k {
 			case "mcmId", "mcmEtchedId":
 				continue
+			case "mcmMetaId", "tcgplayerProductId", "cardKingdomId", "cardsphereId", "deckboxId", "multiverseId":
+				if languageSet && base == "3ED" {
+					continue
+				}
 			}
 			altIdentifiers[k] = v
 		}
@@ -1915,45 +1929,44 @@ func takePrintedName(card *Card, name string) {
 }
 
 // Duplicate certain cards within the same set according to the language tag
-func duplicateCards(sets map[string]*Set, code, tag string, numbers []string) []Card {
+func duplicateCards(sets map[string]*Set, base, code, tag string, numbers []string) []Card {
 	var duplicates []Card
 	copyOf := map[string]string{}
 
-	if sets[code] == nil {
+	if sets[base] == nil {
 		return nil
 	}
 
-	for i := range sets[code].Cards {
+	for i := range sets[base].Cards {
 		// Skip unneeded; a listed number copies its starred sibling too
-		if !slices.Contains(numbers, strings.TrimSuffix(sets[code].Cards[i].Number, SuffixSpecial)) {
+		if !slices.Contains(numbers, strings.TrimSuffix(sets[base].Cards[i].Number, SuffixSpecial)) {
 			continue
 		}
 
-		mainUUID := sets[code].Cards[i].UUID
+		mainUUID := sets[base].Cards[i].UUID
 
 		// Update with new info
-		dupeCard := sets[code].Cards[i]
+		dupeCard := sets[base].Cards[i]
 		dupeCard.UUID = mainUUID + "_" + strings.ToLower(tag)
 		dupeCard.Language = langs[tag]
 		dupeCard.Identifiers = maps.Clone(dupeCard.Identifiers)
 		// TCGplayer sells a copy in another language under its original's
 		// products, and one in the original's language under its own
-		if dupeCard.Language == sets[code].Cards[i].Language {
+		if dupeCard.Language == sets[base].Cards[i].Language {
 			delete(dupeCard.Identifiers, "tcgplayerProductId")
 			delete(dupeCard.Identifiers, "tcgplayerEtchedProductId")
 		}
 
 		// A whole-set copy is told apart by its own code, one filed next to
 		// its original only by the tag behind its number
-		_, found := sets[code+tag]
-		if found {
-			dupeCard.SetCode = code + tag
+		if code != base {
+			dupeCard.SetCode = code
 		} else {
 			dupeCard.Number += strings.ToLower(tag)
 		}
 
 		// Retrieve Printed data if available
-		for j, foreignData := range sets[code].Cards[i].ForeignData {
+		for j, foreignData := range sets[base].Cards[i].ForeignData {
 			if foreignData.Language != dupeCard.Language {
 				continue
 			}
@@ -1968,15 +1981,15 @@ func duplicateCards(sets map[string]*Set, code, tag string, numbers []string) []
 				dupeCard.Identifiers["multiverseId"] = id
 			}
 			// mtgjson names this printing itself, and knows which products hold it
-			dupeCard.UUID = foreignData.UUID + mintedSuffix(sets[code].Cards[i])
+			dupeCard.UUID = foreignData.UUID + mintedSuffix(sets[base].Cards[i])
 			if foreignData.SourceProducts != nil {
 				dupeCard.SourceProducts = foreignData.SourceProducts
 			}
 			// The original's entry names its copy. A printing minted here shares
 			// its foreignData with the one it came from, so it gets its own first.
 			if foreignData.UUID != dupeCard.UUID {
-				sets[code].Cards[i].ForeignData = slices.Clone(sets[code].Cards[i].ForeignData)
-				sets[code].Cards[i].ForeignData[j].UUID = dupeCard.UUID
+				sets[base].Cards[i].ForeignData = slices.Clone(sets[base].Cards[i].ForeignData)
+				sets[base].Cards[i].ForeignData[j].UUID = dupeCard.UUID
 			}
 		}
 

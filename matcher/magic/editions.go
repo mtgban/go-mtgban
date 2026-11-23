@@ -663,6 +663,11 @@ var EditionTable = map[string]string{
 	"Revised Edition Foreign Black Border":   "Foreign Black Border",
 	"French Revised FBB":                     "Foreign Black Border (French)",
 	"German Revised FBB":                     "Foreign Black Border (German)",
+	"Foreign White Bordered":                 "Foreign White Border",
+	"Italian Revised FWB":                    "Foreign White Border",
+	"Revised Edition (Foreign White Border)": "Foreign White Border",
+	"French Revised FWB":                     "Foreign White Border (French)",
+	"German Revised FWB":                     "Foreign White Border (German)",
 
 	"4th Edition BB":                        "Fourth Edition Foreign Black Border",
 	"4th Edition - Black Border":            "Fourth Edition Foreign Black Border",

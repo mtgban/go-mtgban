@@ -1,4 +1,4 @@
-# Language sets: Foreign Black Border, 4th Edition FBB, Renaissance
+# Language sets: foreign borders of Revised and 4th Edition, Renaissance
 
 These sets were printed in several languages, and mtgjson files each card
 once, under one of them, with the others in `foreignData`.
@@ -8,6 +8,7 @@ once, under one of them, with the others in `foreignData`.
 | FBB | French, German, Italian | French | Italian | FBBFR, FBBDE |
 | 4BB | Chinese Traditional, Japanese, Korean, Portuguese (Brazil), Spanish | Spanish | Japanese | 4BBES, 4BBPT, 4BBKO, 4BBZHT |
 | REN | French, German | French | French | RENDE |
+| 3ED | English, French, German, Italian | English | English | FWB (Italian), FWBFR, FWBDE |
 
 - FBB and 4BB take the language US storefronts mostly sell: the per-set
   loop of `matcher/magic/mtgjson.go` gives each card that language's name
@@ -19,9 +20,19 @@ once, under one of them, with the others in `foreignData`.
   Fourth Edition). A copy's uuid is the one mtgjson gives that language in
   `foreignData`, so `MatchIDLanguage` finds it from the base card, as the
   TCGplayer and Scryfall id paths do. The base card's own entry names the
-  base, so a copy finds its way back too.
+  base, so a copy finds its way back too, except to 3ED: mtgjson lists no
+  English entry for its cards.
 - A listing reaches a language set by naming the base set and its language
   (`languageSet` in `matcher/magic/rules.go`), or the language set by name.
+  One whose edition names neither is never sent there by its language alone
+  (`isLanguageSet` in `matcher/magic/candidates.go`).
+- Foreign Revised is white-bordered, sold apart as Foreign White Border.
+  mtgjson has an FWB set holding its sealed products alone, which keeps them
+  and takes Revised's Italian cards; FWBFR and FWBDE are made from it. No
+  vendor sells them under Revised's products, so they carry none of its
+  vendor ids, and TCGplayer's products are linked by name
+  (`tcgplayer/cataloglinks.go`). Foreign white-bordered 4th Edition is not
+  loaded.
 
 Scryfall never scanned some of these printings and serves a stamped English
 placeholder for them; mtgjson carries no scan status to avoid it.
