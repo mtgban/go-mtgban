@@ -105,6 +105,12 @@ func (ck *Graded) scrapePage(session string, page int) error {
 		return err
 	}
 
+	ck.parsePage(doc, page)
+	return nil
+}
+
+// parsePage adds the listings of one page of the storefront.
+func (ck *Graded) parsePage(doc *goquery.Document, page int) {
 	u, _ := url.Parse("https://www.cardkingdom.com/")
 	if ck.partner != "" {
 		q := u.Query()
@@ -125,6 +131,8 @@ func (ck *Graded) scrapePage(session string, page int) error {
 		// Product ID from hidden input
 		id, _ := s.Find("input.product_id").Attr("value")
 
+		slab, conditions, unread := parseGradedSlab(title)
+
 		theCard, err := preprocessGraded(title)
 		if err != nil {
 			if !errors.Is(err, matcher.ErrUnsupported) {
@@ -141,10 +149,11 @@ func (ck *Graded) scrapePage(session string, page int) error {
 			return
 		} else if err != nil {
 			// A slab title naming several printings and no collector number
-			// has nothing left to tell them apart.
+			// has nothing left to tell them apart. An unread slab's title is
+			// logged anyway: its wording may be what kept it from matching.
 			var alias *matcher.AliasingError
 			aliased := errors.As(err, &alias)
-			if aliased && matcher.ExtractNumber(theCard.Variation) == "" {
+			if aliased && unread == "" && matcher.ExtractNumber(theCard.Variation) == "" {
 				return
 			}
 			ck.printf("%v", err)
@@ -172,14 +181,8 @@ func (ck *Graded) scrapePage(session string, page int) error {
 		u.Path = linkPath
 		link := u.String()
 
-		conditions, slab := parseGradedCondition(title)
-		if conditions == "" {
-			text := slab
-			if text == "" {
-				text = title
-			}
-			ck.printf("unsupported %s condition", text)
-			return
+		if unread != "" {
+			ck.printf(mtgban.UnreadSlabFormat, unread)
 		}
 
 		out := &mtgban.InventoryEntry{
@@ -187,6 +190,8 @@ func (ck *Graded) scrapePage(session string, page int) error {
 			Price:      price,
 			URL:        link,
 			OriginalID: id,
+			InstanceID: id,
+			Slab:       slab,
 		}
 		err = ck.inventory.Add(cardID, out)
 		if err != nil {
@@ -194,8 +199,6 @@ func (ck *Graded) scrapePage(session string, page int) error {
 			return
 		}
 	})
-
-	return nil
 }
 
 // Load fetches everything this scraper offers. See mtgban.Scraper.
@@ -234,5 +237,6 @@ func (ck *Graded) Info() (info mtgban.ScraperInfo) {
 	info.Shorthand = "CKGraded"
 	info.InventoryTimestamp = &ck.inventoryDate
 	info.Game = ck.backend.Game
+	info.GradedMode = true
 	return
 }
