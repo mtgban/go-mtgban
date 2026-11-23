@@ -4,6 +4,12 @@ import "strings"
 
 var singlesLanguages = []string{"English", "Italian", "Japanese", "Phyrexian"}
 
+// borderLanguages are read only from the editions ABU lists the foreign
+// black borders and Renaissance under, where each language has its own set.
+var borderLanguages = []string{"French", "German", "Spanish", "Portuguese", "Korean", "Chinese Traditional"}
+
+var borderEditions = []string{"Revised", "4th Edition", "Renaissance"}
+
 // oldEditions are walked with their picture-card copies, which are most of
 // ABU's stock there; elsewhere a picture card is a duplicate listing.
 var oldEditions = []string{"Alpha", "Beta", "Unlimited", "Arabian Nights", "Antiquities", "Legends", "The Dark"}
@@ -26,7 +32,8 @@ func anyOf(words []string) string {
 // slab stays in the index, so only slabs in stock are asked for.
 func singlesFilter() string {
 	old := anyOf(oldEditions)
-	return `+language:` + anyOf(singlesLanguages) +
+	return `+(language:` + anyOf(singlesLanguages) +
+		` OR (+language:` + anyOf(borderLanguages) + ` +magic_edition:` + anyOf(borderEditions) + `))` +
 		` -offline_item:true` +
 		` -magic_features:` + anyOf(oneOffLabels) +
 		` -location_section:"Signed"` +

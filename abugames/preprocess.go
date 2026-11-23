@@ -334,6 +334,28 @@ var eternalNonfoil = map[string]string{
 	"247": "288",
 }
 
+// foreignBorder files a foreign Revised or 4th Edition listing under the
+// black-bordered set it was printed in. ABU lists both borders under one
+// edition and only the title says which, "(BB 1994)" or "(WB)"; 4th Edition
+// was printed in Korean and Chinese black-bordered alone.
+func foreignBorder(edition, variation, lang string) (string, string) {
+	fields := strings.Fields(variation)
+	blackBordered := slices.Contains(fields, "BB")
+	switch {
+	case edition == "Revised" && blackBordered:
+		edition = "Foreign Black Border"
+	case edition == "4th Edition" && !slices.Contains(fields, "WB") &&
+		(blackBordered || lang == "Korean" || lang == "Chinese Traditional"):
+		edition = "Fourth Edition Foreign Black Border"
+	default:
+		return edition, variation
+	}
+	fields = slices.DeleteFunc(fields, func(field string) bool {
+		return field == "BB" || field == "1994"
+	})
+	return edition, strings.Join(fields, " ")
+}
+
 // errForeignListing marks a listing in a language the catalog never printed
 // the card in, which has no printing of its own to be priced against.
 var errForeignListing = errors.New("foreign listing")
@@ -533,6 +555,13 @@ func preprocess(b *matcher.Backend, card *ABUCard) (*matcher.InputCard, error) {
 		parts := strings.Split(cardName, " | ")
 		cardName = parts[0]
 		oracleName = parts[len(parts)-1]
+	}
+
+	var bordered bool
+	if lang != "" && lang != "English" {
+		listed := edition
+		edition, variation = foreignBorder(edition, variation, lang)
+		bordered = edition != listed
 	}
 
 	// Cleanup variation as necessary
@@ -818,9 +847,9 @@ func preprocess(b *matcher.Backend, card *ABUCard) (*matcher.InputCard, error) {
 	// This storefront calls the black-bordered Fourth Edition BB, where the
 	// catalog files it as the Japanese printing, and WB the white-bordered
 	// one. There is no white-bordered printing in any language but English -
-	// the catalog holds 4ED in English and white, 4BB in Japanese and black,
-	// and nothing else - so a foreign one names a card that was never made,
-	// and the matcher already knows to refuse it under that name.
+	// the catalog holds 4ED in English and white and 4BB in black - so a
+	// foreign one names a card that was never made, and the matcher already
+	// knows to refuse it under that name.
 	if matcher.Contains(edition, "4th Edition") {
 		switch variation {
 		case "BB":
@@ -1011,8 +1040,9 @@ func preprocess(b *matcher.Backend, card *ABUCard) (*matcher.InputCard, error) {
 		cardName = name
 	}
 
-	// Stash the language information (filtered earlier)
-	if lang != "" && lang != "English" {
+	// Stash the language information (filtered earlier), except where the
+	// edition already names the printing, whose land letters it would bury
+	if lang != "" && lang != "English" && !bordered {
 		if variation != "" {
 			variation += " "
 		}
@@ -1061,7 +1091,8 @@ func preprocess(b *matcher.Backend, card *ABUCard) (*matcher.InputCard, error) {
 	// and the foreign black borders among them.
 	if lang != "" && lang != "English" {
 		printing := resolved(b, cardName, edition, variation, lang, isFoil)
-		if printing == nil || printing.Language != lang {
+		// mtgjson can spell the language longer: "Portuguese (Brazil)"
+		if printing == nil || !strings.Contains(printing.Language, lang) {
 			idName := cardName
 			if oracleName != "" {
 				idName = oracleName
