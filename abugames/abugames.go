@@ -160,10 +160,9 @@ func (abu *ABUGames) processEntry(ctx context.Context, filter string, channel ch
 				if doc.SellQuantity <= 0 || doc.SellPrice <= 0 {
 					continue
 				}
-				cond, text := slabCondition(&doc, lowerGrade, theCard.Foil)
-				if cond == "" {
-					abu.printf("unsupported %q condition on %s", text, doc.ID)
-					continue
+				cond, slab, unread := slabCondition(&doc, lowerGrade, theCard.Foil)
+				if unread != "" {
+					abu.printf(mtgban.UnreadSlabFormat+" on %s", unread, doc.ID)
 				}
 
 				u.Path = "/magic-the-gathering/singles"
@@ -181,6 +180,7 @@ func (abu *ABUGames) processEntry(ctx context.Context, filter string, channel ch
 						OriginalID: group.GroupValue,
 						InstanceID: doc.ID,
 						SellerName: availableMarketNames[2],
+						Slab:       slab,
 					},
 				}
 				continue
@@ -476,6 +476,7 @@ func (abu *ABUGames) InfoForScraper(name string) mtgban.ScraperInfo {
 	if info.Shorthand == "ABUCredit" {
 		info.CreditMultiplier = 1
 	}
+	info.GradedMode = info.Shorthand == "ABUGraded"
 	return info
 }
 
