@@ -489,3 +489,48 @@ func TestProfitabilityRefusesANegativePrice(t *testing.T) {
 		}
 	}
 }
+
+// slabbed builds a shelf through Add, so the order is the one a scraper
+// publishes, with a PSA 10 folded to NM at slabPrice and, when rawPrice is
+// not zero, a raw NM copy beside it.
+func slabbed(t *testing.T, slabPrice, rawPrice float64) InventoryRecord {
+	t.Helper()
+	inv := InventoryRecord{}
+	slab := &InventoryEntry{Conditions: NM, Price: slabPrice, Quantity: 1, Slab: &Slab{Grader: "PSA", Score: 10}}
+	err := inv.Add("card", slab)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if rawPrice == 0 {
+		return inv
+	}
+	err = inv.Add("card", &InventoryEntry{Conditions: NM, Price: rawPrice, Quantity: 1})
+	if err != nil {
+		t.Fatal(err)
+	}
+	return inv
+}
+
+// A slab is not the copy a spread is about: beside a raw NM copy only the raw
+// one is bought, even where the cheaper slab sorts to the card's first entry.
+func TestArbitSkipsASlab(t *testing.T) {
+	b := backendFor(plainCard())
+	vendor := vendorOf(BuylistRecord{"card": {{Conditions: NM, BuyPrice: 15}}})
+
+	inv := slabbed(t, 8, 10)
+	if inv["card"][0].Slab == nil {
+		t.Fatal("the slab sorted after the raw copy, the test pins nothing")
+	}
+	entries := Arbit(b, nil, vendor, sellerOf(inv, ScraperInfo{Name: "seller"}))
+	if len(entries) != 1 {
+		t.Fatalf("Arbit returned %d entries, want 1", len(entries))
+	}
+	if entries[0].InventoryEntry.Slab != nil || entries[0].InventoryEntry.Price != 10 {
+		t.Errorf("Arbit bought %+v, want the raw copy at 10", entries[0].InventoryEntry)
+	}
+
+	entries = Arbit(b, nil, vendor, sellerOf(slabbed(t, 8, 0), ScraperInfo{Name: "seller"}))
+	if len(entries) != 0 {
+		t.Errorf("Arbit returned %d entries for a slab-only card, want none", len(entries))
+	}
+}

@@ -390,3 +390,36 @@ func TestMismatchFiltersTheReferenceSide(t *testing.T) {
 		})
 	}
 }
+
+// A slab is neither bought nor taken as the price a raw copy is judged
+// against, wherever it sorts among the card's entries.
+func TestMismatchSkipsASlab(t *testing.T) {
+	b := backendFor(plainCard())
+	raw := func(price float64) Seller {
+		return sellerOf(InventoryRecord{
+			"card": {{Conditions: NM, Price: price, Quantity: 1}},
+		}, ScraperInfo{Name: "raw"})
+	}
+
+	inv := slabbed(t, 8, 10)
+	if inv["card"][0].Slab == nil {
+		t.Fatal("the slab sorted after the raw copy, the test pins nothing")
+	}
+	entries := Mismatch(b, nil, sellerOf(inv, ScraperInfo{Name: "reference"}), raw(4))
+	if len(entries) != 1 {
+		t.Fatalf("Mismatch returned %d entries, want 1", len(entries))
+	}
+	if entries[0].ReferenceEntry.Slab != nil || entries[0].ReferenceEntry.Price != 10 {
+		t.Errorf("Mismatch referenced %+v, want the raw copy at 10", entries[0].ReferenceEntry)
+	}
+
+	entries = Mismatch(b, nil, sellerOf(slabbed(t, 100, 0), ScraperInfo{Name: "reference"}), raw(4))
+	if len(entries) != 0 {
+		t.Errorf("Mismatch returned %d entries against a slab reference, want none", len(entries))
+	}
+
+	entries = Mismatch(b, nil, raw(100), sellerOf(slabbed(t, 4, 0), ScraperInfo{Name: "probe"}))
+	if len(entries) != 0 {
+		t.Errorf("Mismatch returned %d entries buying a slab, want none", len(entries))
+	}
+}

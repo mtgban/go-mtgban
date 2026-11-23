@@ -265,6 +265,10 @@ func (r *resolvedOpts) filterCard(cardID string) (*matcher.CardObject, float64, 
 // buying at all, and what it costs once every factor they carry is applied.
 // Both reports are about a copy someone could buy, so both ask this.
 func (r *resolvedOpts) buyable(cardID string, entry InventoryEntry, noQuantity bool, factor float64) (float64, bool) {
+	// A slab is priced by its label, which no raw copy's price compares to
+	if entry.Slab != nil {
+		return 0, false
+	}
 	if slices.Contains(r.filterConditions, entry.Conditions) {
 		return 0, false
 	}
@@ -517,6 +521,10 @@ func Mismatch(b *matcher.Backend, opts *ArbitOpts, reference, probe Seller) []Ar
 			}
 
 			for _, refEntry := range refEntries {
+				// Nor does a slab settle the price of a raw copy
+				if refEntry.Slab != nil {
+					continue
+				}
 				if slices.Contains(r.filterConditions, refEntry.Conditions) {
 					continue
 				}

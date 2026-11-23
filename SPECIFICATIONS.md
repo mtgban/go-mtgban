@@ -221,6 +221,9 @@ rescaled copy of itself. A pair whose grade is missing from the map or is
 at zero. The result carries `ReferenceEntry` instead of `BuylistEntry`, and
 `NoQuantityInventory` bypasses the qty gate here too.
 
+Neither report reads a slab: an inventory entry with a `Slab` is never the
+copy bought, in either report, nor a Mismatch reference (ADR-0006).
+
 `mtgban` imports no game package; a report that reads one game's rarities,
 borders or promo types lives with its caller.
 
