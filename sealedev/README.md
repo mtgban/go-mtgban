@@ -20,7 +20,7 @@ its own sub-seller:
 | Name | Shorthand | Source | Shape |
 | --- | --- | --- | --- |
 | Singles Buylist (est.) | `SS` | `CK`, `SCG` | buylist |
-| TCG Low EV / Sim | `TCGLowEV` / `TCGLowSim` | `TCGLow` | retail |
+| TCG Low EV / Sim | `TCGLowEV` / `TCGLowSim` | `TCGItemLow` | retail |
 | TCG Direct (net) EV / Sim | `TCGDirectNetEV` / `TCGDirectNetSim` | `TCGDirectNet` | retail, priced off the buylist side |
 | CT Zero EV / Sim | `CTZeroEV` / `CTZeroSim` | `CT0` | retail |
 | Mana Pool EV / Sim | `MPEV` / `MPSim` | `MP` | retail |
@@ -105,6 +105,22 @@ wrong - `directNet/2 > tcgMarket`, i.e. Direct claims more than twice what
 the card sells for - it is either capped at twice Low or dropped outright.
 `TCGDirectSYPNet` is computed unconditionally from `TCGDirect`, and `CT0` has
 its flat per-band fee (`getCT0fees`) subtracted in place.
+
+**TCG Low** reads the lowest of three TCGplayer prices: the product `TCGLow`
+the index scraper publishes, and the near mint and lightly played prices in
+`TCGItemLow`, which `tcg_market` publishes per sku (the item price of the
+lowest listing, without its shipping). A card with none of the three counts
+for nothing, as at every other store: TCGplayer's Market is a sales figure,
+not a listing, and on a card nobody lists it is a few sales old.
+`TCGItemLow` is kept off the site's pages by `api_only_stores`.
+
+`TCGLow` already takes the cheaper of near mint and lightly played, so it
+answers for almost every card. `TCGItemLow` counts where `TCGLow` is missing,
+as on Japanese-only printings such as the Godzilla Lands, and where one of its
+grades is cheaper still. It is not read near mint first, as other stores are:
+a sku's lowest listing is picked with its shipping counted, so its item price
+can sit well above what the card sells for, and a lone near mint listing on a
+thin market can be priced at anything.
 
 **Cardmarket** is the larger estimate, and `mkm.go` is entirely about it.
 Cardmarket's market scraper only spends a live API call where one is worth

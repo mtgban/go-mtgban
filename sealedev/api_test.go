@@ -200,6 +200,61 @@ func TestSetPriceReadsBack(t *testing.T) {
 	}
 }
 
+// TestAdjustFillsTCGItemLow pins TCG Low EV's price: the lower of the product
+// Low and the item low, and nothing where neither is quoted, the Market
+// included. The product Low itself is left as it was. Bulk stays; simulate
+// applies the floor.
+func TestAdjustFillsTCGItemLow(t *testing.T) {
+	b := installCards(t, map[string]*matcher.CardObject{
+		"card": {Card: matcher.Card{Name: "Card", SetCode: "AAA"}},
+	})
+	for _, tt := range []struct {
+		name    string
+		retail  map[string]float64
+		wantLow float64
+	}{
+		{name: "a market and no low", retail: map[string]float64{"TCGMarket": 20}},
+		{name: "an item low alone", retail: map[string]float64{"TCGItemLow": 15, "TCGMarket": 20}, wantLow: 15},
+		{name: "an item low under the floor", retail: map[string]float64{"TCGItemLow": 0.3, "TCGMarket": 2}, wantLow: 0.3},
+		{name: "a product low alone", retail: map[string]float64{"TCGLow": 5, "TCGMarket": 20}, wantLow: 5},
+		{name: "a product low under the item low", retail: map[string]float64{"TCGItemLow": 15, "TCGLow": 5, "TCGMarket": 20}, wantLow: 5},
+		{name: "an item low under the product low", retail: map[string]float64{"TCGItemLow": 4, "TCGLow": 5, "TCGMarket": 20}, wantLow: 4},
+	} {
+		productLow := tt.retail["TCGLow"]
+		r := &priceSnapshot{
+			Retail:  map[string]map[string]float64{"card": tt.retail},
+			Buylist: map[string]map[string]float64{},
+		}
+		r.adjust(b, nil, "card")
+		got := r.Retail["card"][tcgItemLowStore]
+		if got != tt.wantLow {
+			t.Errorf("%s: %s = %v, want %v", tt.name, tcgItemLowStore, got, tt.wantLow)
+		}
+		if r.Retail["card"]["TCGLow"] != productLow {
+			t.Errorf("%s: TCGLow = %v, want it left at %v", tt.name, r.Retail["card"]["TCGLow"], productLow)
+		}
+	}
+}
+
+// TestReadSideTakesTheCheaperItemLowGrade pins TCGItemLow at the cheaper of
+// near mint and lightly played, as TCGplayer's product Low reads them, while
+// every other store reads near mint first.
+func TestReadSideTakesTheCheaperItemLowGrade(t *testing.T) {
+	b := installCards(t, map[string]*matcher.CardObject{
+		"card": {Card: matcher.Card{Name: "Card", SetCode: "AAA", Finish: "nonfoil"}},
+	})
+	grades := []v2Entry{{"NM", 10}, {"SP", 8}, {"MP", 2}}
+	prices := readSide(b, map[string]map[string]map[string][]v2Entry{
+		"card": {"nonfoil": {tcgItemLowStore: grades, "CK": grades}},
+	})
+	if got := prices["card"][tcgItemLowStore]; got != 8 {
+		t.Errorf("%s = %v, want the lightly played 8", tcgItemLowStore, got)
+	}
+	if got := prices["card"]["CK"]; got != 10 {
+		t.Errorf("CK = %v, want the near mint 10", got)
+	}
+}
+
 // valueFromCache is the sum the whole value rests on: weighted by probability
 // for the deterministic pass, unweighted for one simulated draw.
 func TestValueFromCache(t *testing.T) {
