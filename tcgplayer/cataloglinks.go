@@ -17,6 +17,24 @@ func catalogLinkKey(setName, name, number string) string {
 	return matcher.Normalize(setName) + "|" + matcher.Normalize(name) + "|" + strings.TrimLeft(number, "0")
 }
 
+// foreignWhiteBorder is the group of FWB's products, which mtgjson knows no
+// card of and which carry no number.
+const foreignWhiteBorder = "Revised Edition (Foreign White Border)"
+
+// foreignWhiteBorderCard answers the FWB card a product of its group names.
+func foreignWhiteBorderCard(b *matcher.Backend, product tcgplayer.Product) string {
+	name, variant := GetProductNameAndVariant(&product)
+	uuid, err := b.Match(&matcher.InputCard{Name: name, Variation: variant, Edition: foreignWhiteBorder})
+	if err != nil {
+		return ""
+	}
+	co, err := b.GetUUID(uuid)
+	if err != nil || co.SetCode != "FWB" {
+		return ""
+	}
+	return uuid
+}
+
 // catalogLinks ties each catalog product the datastore names no card for to
 // the one card it sells, by product id.
 //
@@ -27,6 +45,10 @@ func catalogLinkKey(setName, name, number string) string {
 // has no product of its own, the two share an English name and a collector
 // number, the product's group is named for the card's set (whole, or after
 // a "Promo Pack: "-style prefix), and each is the other's only candidate.
+//
+// The foreignWhiteBorder group is the exception: its products carry no number
+// and its cards are not English, so Match ties each by name and art letter.
+// Each is still the other's only candidate.
 func catalogLinks(b *matcher.Backend, dump *tcgplayer.CatalogDump) map[int]string {
 	claimed := map[string]bool{}
 	unlinked := map[string][]matcher.Card{}
@@ -59,8 +81,18 @@ func catalogLinks(b *matcher.Backend, dump *tcgplayer.CatalogDump) map[int]strin
 
 	products := map[string][]tcgplayer.Product{}
 	for _, product := range dump.Products {
+		if claimed[strconv.Itoa(product.ProductID)] {
+			continue
+		}
+		if groups[product.GroupID] == foreignWhiteBorder {
+			uuid := foreignWhiteBorderCard(b, product)
+			if uuid != "" {
+				products[uuid] = append(products[uuid], product)
+			}
+			continue
+		}
 		number := product.Extended("Number")
-		if number == "" || claimed[strconv.Itoa(product.ProductID)] {
+		if number == "" {
 			continue
 		}
 		setNames := []string{groups[product.GroupID]}

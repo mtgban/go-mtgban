@@ -711,6 +711,7 @@ func Preprocess(b *matcher.Backend, product *tcgplayer.Product, editions map[int
 		"Collector's Edition",
 		"Duel Decks: Jace vs. Chandra",
 		"Revised Edition (Foreign Black Border)",
+		"Revised Edition (Foreign White Border)",
 		"Fourth Edition (Foreign Black Border)",
 		"Unstable",
 		"Shadows over Innistrad",

@@ -167,3 +167,28 @@ func TestCatalogLinks(t *testing.T) {
 		}
 	}
 }
+
+// TestCatalogLinksForeignWhiteBorder pins FWB's products, which carry no
+// number, to the cards their names and art letters tell.
+func TestCatalogLinksForeignWhiteBorder(t *testing.T) {
+	b := realDatastore(t)
+	dump := tcgplayer.CatalogDump{
+		Groups: []tcgplayer.Group{{GroupID: 1690, Name: "Revised Edition (Foreign White Border)"}},
+		Products: []tcgplayer.Product{
+			{ProductID: 110005, GroupID: 1690, Name: "Badlands"},
+			{ProductID: 900000001, GroupID: 1690, Name: "Forest (B)"},
+			{ProductID: 900000002, GroupID: 1690, Name: "Not A Card"},
+		},
+	}
+	links := catalogLinks(b, &dump)
+	for id, want := range map[int]string{110005: "282", 900000001: "305", 900000002: ""} {
+		var got string
+		co, err := b.GetUUID(links[id])
+		if err == nil {
+			got = co.Number
+		}
+		if got != want || (err == nil && co.SetCode != "FWB") {
+			t.Errorf("product %d links to %v, want FWB #%s", id, co, want)
+		}
+	}
+}
