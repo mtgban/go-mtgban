@@ -91,6 +91,10 @@ func TestPreprocessShelves(t *testing.T) {
 		{"Lightning Bolt (0002)", "Promo:\u00a0Unique and Miscellaneous", "PMSC", "English", "PW26", "5"},
 		{"La Madre Tierra (Xenagos, God of Revels) (Spanish)", "Secret Lair", "SLD", "English", "SLD", "2061"},
 		{"Carnage, Crimson Chaos", "Promo: Standard Showdown", "PSSP", "English", "PW25", "13"},
+		{"Tropical Island (Ile tropicale) (French)", "3rd Edition (Revised Edition) (Foreign Black Border)", "FBB", "English", "FBBFR", "288"},
+		{"Wheel Of Fortune (Glücksrad) (German)", "3rd Edition (Revised Edition) (Foreign Black Border)", "FBB", "English", "FBBDE", "185"},
+		{"Underground Sea (Mare Sotterraneo) (Italian)", "3rd Edition (Revised Edition) (Foreign Black Border)", "FBB", "English", "FBB", "290"},
+		{"Winter Orb", "4th Edition (Foreign Black Border)", "4BB", "S.Chinese", "4BBZHT", "358"},
 	} {
 		theCard, err := preprocess(b, tt.name, "", "Regular", tt.language, tt.edition, tt.code)
 		if err != nil {
