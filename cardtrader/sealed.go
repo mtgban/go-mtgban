@@ -87,7 +87,8 @@ func (ct *Sealed) processEntry(ctx context.Context, channel chan<- resultChan, e
 			case product.Quantity < 1,
 				product.OnVacation,
 				product.Bundle,
-				product.Properties.Altered:
+				product.Properties.Altered,
+				product.Graded:
 				continue
 			case matcher.Contains(product.Description, "ita"),
 				matcher.Contains(product.Description, "empty booster"),
