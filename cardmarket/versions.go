@@ -256,6 +256,23 @@ var versionPrintings = map[int]struct{ set, number string }{
 	8069:   {"MIR", "120"},  // Ebony Charm (V.1), CardTrader
 	878087: {"MIR", "120†"}, // Ebony Charm (V.2), CardTrader
 
+	// Foreign Black Bordered
+	15461: {"FBB", "304"}, // Forest (V.1), CardTrader
+	15462: {"FBB", "305"}, // Forest (V.2), CardTrader
+	15463: {"FBB", "306"}, // Forest (V.3), CardTrader
+	15464: {"FBB", "295"}, // Island (V.1), CardTrader
+	15465: {"FBB", "296"}, // Island (V.2), CardTrader
+	15466: {"FBB", "297"}, // Island (V.3), CardTrader
+	15467: {"FBB", "301"}, // Mountain (V.1), CardTrader
+	15468: {"FBB", "302"}, // Mountain (V.2), CardTrader
+	15469: {"FBB", "303"}, // Mountain (V.3), CardTrader
+	15470: {"FBB", "292"}, // Plains (V.1), CardTrader
+	15471: {"FBB", "293"}, // Plains (V.2), CardTrader
+	15472: {"FBB", "294"}, // Plains (V.3), CardTrader
+	15476: {"FBB", "298"}, // Swamp (V.1), CardTrader
+	15477: {"FBB", "299"}, // Swamp (V.2), CardTrader
+	15478: {"FBB", "300"}, // Swamp (V.3), CardTrader
+
 	// Foreign White Bordered
 	16150: {"FWB", "304"}, // Forest (V.1), CardTrader
 	16155: {"FWB", "305"}, // Forest (V.2), CardTrader
