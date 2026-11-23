@@ -265,7 +265,15 @@ func preprocess(b *matcher.Backend, card *Card, index int) (*matcher.InputCard, 
 		Variation: variation,
 		Edition:   edition,
 		Foil:      isFoil,
+		Language:  borderLanguages[card.Variants[index].Language],
 	}, nil
+}
+
+// borderLanguages are the languages of the Revised EU editions beside the
+// Italian both are filed in.
+var borderLanguages = map[string]string{
+	"FR": "French",
+	"DE": "German",
 }
 
 // mcmImageIDRe matches the Cardmarket product id an image name carries as its
@@ -304,7 +312,7 @@ func imageProductID(b *matcher.Backend, rawEdition, imagePath, cardName, edition
 		language = "Japanese"
 	// Most images here are named after the English printing, not the
 	// Italian-only one on sale, so only an Italian hit is the listing's.
-	case "Rinascimento", "Revised EU FBB", "L'Oscurità", "Leggende":
+	case "Rinascimento", "Revised EU FBB", "Revised EU FWB", "L'Oscurità", "Leggende":
 		language = "Italian"
 	case "Promo", "DCI Promo", "Judge Rewards Promos", "MagicFest Promos":
 		imageFirst = true

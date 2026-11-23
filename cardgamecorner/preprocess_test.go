@@ -567,6 +567,32 @@ func TestNumberedSKUPrefix(t *testing.T) {
 	}
 }
 
+// The Revised EU editions hold every language a border was printed in, told
+// apart by the copy's own.
+func TestRevisedEULanguages(t *testing.T) {
+	b := realDatastore(t)
+	for _, tt := range []struct{ edition, language, want string }{
+		{"Revised EU FBB", "IT", "FBB"},
+		{"Revised EU FBB", "FR", "FBBFR"},
+		{"Revised EU FWB", "IT", "FWB"},
+		{"Revised EU FWB", "DE", "FWBDE"},
+	} {
+		card := Card{Name: "Volcanic Island", Edition: tt.edition, Variants: []Variant{{Foil: "Non Foil", Language: tt.language}}}
+		input, err := preprocess(b, &card, 0)
+		if err != nil {
+			t.Fatal(err)
+		}
+		id, err := b.Match(input)
+		if err != nil {
+			t.Fatal(err)
+		}
+		co, err := b.GetUUID(id)
+		if err != nil || co.SetCode != tt.want {
+			t.Errorf("%s in %s = %v, want %s", tt.edition, tt.language, co, tt.want)
+		}
+	}
+}
+
 // A card the store's version tag cannot place is retried with the number the
 // listing states, and answered only where the landed printing carries it.
 func TestMatchByListedNumber(t *testing.T) {
