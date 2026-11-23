@@ -334,6 +334,27 @@ func TestRunEVSkipsTheSimulationForFixedContents(t *testing.T) {
 	}
 }
 
+// TestRunEVCountsBulkOnlyInFixedContents pins where the bulk floor applies:
+// a deck priced entirely under it is still worth its cards, a booster is not.
+func TestRunEVCountsBulkOnlyInFixedContents(t *testing.T) {
+	b := realDatastore(t)
+	for _, random := range []bool{false, true} {
+		uuid, setCode := sealedProduct(t, b, random)
+
+		ss := NewScraper(b, "")
+		ss.repetitions = 10
+		ss.prices = pricedAt(t, b, setCode, uuid, BulkThreshold/2)
+
+		results, _ := ss.runEV(context.Background(), uuid)
+		if random && len(results) != 0 {
+			t.Errorf("random %s: valued bulk it only draws, %d rows", uuid, len(results))
+		}
+		if !random && len(results) == 0 {
+			t.Errorf("fixed %s: valued bulk it holds for certain at nothing", uuid)
+		}
+	}
+}
+
 // TestRunEVDrawsAHeldProductFromItsOpenings pins the reuse: a product that
 // opens from what it holds draws each opening from the openings kept for what
 // it holds, recentred on their expected value, rather than opening them again

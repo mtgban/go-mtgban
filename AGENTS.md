@@ -50,7 +50,7 @@ Direct (net) where the buylist has no number or an implausible one, and
 Cardmarket for the ~86% of the catalog its market scraper never polls - so
 an EV can move between runs without any price having moved. It also names
 what silently never counts toward a total (serialized, cosmic foil,
-unfixed Secret Lair bonuses, anything under the bulk threshold) and why
+unfixed Secret Lair bonuses, bulk in anything drawn at random) and why
 that floor is deliberately the same for every source.
 
 `cardkingdom/README.md` covers what a store's feed cannot say: Card Kingdom

@@ -287,7 +287,9 @@ func (ss *Scraper) simulate(ctx context.Context, setCode, productUUID string) op
 
 	// Resolve each card's price a single time per parameter (skipped cards
 	// resolve to 0). This keeps the price lookups out of the simulation loop,
-	// which can run Repetitions times.
+	// which can run Repetitions times. Bulk counts only toward a product
+	// holding it for certain.
+	random := sealed.IsRandom(ss.backend, setCode, productUUID)
 	unitPrices := make([]map[string]float64, len(evParameters))
 	for i := range evParameters {
 		priceSource := ss.prices.Retail
@@ -300,7 +302,11 @@ func (ss *Scraper) simulate(ctx context.Context, setCode, productUUID string) op
 			if skipped[pick] {
 				continue
 			}
-			cache[pick] = maxStorePrice(ss.backend, pick, priceSource, evParameters[i].SourceStores)
+			price := maxStorePrice(ss.backend, pick, priceSource, evParameters[i].SourceStores)
+			if random && price < BulkThreshold {
+				continue
+			}
+			cache[pick] = price
 		}
 		unitPrices[i] = cache
 	}
@@ -317,7 +323,7 @@ func (ss *Scraper) simulate(ctx context.Context, setCode, productUUID string) op
 		}
 	}
 
-	if !sealed.IsRandom(ss.backend, setCode, productUUID) {
+	if !random {
 		// Fixed contents: a simulation would always draw the same cards, so its
 		// value equals the deterministic probability EV. Copy it instead of
 		// running a pointless Monte Carlo.

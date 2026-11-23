@@ -39,7 +39,8 @@ const (
 	banAPIURL = "https://www.mtgban.com/api/v2/all%s.json?sig=%s"
 
 	// BulkThreshold is the price under which a card counts as bulk and stops
-	// being worth naming in an opening
+	// counting toward a product that draws it at random. A product holding it
+	// for certain, a deck or a fixed drop, still counts it.
 	BulkThreshold = 0.5
 	// MaxSinglePrice caps what one card may contribute, so a mispriced
 	// outlier cannot carry a whole product
@@ -191,11 +192,11 @@ func loadPrices(ctx context.Context, b *matcher.Backend, sig, selected string) (
 	// pass below.
 	mkm := fitMKMCalibration(b, &response)
 
-	// Adjust Direct/CT0 estimates and prune bulk in a single pass over the catalog.
+	// Adjust Direct/CT0 estimates and drop what they leave at nothing in a
+	// single pass over the catalog. Bulk stays; simulate applies the floor.
 	uuids := b.GetUUIDs()
 	for _, uuid := range uuids {
-		// Price what Cardmarket never polled, ahead of the prune below so
-		// the estimate is held to the same bulk threshold as a real price.
+		// Price what Cardmarket never polled.
 		mkm.fill(b, &response, uuid)
 
 		tcgLow := response.getRetail(b, uuid, "TCGLow")
@@ -235,15 +236,14 @@ func loadPrices(ctx context.Context, b *matcher.Backend, sig, selected string) (
 
 		// CardTrader Zero: subtract its flat fee.
 		ct0 := response.getRetail(b, uuid, "CT0")
-		ct0 -= getCT0fees(ct0)
 		if ct0 > 0 {
-			response.setRetail(b, uuid, "CT0", ct0)
+			response.setRetail(b, uuid, "CT0", ct0-getCT0fees(ct0))
 		}
 
-		// Prune prices too low to matter, after the adjustments above.
+		// Drop the prices left at nothing, and the broken ones.
 		for _, category := range []map[string]map[string]float64{response.Retail, response.Buylist} {
 			for store := range category[uuid] {
-				if getPrice(b, uuid, category[uuid][store]) < BulkThreshold {
+				if getPrice(b, uuid, category[uuid][store]) <= 0 {
 					delete(category[uuid], store)
 				}
 			}
