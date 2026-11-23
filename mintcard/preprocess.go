@@ -55,9 +55,6 @@ var codeTable = map[string]string{
 }
 
 func preprocess(b *matcher.Backend, cardName, number, finish, langauge, edition, setCode string) (*matcher.InputCard, error) {
-	if setCode == "FWB" {
-		return nil, matcher.ErrUnsupported
-	}
 	// The double-faced helper cards a booster carries are the datastore's
 	// substitute cards, filed in a set of their own beside the one they
 	// came in and numbered from one: "Helper Card (9/9)" of Kaldheim is

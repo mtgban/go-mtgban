@@ -94,6 +94,8 @@ func TestPreprocessShelves(t *testing.T) {
 		{"Tropical Island (Ile tropicale) (French)", "3rd Edition (Revised Edition) (Foreign Black Border)", "FBB", "English", "FBBFR", "288"},
 		{"Wheel Of Fortune (Glücksrad) (German)", "3rd Edition (Revised Edition) (Foreign Black Border)", "FBB", "English", "FBBDE", "185"},
 		{"Underground Sea (Mare Sotterraneo) (Italian)", "3rd Edition (Revised Edition) (Foreign Black Border)", "FBB", "English", "FBB", "290"},
+		{"Tundra (German)", "3rd Edition (Revised Edition) (Foreign White Border)", "FWB", "English", "FWBDE", "289"},
+		{"Scrubland (Italian)", "3rd Edition (Revised Edition) (Foreign White Border)", "FWB", "English", "FWB", "286"},
 		{"Winter Orb", "4th Edition (Foreign Black Border)", "4BB", "S.Chinese", "4BBZHT", "358"},
 	} {
 		theCard, err := preprocess(b, tt.name, "", "Regular", tt.language, tt.edition, tt.code)
