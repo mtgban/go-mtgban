@@ -332,20 +332,28 @@ func setFamilyEdition(b *matcher.Backend, name, edition, cardEdition, variation 
 	return edition, variation
 }
 
-// languageSet names the set holding a foreign-only set's printings in
-// language, or nothing where edition is not such a set or that one is its own
+// languageSet names the set holding edition's printings in language, or
+// nothing where edition has no language sets or that language is its own
 func languageSet(b *matcher.Backend, edition, language string) string {
 	if language == "" {
 		return ""
 	}
 	for _, ls := range languageSets {
-		base, found := b.Sets[ls.code]
-		if !found || base.Name != edition || !strings.Contains(langs[ls.tag], language) {
+		base, found := b.Sets[ls.base]
+		if !found || base.Name != edition {
 			continue
 		}
-		set, found := b.Sets[ls.code+ls.tag]
-		if found {
+		set, found := b.Sets[ls.code]
+		if !found {
+			continue
+		}
+		if strings.Contains(langs[ls.tag], language) {
 			return set.Name
+		}
+		// Revised's other languages are FWB's language sets
+		name := languageSet(b, set.Name, language)
+		if name != "" {
+			return name
 		}
 	}
 	return ""

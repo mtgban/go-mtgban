@@ -42,7 +42,7 @@ func TestLanguageCopyTakesMtgjsonPrinting(t *testing.T) {
 	cards[1].Variations = []string{"en-1114"}
 	sets := map[string]*Set{"SLD": {Code: "SLD", Cards: cards}}
 
-	copies := duplicateCards(sets, "SLD", "JPN", []string{"1114", "1115", "1117"})
+	copies := duplicateCards(sets, "SLD", "SLD", "JPN", []string{"1114", "1115", "1117"})
 
 	want := []struct {
 		uuid, product string
@@ -145,7 +145,7 @@ func TestDuplicateListsItsCodeOnce(t *testing.T) {
 		}},
 	}
 
-	duplicate(sets, "Alternate Fourth Edition", "4ED", "ALT", "1995-04-01")
+	duplicate(sets, "Alternate Fourth Edition", "4ED", "4EDALT", "ALT", "1995-04-01")
 
 	for _, code := range []string{"LEA", "4ED"} {
 		for _, card := range sets[code].Cards {
@@ -278,8 +278,8 @@ func TestLanguageSets(t *testing.T) {
 	}
 
 	for _, ls := range languageSets {
-		code, language := ls.code+ls.tag, langs[ls.tag]
-		base, err := testBackend.GetSet(ls.code)
+		code, language := ls.code, langs[ls.tag]
+		base, err := testBackend.GetSet(ls.base)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -287,10 +287,10 @@ func TestLanguageSets(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if set.Name != ls.name || set.ParentCode != ls.code || set.ReleaseDate != base.ReleaseDate ||
-			set.Type != base.Type || topParent(code) != topParent(ls.code) {
+		if set.Name != ls.name || set.ParentCode != ls.base || set.ReleaseDate != base.ReleaseDate ||
+			set.Type != base.Type || topParent(code) != topParent(ls.base) {
 			t.Errorf("%s is %q under %s, %s %s; want %q under %s, %s %s", code, set.Name,
-				set.ParentCode, set.ReleaseDate, set.Type, ls.name, ls.code, base.ReleaseDate, base.Type)
+				set.ParentCode, set.ReleaseDate, set.Type, ls.name, ls.base, base.ReleaseDate, base.Type)
 		}
 
 		// Its cards' art letters read like its base's
@@ -314,7 +314,7 @@ func TestLanguageSets(t *testing.T) {
 			want++
 			copied, err := testBackend.GetUUID(printing)
 			if err != nil {
-				t.Errorf("%s #%s has no %s printing in %s", ls.code, card.Number, language, code)
+				t.Errorf("%s #%s has no %s printing in %s", ls.base, card.Number, language, code)
 				continue
 			}
 			var name, scryfallID string
@@ -328,17 +328,22 @@ func TestLanguageSets(t *testing.T) {
 				copied.Identifiers["scryfallId"] != scryfallID || !strings.Contains(copied.Images["full"], scryfallID) ||
 				copied.Identifiers["mtgjsonId"] != card.Identifiers["mtgjsonId"] ||
 				!slices.Contains(copied.Printings, code) || !slices.Contains(card.Printings, code) {
-				t.Errorf("%s #%s in %s is %s %s #%s %s %q, image %s", ls.code, card.Number, language,
+				t.Errorf("%s #%s in %s is %s %s #%s %s %q, image %s", ls.base, card.Number, language,
 					copied.Name, copied.SetCode, copied.Number, copied.Language, copied.PrintedName, copied.Images["full"])
 			}
 
 			id, err := testBackend.MatchIDLanguage(card.UUID, language)
 			if err != nil || id != printing {
-				t.Errorf("%s #%s in %s: MatchIDLanguage = %s %v", ls.code, card.Number, language, id, err)
+				t.Errorf("%s #%s in %s: MatchIDLanguage = %s %v", ls.base, card.Number, language, id, err)
+			}
+			// mtgjson lists no English entry, so nothing leads back to an English base
+			wantBack := card.UUID
+			if card.Language == "English" {
+				wantBack = ""
 			}
 			id, err = testBackend.MatchIDLanguage(printing, card.Language)
-			if err != nil || id != card.UUID {
-				t.Errorf("%s #%s in %s: MatchIDLanguage back to %s = %s %v", ls.code, card.Number, language, card.Language, id, err)
+			if id != wantBack || (err != nil) != (wantBack == "") {
+				t.Errorf("%s #%s in %s: MatchIDLanguage back to %s = %s %v", ls.base, card.Number, language, card.Language, id, err)
 			}
 			in := matcher.InputCard{
 				Name: card.Name, Edition: base.Name, Variation: card.Number,
@@ -346,12 +351,39 @@ func TestLanguageSets(t *testing.T) {
 			}
 			id, err = testBackend.Match(&in)
 			if err != nil || id != printing {
-				t.Errorf("%s #%s in %s: Match = %s %v", ls.code, card.Number, language, id, err)
+				t.Errorf("%s #%s in %s: Match = %s %v", ls.base, card.Number, language, id, err)
 			}
 		}
 		if want == 0 || len(set.Cards) != want {
-			t.Errorf("%s holds %d cards, want the %d %s printings of %s", code, len(set.Cards), want, language, ls.code)
+			t.Errorf("%s holds %d cards, want the %d %s printings of %s", code, len(set.Cards), want, language, ls.base)
 		}
+	}
+}
+
+// Every vendor sells the foreign white borders apart from Revised, so they
+// share none of its cards' vendor ids, and the sealed products mtgjson files
+// under FWB stay there.
+func TestForeignWhiteBorderIsItsOwn(t *testing.T) {
+	realDatastore(t)
+	for _, code := range []string{"FWB", "FWBFR", "FWBDE"} {
+		set, err := testBackend.GetSet(code)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, card := range set.Cards {
+			for _, tag := range []string{
+				"tcgplayerProductId", "mcmId", "mcmMetaId", "cardKingdomId", "cardsphereId", "deckboxId", "multiverseId",
+			} {
+				id, found := card.Identifiers[tag]
+				if found {
+					t.Errorf("%s #%s took Revised's %s %s", code, card.Number, tag, id)
+				}
+			}
+		}
+	}
+	set, _ := testBackend.GetSet("FWB")
+	if len(set.SealedProduct) == 0 {
+		t.Error("FWB lost its sealed products")
 	}
 }
 
