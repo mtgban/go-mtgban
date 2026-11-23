@@ -29,6 +29,12 @@ func TestLanguageRoutesEdition(t *testing.T) {
 		{"Counterspell", "Fourth Edition Foreign Black Border", "Chinese Traditional", "4BBZHT"},
 		{"Angry Mob", "Renaissance", "French", "REN"},
 		{"Angry Mob", "Renaissance", "German", "RENDE"},
+		// An edition naming no set says nothing of the border
+		{"Badlands", "Some Unheard Edition", "German", ""},
+		{"Badlands", "Some Unheard Edition", "Italian", ""},
+		{"Winter Orb", "Some Unheard Edition", "Japanese", ""},
+		{"Angry Mob", "Some Unheard Edition", "French", ""},
+		{"Badlands", "Fourth Edition", "Italian", ""},
 		// FBB was never printed in Spanish
 		{"Badlands", "Foreign Black Border", "Spanish", ""},
 		// Rinascimento reprinted no Legends or The Dark card

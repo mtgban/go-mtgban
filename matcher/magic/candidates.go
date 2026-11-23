@@ -86,10 +86,28 @@ func (Rules) CandidateSets(b *matcher.Backend, inCard *matcher.InputCard, printi
 	// duplicates out. This may result in false positives of course.
 	if len(codes) == 0 {
 		b.Log("No loose match found, trying all")
-		codes = append(codes, printings...)
+		for _, setCode := range printings {
+			// The language would pick one of these for an edition naming
+			// another set, or none
+			if inCard.Edition != "" && isLanguageSet(setCode) {
+				continue
+			}
+			codes = append(codes, setCode)
+		}
 	}
 
 	return codes
+}
+
+// isLanguageSet reports a set holding one language of several a card was
+// printed in, which a listing reaches by naming it or the set it goes with.
+func isLanguageSet(code string) bool {
+	for _, ls := range languageSets {
+		if ls.code == code || ls.code+ls.tag == code {
+			return true
+		}
+	}
+	return false
 }
 
 // FinalizeCandidates keeps the first World Championship printing, which the
