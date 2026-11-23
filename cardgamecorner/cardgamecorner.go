@@ -94,9 +94,11 @@ func wantedLanguage(game matcher.Game, language, edition string) bool {
 		return edition == "War of the Spark: Japanese Alternate-Art Planeswalkers"
 	case "IT":
 		switch edition {
-		case "Revised EU FBB", "Rinascimento", "L'Oscurità", "Leggende":
+		case "Revised EU FBB", "Revised EU FWB", "Rinascimento", "L'Oscurità", "Leggende":
 			return true
 		}
+	case "FR", "DE":
+		return edition == "Revised EU FBB" || edition == "Revised EU FWB"
 	}
 	return false
 }
