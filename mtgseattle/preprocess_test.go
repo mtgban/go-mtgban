@@ -116,6 +116,7 @@ func TestShelfWordingResolvesToItsPrinting(t *testing.T) {
 		{"Badlands", "French Revised FBB", "", "FBBFR", "282"},
 		{"Badlands", "German Revised FBB", "", "FBBDE", "282"},
 		{"Angry Mob", "German Renaissance", "", "RENDE", "4"},
+		{"Plateau", "German Revised FWB", "", "FWBDE", "284"},
 	}
 	for _, test := range tests {
 		theCard, err := preprocess(b, test.cardName, test.edition, test.variant)
