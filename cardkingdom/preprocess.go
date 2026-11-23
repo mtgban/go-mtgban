@@ -2,7 +2,9 @@ package cardkingdom
 
 import (
 	"errors"
+	"regexp"
 	"slices"
+	"strconv"
 	"strings"
 
 	"github.com/mtgban/go-cardkingdom"
@@ -596,11 +598,13 @@ func preprocessGraded(title string) (*matcher.InputCard, error) {
 		cardName = strings.Replace(cardName, "  ", " ", -1)
 	}
 
+	supported := false
 	for _, score := range supportedScores {
 		before, after, found := strings.Cut(edition, score)
 		if !found {
 			continue
 		}
+		supported = true
 		edition = strings.TrimSpace(before)
 		if rest := strings.TrimSpace(after); rest != "" {
 			if variant != "" {
@@ -609,6 +613,9 @@ func preprocessGraded(title string) (*matcher.InputCard, error) {
 			variant += rest
 		}
 		break
+	}
+	if !supported {
+		edition = strings.TrimSpace(reOtherSlab.ReplaceAllString(edition, ""))
 	}
 
 	isFoil := strings.Contains(variant, "Foil") || strings.Contains(edition, "Foil")
@@ -798,39 +805,49 @@ var supportedScores = []string{
 	"PSA", "BGS", "CGC",
 }
 
-// parseGradedCondition reads the grade off a graded listing's title, and
-// alongside it the grader-plus-score text a caller can name a refusal by
-// ("PSA 11"), empty when the title names no known grader at all.
-func parseGradedCondition(title string) (mtgban.Condition, string) {
-	var grade string
-	var score string
-	for _, score = range supportedScores {
-		_, after, found := strings.Cut(title, score+" ")
+// reSlabScore is a slab's score as a title prints it, in half steps. A 10.5
+// is a 10.
+var reSlabScore = regexp.MustCompile(`^(10|[1-9])(\.[05])?$`)
+
+// reOtherSlab is the grade of a service outside supportedScores, closing the
+// title's parenthesis or the edition split off it: "SGC 9.5".
+var reOtherSlab = regexp.MustCompile(`\b([A-Z]{3,4}) \d{1,2}(\.\d+)?\+?(\)|$)`)
+
+// parseGradedSlab reads the slab off a graded listing's title, "CGC Pristine
+// 10" as a CGC 10 labelled Pristine, and its grade. A slab that does not fold
+// is an unread one, graded NM, and unread is the wording to log it by.
+func parseGradedSlab(title string) (slab *mtgban.Slab, grade mtgban.Condition, unread string) {
+	for _, grader := range supportedScores {
+		_, after, found := strings.Cut(title, grader)
 		if !found {
 			continue
 		}
-		grade = after
-		break
+		wording, _, _ := strings.Cut(after, ")")
+
+		slab = &mtgban.Slab{Grader: grader}
+		var label []string
+		for _, field := range strings.Fields(wording) {
+			if slab.Score == 0 && reSlabScore.MatchString(field) {
+				score, _ := strconv.ParseFloat(field, 64)
+				slab.Score = min(score, 10)
+				continue
+			}
+			label = append(label, field)
+		}
+		slab.Label = strings.Join(label, " ")
+
+		grade, found = slab.Fold()
+		if found {
+			return slab, grade, ""
+		}
+		unread = strings.TrimSpace(grader + wording)
+		return mtgban.UnreadSlab(grader, unread), mtgban.NM, unread
 	}
 
-	if grade == "" {
-		return "", ""
+	match := reOtherSlab.FindStringSubmatch(title)
+	if match != nil {
+		unread = strings.TrimSuffix(match[0], ")")
+		return mtgban.UnreadSlab(match[1], unread), mtgban.NM, unread
 	}
-
-	grade = strings.Split(grade, ")")[0]
-	grade = strings.Split(grade, ".")[0]
-	grade = strings.TrimSuffix(grade, " Quad ++")
-	grade = strings.TrimSuffix(grade, " Quad++")
-
-	slab := score + " " + grade
-
-	// A grade the table does not cover has no condition, and must not fall
-	// through to the zero value: an empty condition is silently promoted to
-	// NM when the entry is added
-	condition, found := mtgban.SlabCondition(score, grade)
-	if !found {
-		return "", slab
-	}
-
-	return condition, slab
+	return mtgban.UnreadSlab("", title), mtgban.NM, title
 }

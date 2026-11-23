@@ -1,6 +1,17 @@
 package cardkingdom
 
-import "testing"
+import (
+	"fmt"
+	"maps"
+	"os"
+	"slices"
+	"strings"
+	"testing"
+
+	"github.com/PuerkitoBio/goquery"
+
+	"github.com/mtgban/go-mtgban/mtgban"
+)
 
 // TestPreprocessGradedNested pins the titles whose edition carries a
 // parenthetical of its own. Refusing them dropped 41 of the roughly 950
@@ -200,6 +211,197 @@ func TestMatchGradedClaimOnlyPrintings(t *testing.T) {
 			}
 			if co.SetCode != "TMT" || co.Number != tt.number {
 				t.Errorf("%q landed on %s #%s, want TMT #%s", tt.title, co.SetCode, co.Number, tt.number)
+			}
+		})
+	}
+}
+
+// TestParseGradedSlab pins the slab read off each title shape the storefront
+// prints, the "Quad ++" tail the scraper has always read past, and a slab that
+// does not fold being published as NM.
+func TestParseGradedSlab(t *testing.T) {
+	for _, tt := range []struct {
+		title  string
+		slab   mtgban.Slab
+		grade  mtgban.Condition
+		unread string
+	}{
+		{
+			title: "Academy Ruins (Time Spiral Foil CGC 9) #5396",
+			slab:  mtgban.Slab{Grader: "CGC", Score: 9}, grade: mtgban.NM,
+		},
+		{
+			title: "Windswept Heath (Onslaught Foil CGC 7.5) #3072",
+			slab:  mtgban.Slab{Grader: "CGC", Score: 7.5}, grade: mtgban.SP,
+		},
+		{
+			title: "Arguel's Blood Fast (Ixalan Foil CGC Pristine 10) #7003",
+			slab:  mtgban.Slab{Grader: "CGC", Score: 10, Label: "Pristine"}, grade: mtgban.NM,
+		},
+		{
+			title: "Michelangelo, the Heart (TMNT Eternal Foil (Borderless) CGC Pristine 10) #7051",
+			slab:  mtgban.Slab{Grader: "CGC", Score: 10, Label: "Pristine"}, grade: mtgban.NM,
+		},
+		{
+			title: "Bad Moon - Inked (Alpha CGC Authentic Altered) #5002",
+			slab:  mtgban.Slab{Grader: "CGC", Label: "Authentic Altered"}, grade: mtgban.PO,
+		},
+		{
+			title: "Mox Diamond (Stronghold BGS 9.0) #3854",
+			slab:  mtgban.Slab{Grader: "BGS", Score: 9}, grade: mtgban.NM,
+		},
+		{
+			title: "Mox Diamond (Stronghold BGS 8.5) #3854",
+			slab:  mtgban.Slab{Grader: "BGS", Score: 8.5}, grade: mtgban.SP,
+		},
+		{
+			title: "Land Tax (4th Edition Alternate PSA 7) #3676",
+			slab:  mtgban.Slab{Grader: "PSA", Score: 7}, grade: mtgban.NM,
+		},
+		{
+			title: "Lion's Eye Diamond (Mirage BGS 9.5 Quad ++) #6775",
+			slab:  mtgban.Slab{Grader: "BGS", Score: 9.5, Label: "Quad ++"}, grade: mtgban.NM,
+		},
+		{
+			title: "Royal Assassin (Beta PSA Authentic) #6115",
+			slab:  mtgban.Slab{Grader: "PSA", Label: "PSA Authentic"}, grade: mtgban.NM,
+			unread: "PSA Authentic",
+		},
+		{
+			title: "Royal Assassin (Beta PSA 11) #6115",
+			slab:  mtgban.Slab{Grader: "PSA", Label: "PSA 11"}, grade: mtgban.NM,
+			unread: "PSA 11",
+		},
+		{
+			title: "Royal Assassin (Beta CGC 10.5) #6115",
+			slab:  mtgban.Slab{Grader: "CGC", Score: 10}, grade: mtgban.NM,
+		},
+		{
+			title: "Royal Assassin (Beta SGC 9) #6115",
+			slab:  mtgban.Slab{Label: "SGC 9"}, grade: mtgban.NM,
+			unread: "SGC 9",
+		},
+		{
+			title: "Academy Ruins (Time Spiral Foil TAG 9.5) #5396",
+			slab:  mtgban.Slab{Grader: "TAG", Label: "TAG 9.5"}, grade: mtgban.NM,
+			unread: "TAG 9.5",
+		},
+		{
+			title: "Windswept Heath (Onslaught Foil CGC) #3024",
+			slab:  mtgban.Slab{Grader: "CGC", Label: "CGC"}, grade: mtgban.NM,
+			unread: "CGC",
+		},
+		{
+			title: "Windswept Heath (Onslaught Foil) #3024",
+			slab:  mtgban.Slab{Label: "Windswept Heath (Onslaught Foil) #3024"}, grade: mtgban.NM,
+			unread: "Windswept Heath (Onslaught Foil) #3024",
+		},
+	} {
+		t.Run(tt.title, func(t *testing.T) {
+			slab, grade, unread := parseGradedSlab(tt.title)
+			if slab == nil || *slab != tt.slab || grade != tt.grade || unread != tt.unread {
+				t.Errorf("parseGradedSlab(%q) = %+v, %q, %q; want %+v, %q, %q",
+					tt.title, slab, grade, unread, tt.slab, tt.grade, tt.unread)
+			}
+		})
+	}
+}
+
+// TestGradedPageCarriesSlabs pins every entry of a page carrying its slab,
+// two copies of one slab at one price staying apart by product id, and a slab
+// that does not fold published as NM and logged.
+func TestGradedPageCarriesSlabs(t *testing.T) {
+	b := realDatastore(t)
+
+	r, err := os.Open("testdata/graded_page.html")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer r.Close()
+	doc, err := goquery.NewDocumentFromReader(r)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var logs []string
+	ck := &Graded{inventory: mtgban.InventoryRecord{}, backend: b}
+	ck.logCallback = func(format string, a ...any) {
+		logs = append(logs, fmt.Sprintf(format, a...))
+	}
+	ck.parsePage(doc, 1)
+
+	slabs := map[string]mtgban.Slab{}
+	for _, entries := range ck.inventory {
+		for _, entry := range entries {
+			if entry.Slab == nil {
+				t.Fatalf("entry %s has no slab", entry.OriginalID)
+			}
+			if entry.InstanceID != entry.OriginalID || entry.Quantity != 1 {
+				t.Errorf("entry %s: instance %q, quantity %d", entry.OriginalID, entry.InstanceID, entry.Quantity)
+			}
+			slabs[entry.OriginalID] = *entry.Slab
+		}
+	}
+
+	want := map[string]mtgban.Slab{
+		"326940": {Grader: "CGC", Score: 10},
+		"314595": {Grader: "CGC", Score: 10},
+		"332494": {Grader: "CGC", Score: 8},
+		"331192": {Grader: "CGC", Score: 8.5},
+		"319260": {Grader: "CGC", Score: 10, Label: "Pristine"},
+		"326480": {Grader: "CGC", Label: "Authentic Altered"},
+		"270508": {Grader: "PSA", Label: "PSA Authentic"},
+		"330176": {Label: "SGC 9"},
+	}
+	if !maps.Equal(slabs, want) {
+		t.Errorf("slabs = %v, want %v", slabs, want)
+	}
+	wantLogs := []string{
+		`[CKGraded] unsupported slab "PSA Authentic", published as NM`,
+		`[CKGraded] unsupported slab "SGC 9", published as NM`,
+	}
+	if !slices.Equal(logs, wantLogs) {
+		t.Errorf("logs = %q, want %q", logs, wantLogs)
+	}
+	if !ck.Info().GradedMode {
+		t.Error("Info().GradedMode = false")
+	}
+}
+
+// TestGradedAliasedSlabs pins a title that names several printings and no
+// collector number being dropped, without a line only where its slab reads.
+func TestGradedAliasedSlabs(t *testing.T) {
+	b := realDatastore(t)
+	for _, tt := range []struct {
+		title  string
+		logged bool
+	}{
+		{title: "Forest (Alpha CGC 9) #1"},
+		{title: "Forest (Alpha SGC 9) #1", logged: true},
+	} {
+		t.Run(tt.title, func(t *testing.T) {
+			page := `<div class="productListWrapper gradedMagic"><span class="productTitle"><a href="/f">` +
+				tt.title + `</a></span><span class="itemPrice">$9.99</span></div>`
+			doc, err := goquery.NewDocumentFromReader(strings.NewReader(page))
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			var logs []string
+			ck := &Graded{inventory: mtgban.InventoryRecord{}, backend: b}
+			ck.logCallback = func(format string, a ...any) {
+				logs = append(logs, fmt.Sprintf(format, a...))
+			}
+			ck.parsePage(doc, 1)
+
+			if len(ck.inventory) != 0 {
+				t.Errorf("inventory = %v, want none", ck.inventory)
+			}
+			if !tt.logged && len(logs) != 0 {
+				t.Errorf("logs = %q, want none", logs)
+			}
+			if tt.logged && !slices.Contains(logs, fmt.Sprintf("[CKGraded] %q", tt.title)) {
+				t.Errorf("logs = %q, want the title", logs)
 			}
 		})
 	}
