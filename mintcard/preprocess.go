@@ -83,6 +83,11 @@ func preprocess(b *matcher.Backend, cardName, number, finish, langauge, edition,
 	if fixup, found := codeTable[setCode]; found {
 		setCode = fixup
 	}
+	// 4BB was printed in Traditional Chinese alone, which the feed files
+	// under its one Chinese key
+	if setCode == "4BB" && langauge == "S.Chinese" {
+		langauge = "Chinese Traditional"
+	}
 	if strings.Count(cardName, "Token") > 1 {
 		return preprocessTokenPair(b, cardName, finish, setCode)
 	}
