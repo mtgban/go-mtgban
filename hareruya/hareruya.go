@@ -35,8 +35,13 @@ const (
 // English or Japanese ("MP Signed", "BGS8 サイン9点", "Poor Water").
 var reAltered = regexp.MustCompile(`Singed|Signed|Ink|Water|サイン|欠け`)
 
-// reSlab reads a graded slab's label, grader and score ("BGS8.5").
-var reSlab = regexp.MustCompile(`^(PSA|BGS|CGC)\s*(\S+)$`)
+// reSlab reads a graded slab's label: the grader, and the score and words
+// after it ("BGS8.5", "CGC Pristine 10"). SGC and ARS are graders no Slab
+// names yet, read so their slabs are published unread rather than dropped.
+var reSlab = regexp.MustCompile(`^(PSA|BGS|CGC|TAG|SGC|ARS)\s*(.*)$`)
+
+// reSlabScore is a slab's score, 1 to 10 in half steps; a 10.5 is a 10.
+var reSlabScore = regexp.MustCompile(`^(10|[1-9])(\.0|\.5)?$`)
 
 // Hareruya prices Hareruya's singles.
 type Hareruya struct {
@@ -430,8 +435,9 @@ func (ha *Hareruya) walkSet(ctx context.Context, channel chan<- responseChan, ca
 						SellerName: availableMarketNames[0],
 					},
 				}
-				if row.Graded {
+				if row.Slab != nil {
 					out.invEntry.SellerName = availableMarketNames[1]
+					out.invEntry.Slab = row.Slab
 				}
 
 				select {
@@ -484,8 +490,9 @@ type Row struct {
 	Quantity  int
 	Condition mtgban.Condition
 	Price     float64
-	// Graded marks a copy in a grading service's slab.
-	Graded bool
+	// Slab is the grading service's slab the copy sits in, nil for a raw
+	// copy.
+	Slab *mtgban.Slab
 	// Class is the product class the row's cart button adds: each
 	// condition of a lot has its own.
 	Class string
@@ -500,19 +507,36 @@ func cartClass(item *goquery.Selection) string {
 	return item.Find(".itemUserAct__cart [data-productclass]").AttrOr("data-productclass", "")
 }
 
-// haCondition maps Hareruya's condition text to our grade, and reports
-// whether it names a graded slab, which grades by its score.
-func haCondition(s string) (mtgban.Condition, bool, error) {
+// haCondition maps Hareruya's condition text to our grade and, for a copy in
+// a grading service's slab, the slab, which grades by its score. A slab it
+// cannot read is published as NM, and logged.
+func (ha *Hareruya) haCondition(s string) (mtgban.Condition, *mtgban.Slab, error) {
 	match := reSlab.FindStringSubmatch(s)
 	if match == nil {
 		grade, err := mtgban.ParseCondition(s)
-		return grade, false, err
+		return grade, nil, err
 	}
-	grade, found := mtgban.SlabCondition(match[1], match[2])
-	if !found {
-		return "", true, fmt.Errorf("%w: %q", mtgban.ErrInvalidCondition, s)
+	slab := &mtgban.Slab{Grader: match[1]}
+	var label []string
+	for _, field := range strings.Fields(match[2]) {
+		if slab.Score == 0 && reSlabScore.MatchString(field) {
+			score, _ := strconv.ParseFloat(field, 64)
+			slab.Score = min(score, 10)
+			continue
+		}
+		label = append(label, field)
 	}
-	return grade, true, nil
+	slab.Label = strings.Join(label, " ")
+	// CGC's Pristine is its top score, printed with the 10 or without it.
+	if slab.Grader == "CGC" && slab.Label == "Pristine" {
+		slab.Score = 10
+	}
+	grade, found := slab.Fold()
+	if found {
+		return grade, slab, nil
+	}
+	ha.printf(mtgban.UnreadSlabFormat, s)
+	return mtgban.NM, mtgban.UnreadSlab(match[1], s), nil
 }
 
 // LazyResult carries a page of rows and the error that ended the walk, so a
@@ -628,7 +652,7 @@ func (ha *Hareruya) lazyResults(doc *goquery.Document) []LazyResult {
 				break
 			}
 
-			grade, graded, err := haCondition(condition)
+			grade, slab, err := ha.haCondition(condition)
 			if err != nil {
 				ha.printf("unsupported %s condition", condition)
 				break
@@ -638,7 +662,7 @@ func (ha *Hareruya) lazyResults(doc *goquery.Document) []LazyResult {
 				Price:     price,
 				Condition: grade,
 				Quantity:  qty,
-				Graded:    graded,
+				Slab:      slab,
 				Class:     cartClass(s),
 				Main:      true,
 			})
@@ -664,7 +688,7 @@ func (ha *Hareruya) lazyResults(doc *goquery.Document) []LazyResult {
 				return
 			}
 
-			grade, graded, err := haCondition(condition)
+			grade, slab, err := ha.haCondition(condition)
 			if err != nil {
 				ha.printf("unsupported %s condition", condition)
 				return
@@ -674,7 +698,7 @@ func (ha *Hareruya) lazyResults(doc *goquery.Document) []LazyResult {
 				Price:     price,
 				Condition: grade,
 				Quantity:  qty,
-				Graded:    graded,
+				Slab:      slab,
 				Class:     se.Find(".addCart[data-productclass]").AttrOr("data-productclass", ""),
 			})
 		})
@@ -883,6 +907,7 @@ func (ha *Hareruya) InfoForScraper(name string) mtgban.ScraperInfo {
 	info := ha.Info()
 	info.Name = name
 	info.Shorthand = name2shorthand[name]
+	info.GradedMode = name == availableMarketNames[1]
 	return info
 }
 
