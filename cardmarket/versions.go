@@ -256,6 +256,23 @@ var versionPrintings = map[int]struct{ set, number string }{
 	8069:   {"MIR", "120"},  // Ebony Charm (V.1), CardTrader
 	878087: {"MIR", "120†"}, // Ebony Charm (V.2), CardTrader
 
+	// Foreign White Bordered
+	16150: {"FWB", "304"}, // Forest (V.1), CardTrader
+	16155: {"FWB", "305"}, // Forest (V.2), CardTrader
+	16160: {"FWB", "306"}, // Forest (V.3), CardTrader
+	16151: {"FWB", "295"}, // Island (V.1), CardTrader
+	16156: {"FWB", "296"}, // Island (V.2), CardTrader
+	16161: {"FWB", "297"}, // Island (V.3), CardTrader
+	16152: {"FWB", "301"}, // Mountain (V.1), CardTrader
+	16157: {"FWB", "302"}, // Mountain (V.2), CardTrader
+	16162: {"FWB", "303"}, // Mountain (V.3), CardTrader
+	16153: {"FWB", "292"}, // Plains (V.1), CardTrader
+	16158: {"FWB", "293"}, // Plains (V.2), CardTrader
+	16163: {"FWB", "294"}, // Plains (V.3), CardTrader
+	16154: {"FWB", "298"}, // Swamp (V.1), CardTrader
+	16159: {"FWB", "299"}, // Swamp (V.2), CardTrader
+	16164: {"FWB", "300"}, // Swamp (V.3), CardTrader
+
 	// Summer Magic
 	16934: {"SUM", "306"}, // Forest (V.1), CardTrader
 	16939: {"SUM", "305"}, // Forest (V.2), CardTrader

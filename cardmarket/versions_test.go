@@ -63,8 +63,9 @@ func TestVersionPrintingsAreReal(t *testing.T) {
 // datastore's own links: Sim Han How's Forest V.1, which mtgjson links to
 // shh328 where Cardmarket's image is shh347, and V.2, linked to Fourth
 // Edition's black bordered Forest; Mark Justice's Plains V.3 and Chronicles'
-// Urza's Mine V.2, each linked to several printings. A version the links get
-// right still lands.
+// Urza's Mine V.2, each linked to several printings; Foreign White Bordered's
+// Forest V.2, which mtgjson does not link. A version the links get right still
+// lands.
 func TestResolveMappedReadsVersionPrintings(t *testing.T) {
 	b := realDatastore(t)
 	r := &resolver{backend: b, gameID: cm.GameMagic}
@@ -80,6 +81,7 @@ func TestResolveMappedReadsVersionPrintings(t *testing.T) {
 		{249456, "Forest (V.4)", "WCD 2002: Sim Han How", "shh350"},
 		{22804, "Plains (V.3)", "Pro Tour 1996: Mark Justice", "mj365"},
 		{272488, "Urza's Mine (V.2)", "Chronicles: Japanese", "114b"},
+		{16155, "Forest (V.2)", "Foreign White Bordered", "305"},
 	} {
 		got := r.resolveMapped(tt.id, cm.CatalogProduct{Name: tt.name}, cm.Expansion{Name: tt.expansion})
 		co, err := b.GetUUID(got.cardID)
