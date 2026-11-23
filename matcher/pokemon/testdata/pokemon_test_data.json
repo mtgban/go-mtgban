@@ -1,0 +1,5535 @@
+[
+    {
+        "description": "Absol SFA #030 Normal",
+        "input": {
+            "name": "Absol",
+            "variant": "030",
+            "edition": "SV: Shrouded Fable",
+            "finish": "Normal"
+        },
+        "uuid": "030-064_560340"
+    },
+    {
+        "description": "Aerodactyl HP #35 Delta Species Reverse Holofoil",
+        "input": {
+            "name": "Aerodactyl",
+            "variant": "35 Delta Species",
+            "edition": "EX Holon Phantoms",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "35-110_83472_reverseholofoil"
+    },
+    {
+        "description": "Aipom PFL #078 Normal",
+        "input": {
+            "name": "Aipom",
+            "variant": "078",
+            "edition": "ME02: Phantasmal Flames",
+            "finish": "Normal"
+        },
+        "uuid": "078-094_662126"
+    },
+    {
+        "description": "Alakazam ex MEW #065 Holofoil",
+        "input": {
+            "name": "Alakazam ex",
+            "variant": "065",
+            "edition": "SV: Scarlet & Violet 151",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "065-165_516381_holofoil"
+    },
+    {
+        "description": "Alolan Diglett M17 #009 Holofoil",
+        "input": {
+            "name": "Alolan Diglett",
+            "variant": "009",
+            "edition": "McDonald's Promos 2017",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "009-012_152689_holofoil"
+    },
+    {
+        "description": "Alolan Exeggutor 2019SM #2 Holofoil",
+        "input": {
+            "name": "Alolan Exeggutor",
+            "variant": "2",
+            "edition": "McDonald's Collection 2019",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "2019sm-2_holofoil"
+    },
+    {
+        "description": "Alolan Exeggutor SM06 #2 Reverse Holofoil",
+        "input": {
+            "name": "Alolan Exeggutor",
+            "variant": "2",
+            "edition": "SM - Forbidden Light",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "2-131_165649_reverseholofoil"
+    },
+    {
+        "description": "Alolan Sandshrew SMK2 #19 29 Normal",
+        "input": {
+            "name": "Alolan Sandshrew",
+            "variant": "19 29",
+            "edition": "SM Trainer Kit: Alolan Sandslash & Alolan Ninetales",
+            "finish": "Normal"
+        },
+        "uuid": "19-145_168209"
+    },
+    {
+        "description": "Alomomola M11 #005 Holofoil",
+        "input": {
+            "name": "Alomomola",
+            "variant": "005",
+            "edition": "McDonald's Promos 2011",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "005-012_83507_holofoil"
+    },
+    {
+        "description": "Altaria SWSH12-TG #TG11 Holofoil",
+        "input": {
+            "name": "Altaria",
+            "variant": "TG11",
+            "edition": "SWSH12: Silver Tempest Trainer Gallery",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "tg11-tg30_452027_holofoil"
+    },
+    {
+        "description": "Ancient Mew MISCP #001 Holofoil",
+        "input": {
+            "name": "Ancient Mew",
+            "variant": "001",
+            "edition": "Miscellaneous Promos",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "miscp-001_holofoil"
+    },
+    {
+        "description": "Antique Armor Fossil PBL #072 Normal",
+        "input": {
+            "name": "Antique Armor Fossil",
+            "variant": "072",
+            "edition": "ME05: Pitch Black",
+            "finish": "Normal"
+        },
+        "uuid": "072-084_704829"
+    },
+    {
+        "description": "Aqua Patch SM02 #161 Holofoil",
+        "input": {
+            "name": "Aqua Patch",
+            "variant": "161",
+            "edition": "SM - Guardians Rising",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "161-145_131057_holofoil"
+    },
+    {
+        "description": "Arceus V SWSD #SWSH204 Holofoil",
+        "input": {
+            "name": "Arceus V",
+            "variant": "SWSH204",
+            "edition": "SWSH: Sword & Shield Promo Cards",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "swsh204_271837_holofoil"
+    },
+    {
+        "description": "Arceus VSTAR 30C-24837 #123 Holofoil",
+        "input": {
+            "name": "Arceus VSTAR",
+            "variant": "123",
+            "edition": "ME: 30th Celebration Classic Collection",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "123-172_716208_holofoil"
+    },
+    {
+        "description": "Archeops NVI #67 Normal",
+        "input": {
+            "name": "Archeops",
+            "variant": "67",
+            "edition": "Noble Victories",
+            "finish": "Normal"
+        },
+        "uuid": "67-101_83609"
+    },
+    {
+        "description": "Arctozolt SWSH03 #066 Reverse Holofoil",
+        "input": {
+            "name": "Arctozolt",
+            "variant": "066",
+            "edition": "SWSH03: Darkness Ablaze",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "066-189_219434_reverseholofoil"
+    },
+    {
+        "description": "Artazon WCD2023 #171 Tord Reklev Normal",
+        "input": {
+            "name": "Artazon",
+            "variant": "171 Tord Reklev",
+            "edition": "2023 World Championship Decks",
+            "finish": "Normal"
+        },
+        "uuid": "171-193_542059"
+    },
+    {
+        "description": "Articuno SV #148 Holofoil",
+        "input": {
+            "name": "Articuno",
+            "variant": "148",
+            "edition": "Supreme Victors",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "148_83651_holofoil"
+    },
+    {
+        "description": "Audino LTR-1465 #RC17 Holofoil",
+        "input": {
+            "name": "Audino",
+            "variant": "RC17",
+            "edition": "Legendary Treasures: Radiant Collection",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "rc17-rc25_83665_holofoil"
+    },
+    {
+        "description": "Avalugg FLF #31 Normal",
+        "input": {
+            "name": "Avalugg",
+            "variant": "31",
+            "edition": "XY - Flashfire",
+            "finish": "Normal"
+        },
+        "uuid": "31-106_91164"
+    },
+    {
+        "description": "Baltoy AOR #31 Reverse Holofoil",
+        "input": {
+            "name": "Baltoy",
+            "variant": "31",
+            "edition": "XY - Ancient Origins",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "31-98_101452_reverseholofoil"
+    },
+    {
+        "description": "Basic Fighting Energy MEE #014 30th Celebration Holofoil",
+        "input": {
+            "name": "Basic Fighting Energy",
+            "variant": "014 30th Celebration",
+            "edition": "MEE: Mega Evolution Energies",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "014_713253_holofoil"
+    },
+    {
+        "description": "Basic Fire Energy G23330 # Normal",
+        "input": {
+            "name": "Basic Fire Energy",
+            "edition": "My First Battle",
+            "finish": "Normal"
+        },
+        "uuid": "524039"
+    },
+    {
+        "description": "Basic Grass Energy SVE #009 Cracked Ice Holo Holofoil",
+        "input": {
+            "name": "Basic Grass Energy",
+            "variant": "009 Cracked Ice Holo",
+            "edition": "SVE: Scarlet & Violet Energies",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "009_599740_holofoil"
+    },
+    {
+        "description": "Basic Lightning Energy MEE #4 Normal",
+        "input": {
+            "name": "Basic Lightning Energy",
+            "variant": "4",
+            "edition": "MEE: Mega Evolution Energies",
+            "finish": "Normal"
+        },
+        "uuid": "4_656266"
+    },
+    {
+        "description": "Basic Metal Energy SVE #016 Normal",
+        "input": {
+            "name": "Basic Metal Energy",
+            "variant": "016",
+            "edition": "SVE: Scarlet & Violet Energies",
+            "finish": "Normal"
+        },
+        "uuid": "016_578869"
+    },
+    {
+        "description": "Bede CHP #50 Reverse Holofoil",
+        "input": {
+            "name": "Bede",
+            "variant": "50",
+            "edition": "Champion's Path",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "50-73_223050_reverseholofoil"
+    },
+    {
+        "description": "Beedrill PLF #3 Normal",
+        "input": {
+            "name": "Beedrill",
+            "variant": "3",
+            "edition": "Plasma Freeze",
+            "finish": "Normal"
+        },
+        "uuid": "3-116_83773"
+    },
+    {
+        "description": "Black Belt's Training PRE #096 Reverse Holofoil",
+        "input": {
+            "name": "Black Belt's Training",
+            "variant": "096",
+            "edition": "SV: Prismatic Evolutions",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "096-131_610451_reverseholofoil"
+    },
+    {
+        "description": "Black Kyurem EX PR-1407 #BW62 Holofoil",
+        "input": {
+            "name": "Black Kyurem EX",
+            "variant": "BW62",
+            "edition": "Black and White Promos",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "bw62_83855_holofoil"
+    },
+    {
+        "description": "Blastoise PR-1840 #031 Non-Holo Normal",
+        "input": {
+            "name": "Blastoise",
+            "variant": "031 Non-Holo",
+            "edition": "Deck Exclusives",
+            "finish": "Normal"
+        },
+        "uuid": "031-149_123456"
+    },
+    {
+        "description": "Blastoise SW #2 Reverse Holofoil",
+        "input": {
+            "name": "Blastoise",
+            "variant": "2",
+            "edition": "Secret Wonders",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "2-132_83893_reverseholofoil"
+    },
+    {
+        "description": "Blitzle 2011BW #6 Holofoil",
+        "input": {
+            "name": "Blitzle",
+            "variant": "6",
+            "edition": "McDonald's Collection 2011",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "2011bw-6_holofoil"
+    },
+    {
+        "description": "Blitzle NVI #35 Reverse Holofoil",
+        "input": {
+            "name": "Blitzle",
+            "variant": "35",
+            "edition": "Noble Victories",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "35-101_83930_reverseholofoil"
+    },
+    {
+        "description": "Boltund SWSH01 #075 Holofoil",
+        "input": {
+            "name": "Boltund",
+            "variant": "075",
+            "edition": "SWSH01: Sword & Shield Base Set",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "075-202_208373_holofoil"
+    },
+    {
+        "description": "Boss's Orders BA22 #154 #44 Pikachu Stamped Normal",
+        "input": {
+            "name": "Boss's Orders",
+            "variant": "154 #44 Pikachu Stamped",
+            "edition": "Battle Academy 2022",
+            "finish": "Normal"
+        },
+        "uuid": "154-192_268174"
+    },
+    {
+        "description": "Boss's Orders WCD2022 #132 Cyrus Rikuto Ohashi Normal",
+        "input": {
+            "name": "Boss's Orders",
+            "variant": "132 Cyrus Rikuto Ohashi",
+            "edition": "2022 World Championship Decks",
+            "finish": "Normal"
+        },
+        "uuid": "132-172_485023"
+    },
+    {
+        "description": "Bouffalant SSP #151 Normal",
+        "input": {
+            "name": "Bouffalant",
+            "variant": "151",
+            "edition": "SV08: Surging Sparks",
+            "finish": "Normal"
+        },
+        "uuid": "151-191_589877"
+    },
+    {
+        "description": "Bouffalant SWSH05 #118 Normal",
+        "input": {
+            "name": "Bouffalant",
+            "variant": "118",
+            "edition": "SWSH05: Battle Styles",
+            "finish": "Normal"
+        },
+        "uuid": "118-163_234160"
+    },
+    {
+        "description": "Bronzong PHF #61 Normal",
+        "input": {
+            "name": "Bronzong",
+            "variant": "61",
+            "edition": "XY - Phantom Forces",
+            "finish": "Normal"
+        },
+        "uuid": "61-119_94629"
+    },
+    {
+        "description": "Bronzong SWSH10-TG #TG11 Holofoil",
+        "input": {
+            "name": "Bronzong",
+            "variant": "TG11",
+            "edition": "SWSH10: Astral Radiance Trainer Gallery",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "tg11-tg30_272482_holofoil"
+    },
+    {
+        "description": "Bug Catcher BTA #189 #26 Pikachu Stamped Normal",
+        "input": {
+            "name": "Bug Catcher",
+            "variant": "189 #26 Pikachu Stamped",
+            "edition": "Battle Academy",
+            "finish": "Normal"
+        },
+        "uuid": "189-236_219111"
+    },
+    {
+        "description": "Buizel PR-1421 #DP13 Holofoil",
+        "input": {
+            "name": "Buizel",
+            "variant": "DP13",
+            "edition": "Diamond and Pearl Promos",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "dp13_84019_holofoil"
+    },
+    {
+        "description": "Buneary POP-1432 #012 Normal",
+        "input": {
+            "name": "Buneary",
+            "variant": "012",
+            "edition": "POP Series 6",
+            "finish": "Normal"
+        },
+        "uuid": "012-017_84038"
+    },
+    {
+        "description": "Burmy CCP #078 Plant Cloak Normal",
+        "input": {
+            "name": "Burmy",
+            "variant": "078 Plant Cloak",
+            "edition": "Countdown Calendar Promos",
+            "finish": "Normal"
+        },
+        "uuid": "078-132_153087"
+    },
+    {
+        "description": "Butterfree HIF #3 Normal",
+        "input": {
+            "name": "Butterfree",
+            "variant": "3",
+            "edition": "Hidden Fates",
+            "finish": "Normal"
+        },
+        "uuid": "3-68_197645"
+    },
+    {
+        "description": "Carnivine DP #21 Normal",
+        "input": {
+            "name": "Carnivine",
+            "variant": "21",
+            "edition": "Diamond and Pearl",
+            "finish": "Normal"
+        },
+        "uuid": "21-130_84099"
+    },
+    {
+        "description": "Castform SWSH11-TG #TG11 Holofoil",
+        "input": {
+            "name": "Castform",
+            "variant": "TG11",
+            "edition": "SWSH11: Lost Origin Trainer Gallery",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "tg11-tg30_284271_holofoil"
+    },
+    {
+        "description": "Cessation Crystal WCD2008 #74 Paul Atanassov Normal",
+        "input": {
+            "name": "Cessation Crystal",
+            "variant": "74 Paul Atanassov",
+            "edition": "2008 World Championship Decks",
+            "finish": "Normal"
+        },
+        "uuid": "74-100_479761"
+    },
+    {
+        "description": "Cetitan 2023SV #5 Holofoil",
+        "input": {
+            "name": "Cetitan",
+            "variant": "5",
+            "edition": "McDonald's Collection 2023",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "2023sv-5_holofoil"
+    },
+    {
+        "description": "Champions Festival PR-1451 #XY27 Top 16 Holofoil",
+        "input": {
+            "name": "Champions Festival",
+            "variant": "XY27 Top 16",
+            "edition": "XY Promos",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "xy27_96480_holofoil"
+    },
+    {
+        "description": "Charmander DEP #4 Holo Holofoil",
+        "input": {
+            "name": "Charmander",
+            "variant": "4 Holo",
+            "edition": "Detective Pikachu",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "4-18_186005_holofoil"
+    },
+    {
+        "description": "Charmander M21 #009 Normal",
+        "input": {
+            "name": "Charmander",
+            "variant": "009",
+            "edition": "McDonald's 25th Anniversary Promos",
+            "finish": "Normal"
+        },
+        "uuid": "009-025_232324"
+    },
+    {
+        "description": "Charmander PR-1542 #2 Normal",
+        "input": {
+            "name": "Charmander",
+            "variant": "2",
+            "edition": "EX Trainer Kit 2: Plusle & Minun",
+            "finish": "Normal"
+        },
+        "uuid": "2-12_84212"
+    },
+    {
+        "description": "Charmander SWSD #SWSH092 Holofoil",
+        "input": {
+            "name": "Charmander",
+            "variant": "SWSH092",
+            "edition": "SWSH: Sword & Shield Promo Cards",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "swsh092_234282_holofoil"
+    },
+    {
+        "description": "Charmeleon LC #037 Reverse Holofoil",
+        "input": {
+            "name": "Charmeleon",
+            "variant": "037",
+            "edition": "Legendary Collection",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "037-110_84223_reverseholofoil"
+    },
+    {
+        "description": "Charmeleon POP-1439 #005 Delta Species Normal",
+        "input": {
+            "name": "Charmeleon",
+            "variant": "005 Delta Species",
+            "edition": "POP Series 5",
+            "finish": "Normal"
+        },
+        "uuid": "005-017_84237"
+    },
+    {
+        "description": "Chatot TEF #132 Normal",
+        "input": {
+            "name": "Chatot",
+            "variant": "132",
+            "edition": "SV05: Temporal Forces",
+            "finish": "Normal"
+        },
+        "uuid": "132-162_542876"
+    },
+    {
+        "description": "Cheren BCR #148 Full Art Holofoil",
+        "input": {
+            "name": "Cheren",
+            "variant": "148 Full Art",
+            "edition": "Boundaries Crossed",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "148-149_84250_holofoil"
+    },
+    {
+        "description": "Cherrim POP-1450 #006 Normal",
+        "input": {
+            "name": "Cherrim",
+            "variant": "006",
+            "edition": "POP Series 8",
+            "finish": "Normal"
+        },
+        "uuid": "006-017_84253"
+    },
+    {
+        "description": "Chespin 2014XY #2 Holofoil",
+        "input": {
+            "name": "Chespin",
+            "variant": "2",
+            "edition": "McDonald's Collection 2014",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "2014xy-2_holofoil"
+    },
+    {
+        "description": "Chewtle SHF #026 Normal",
+        "input": {
+            "name": "Chewtle",
+            "variant": "026",
+            "edition": "Shining Fates",
+            "finish": "Normal"
+        },
+        "uuid": "026-072_232430"
+    },
+    {
+        "description": "Chimchar FPP #076 Normal",
+        "input": {
+            "name": "Chimchar",
+            "variant": "076",
+            "edition": "First Partner Pack",
+            "finish": "Normal"
+        },
+        "uuid": "076-130_231454"
+    },
+    {
+        "description": "Chimchar POP-1450 #012 Normal",
+        "input": {
+            "name": "Chimchar",
+            "variant": "012",
+            "edition": "POP Series 8",
+            "finish": "Normal"
+        },
+        "uuid": "012-017_84287"
+    },
+    {
+        "description": "Chimecho SWSH05 #059 Normal",
+        "input": {
+            "name": "Chimecho",
+            "variant": "059",
+            "edition": "SWSH05: Battle Styles",
+            "finish": "Normal"
+        },
+        "uuid": "059-163_234231"
+    },
+    {
+        "description": "Chimecho SWSH09 #063 Reverse Holofoil",
+        "input": {
+            "name": "Chimecho",
+            "variant": "063",
+            "edition": "SWSH09: Brilliant Stars",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "063-172_263779_reverseholofoil"
+    },
+    {
+        "description": "Choice Band WCD2018 #121 Magnus Pedersen Normal",
+        "input": {
+            "name": "Choice Band",
+            "variant": "121 Magnus Pedersen",
+            "edition": "2018 World Championship Decks",
+            "finish": "Normal"
+        },
+        "uuid": "121-145_481944"
+    },
+    {
+        "description": "Choice Belt WCD2023 #135 Vance Kelley Normal",
+        "input": {
+            "name": "Choice Belt",
+            "variant": "135 Vance Kelley",
+            "edition": "2023 World Championship Decks",
+            "finish": "Normal"
+        },
+        "uuid": "135-172_542036"
+    },
+    {
+        "description": "Cinccino ex CRI #073 Holofoil",
+        "input": {
+            "name": "Cinccino ex",
+            "variant": "073",
+            "edition": "ME04: Chaos Rising",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "073-086_693463_holofoil"
+    },
+    {
+        "description": "Clamperl PRC #49 Reverse Holofoil",
+        "input": {
+            "name": "Clamperl",
+            "variant": "49",
+            "edition": "XY - Primal Clash",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "49-160_95947_reverseholofoil"
+    },
+    {
+        "description": "Clawitzer PR-1451 #XY146 XY Steam Siege Prerelease Holofoil",
+        "input": {
+            "name": "Clawitzer",
+            "variant": "XY146 XY Steam Siege Prerelease",
+            "edition": "XY Promos",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "xy146_129378_holofoil"
+    },
+    {
+        "description": "Clemont GEN #59 Reverse Holofoil",
+        "input": {
+            "name": "Clemont",
+            "variant": "59",
+            "edition": "Generations",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "59-83_113717_reverseholofoil"
+    },
+    {
+        "description": "Code Card - BREAKpoint 3 Pack Blister BKP #Umbreon Normal",
+        "input": {
+            "name": "Code Card - BREAKpoint 3 Pack Blister",
+            "variant": "Umbreon",
+            "edition": "XY - BREAKpoint",
+            "finish": "Normal"
+        },
+        "uuid": "280319"
+    },
+    {
+        "description": "Code Card - Celebrations Booster Pack CLB # Normal",
+        "input": {
+            "name": "Code Card - Celebrations Booster Pack",
+            "edition": "Celebrations",
+            "finish": "Normal"
+        },
+        "uuid": "251049"
+    },
+    {
+        "description": "Code Card - Champion's Path Premium Collection CHP #Marnie Normal",
+        "input": {
+            "name": "Code Card - Champion's Path Premium Collection",
+            "variant": "Marnie",
+            "edition": "Champion's Path",
+            "finish": "Normal"
+        },
+        "uuid": "251559"
+    },
+    {
+        "description": "Code Card - Dragon Vault Booster Pack DRV # Normal",
+        "input": {
+            "name": "Code Card - Dragon Vault Booster Pack",
+            "edition": "Dragon Vault",
+            "finish": "Normal"
+        },
+        "uuid": "280554"
+    },
+    {
+        "description": "Code Card - Mega Diancie EX Premium Collection PHF # Normal",
+        "input": {
+            "name": "Code Card - Mega Diancie EX Premium Collection",
+            "edition": "XY - Phantom Forces",
+            "finish": "Normal"
+        },
+        "uuid": "280436"
+    },
+    {
+        "description": "Code Card - Mega Lucario Collection FFI # Normal",
+        "input": {
+            "name": "Code Card - Mega Lucario Collection",
+            "edition": "XY - Furious Fists",
+            "finish": "Normal"
+        },
+        "uuid": "280430"
+    },
+    {
+        "description": "Code Card - Steam Siege Collectible Pin 3 Pack Blister STS #Volcanion Normal",
+        "input": {
+            "name": "Code Card - Steam Siege Collectible Pin 3 Pack Blister",
+            "variant": "Volcanion",
+            "edition": "XY - Steam Siege",
+            "finish": "Normal"
+        },
+        "uuid": "280486"
+    },
+    {
+        "description": "Code Card - Ultra Beasts GX Premium Collection SM04 #Buzzwole GX & Xurkitree GX Normal",
+        "input": {
+            "name": "Code Card - Ultra Beasts GX Premium Collection",
+            "variant": "Buzzwole GX & Xurkitree GX",
+            "edition": "SM - Crimson Invasion",
+            "finish": "Normal"
+        },
+        "uuid": "266559"
+    },
+    {
+        "description": "Code Card - Unified Minds Single Pack Blister SM11 #Sudowoodo Normal",
+        "input": {
+            "name": "Code Card - Unified Minds Single Pack Blister",
+            "variant": "Sudowoodo",
+            "edition": "SM - Unified Minds",
+            "finish": "Normal"
+        },
+        "uuid": "266587"
+    },
+    {
+        "description": "Combee CCP #059 Normal",
+        "input": {
+            "name": "Combee",
+            "variant": "059",
+            "edition": "Countdown Calendar Promos",
+            "finish": "Normal"
+        },
+        "uuid": "059-100_153090"
+    },
+    {
+        "description": "Community Center PPP #146 Reverse Holofoil",
+        "input": {
+            "name": "Community Center",
+            "variant": "146",
+            "edition": "Professor Program Promos",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "146-167_718143_reverseholofoil"
+    },
+    {
+        "description": "Computer Search WCD2013 #137 Jason Klaczynski Normal",
+        "input": {
+            "name": "Computer Search",
+            "variant": "137 Jason Klaczynski",
+            "edition": "2013 World Championship Decks",
+            "finish": "Normal"
+        },
+        "uuid": "137-149_480673"
+    },
+    {
+        "description": "Cool Porygon PR-1418 #15 Holofoil",
+        "input": {
+            "name": "Cool Porygon",
+            "variant": "15",
+            "edition": "WoTC Promo",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "15-53_84422_holofoil"
+    },
+    {
+        "description": "Copperajah V SWSH02 #136 Holofoil",
+        "input": {
+            "name": "Copperajah V",
+            "variant": "136",
+            "edition": "SWSH02: Rebel Clash",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "136-192_213232_holofoil"
+    },
+    {
+        "description": "Copycat G22880 #143 Normal",
+        "input": {
+            "name": "Copycat",
+            "variant": "143",
+            "edition": "Prize Pack Series Cards",
+            "finish": "Normal"
+        },
+        "uuid": "143-203_476105"
+    },
+    {
+        "description": "Corsola UF #37 Normal",
+        "input": {
+            "name": "Corsola",
+            "variant": "37",
+            "edition": "EX Unseen Forces",
+            "finish": "Normal"
+        },
+        "uuid": "37-115_84440"
+    },
+    {
+        "description": "Corvisquire SWSH01 #151 Normal",
+        "input": {
+            "name": "Corvisquire",
+            "variant": "151",
+            "edition": "SWSH01: Sword & Shield Base Set",
+            "finish": "Normal"
+        },
+        "uuid": "151-202_208472"
+    },
+    {
+        "description": "Cosmoem CLB #014 Holofoil",
+        "input": {
+            "name": "Cosmoem",
+            "variant": "014",
+            "edition": "Celebrations",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "014-025_250297_holofoil"
+    },
+    {
+        "description": "Cosmog 2017SM #6 Holofoil",
+        "input": {
+            "name": "Cosmog",
+            "variant": "6",
+            "edition": "McDonald's Collection 2017",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "2017sm-6_holofoil"
+    },
+    {
+        "description": "Cresselia PFL #039 Reverse Holofoil",
+        "input": {
+            "name": "Cresselia",
+            "variant": "039",
+            "edition": "ME02: Phantasmal Flames",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "039-094_662145_reverseholofoil"
+    },
+    {
+        "description": "Cubone DRX #60 Reverse Holofoil",
+        "input": {
+            "name": "Cubone",
+            "variant": "60",
+            "edition": "Dragons Exalted",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "60-124_84536_reverseholofoil"
+    },
+    {
+        "description": "Cutiefly M22 #011 Normal",
+        "input": {
+            "name": "Cutiefly",
+            "variant": "011",
+            "edition": "McDonald's Promos 2022",
+            "finish": "Normal"
+        },
+        "uuid": "011-015_281494"
+    },
+    {
+        "description": "Cyclizar PAR #157 Reverse Holofoil",
+        "input": {
+            "name": "Cyclizar",
+            "variant": "157",
+            "edition": "SV04: Paradox Rift",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "157-182_523838_reverseholofoil"
+    },
+    {
+        "description": "Dark Ariados RR-1428 #30 Reverse Holofoil",
+        "input": {
+            "name": "Dark Ariados",
+            "variant": "30",
+            "edition": "EX Team Rocket Returns",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "30-109_84567_reverseholofoil"
+    },
+    {
+        "description": "Dark Ivysaur PR-1455 #006 Normal",
+        "input": {
+            "name": "Dark Ivysaur",
+            "variant": "006",
+            "edition": "Best of Promos",
+            "finish": "Normal"
+        },
+        "uuid": "006-009_84616"
+    },
+    {
+        "description": "Dark Magneton TR #28 Unlimited",
+        "input": {
+            "name": "Dark Magneton",
+            "variant": "28",
+            "edition": "Team Rocket",
+            "finish": "Unlimited"
+        },
+        "uuid": "28-82_84625_unlimited"
+    },
+    {
+        "description": "Dark Pupitar N4 #038 Unlimited",
+        "input": {
+            "name": "Dark Pupitar",
+            "variant": "038",
+            "edition": "Neo Destiny",
+            "finish": "Unlimited"
+        },
+        "uuid": "038-105_84642_unlimited"
+    },
+    {
+        "description": "Dark Venusaur BOG #7 Normal",
+        "input": {
+            "name": "Dark Venusaur",
+            "variant": "7",
+            "edition": "Best of game",
+            "finish": "Normal"
+        },
+        "uuid": "bog-7"
+    },
+    {
+        "description": "Darkrai EX WCD2016 #74 Shunto Sadahiro Normal",
+        "input": {
+            "name": "Darkrai EX",
+            "variant": "74 Shunto Sadahiro",
+            "edition": "2016 World Championship Decks",
+            "finish": "Normal"
+        },
+        "uuid": "74-122_481738"
+    },
+    {
+        "description": "Darkrai GX SM03 #158 Secret Holofoil",
+        "input": {
+            "name": "Darkrai GX",
+            "variant": "158 Secret",
+            "edition": "SM - Burning Shadows",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "158-147_138580_holofoil"
+    },
+    {
+        "description": "Delcatty PR-1543 #3 Normal",
+        "input": {
+            "name": "Delcatty",
+            "variant": "3",
+            "edition": "EX Trainer Kit 1: Latias & Latios",
+            "finish": "Normal"
+        },
+        "uuid": "3-10_84737"
+    },
+    {
+        "description": "Delibird GE #36 Reverse Holofoil",
+        "input": {
+            "name": "Delibird",
+            "variant": "36",
+            "edition": "Great Encounters",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "36-106_84748_reverseholofoil"
+    },
+    {
+        "description": "Desert Ruins WCD2005 #88 Michael Gonzalez Normal",
+        "input": {
+            "name": "Desert Ruins",
+            "variant": "88 Michael Gonzalez",
+            "edition": "2005 World Championship Decks",
+            "finish": "Normal"
+        },
+        "uuid": "88-101_477512"
+    },
+    {
+        "description": "Dewgong EVO #29 Normal",
+        "input": {
+            "name": "Dewgong",
+            "variant": "29",
+            "edition": "XY - Evolutions",
+            "finish": "Normal"
+        },
+        "uuid": "29-108_124042"
+    },
+    {
+        "description": "Dewott BLW #29 Normal",
+        "input": {
+            "name": "Dewott",
+            "variant": "29",
+            "edition": "Black and White",
+            "finish": "Normal"
+        },
+        "uuid": "29-114_84793"
+    },
+    {
+        "description": "Dewott M12 #005 Holofoil",
+        "input": {
+            "name": "Dewott",
+            "variant": "005",
+            "edition": "McDonald's Promos 2012",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "005-012_84797_holofoil"
+    },
+    {
+        "description": "Dialga EX PLB #65 Team Plasma Holofoil",
+        "input": {
+            "name": "Dialga EX",
+            "variant": "65 Team Plasma",
+            "edition": "Plasma Blast",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "65-101_84808_holofoil"
+    },
+    {
+        "description": "Dialga PL #23 Reverse Holofoil",
+        "input": {
+            "name": "Dialga",
+            "variant": "23",
+            "edition": "Platinum",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "23-127_84802_reverseholofoil"
+    },
+    {
+        "description": "Doublade BKP #61 Reverse Holofoil",
+        "input": {
+            "name": "Doublade",
+            "variant": "61",
+            "edition": "XY - BREAKpoint",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "61-122_111602_reverseholofoil"
+    },
+    {
+        "description": "Double Colorless Energy WCD2012 #92 Igor Costa Normal",
+        "input": {
+            "name": "Double Colorless Energy",
+            "variant": "92 Igor Costa",
+            "edition": "2012 World Championship Decks",
+            "finish": "Normal"
+        },
+        "uuid": "92-99_480546"
+    },
+    {
+        "description": "Dragapult M24 #006 Normal",
+        "input": {
+            "name": "Dragapult",
+            "variant": "006",
+            "edition": "McDonald's Promos 2024",
+            "finish": "Normal"
+        },
+        "uuid": "006-015_614375"
+    },
+    {
+        "description": "Drampa DRM #51 Normal",
+        "input": {
+            "name": "Drampa",
+            "variant": "51",
+            "edition": "Dragon Majesty",
+            "finish": "Normal"
+        },
+        "uuid": "51-70_175481"
+    },
+    {
+        "description": "Dratini DS #66 Delta Species Normal",
+        "input": {
+            "name": "Dratini",
+            "variant": "66 Delta Species",
+            "edition": "EX Delta Species",
+            "finish": "Normal"
+        },
+        "uuid": "66-113_84941"
+    },
+    {
+        "description": "Dratini M18 #009 Holofoil",
+        "input": {
+            "name": "Dratini",
+            "variant": "009",
+            "edition": "McDonald's Promos 2018",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "009-012_180457_holofoil"
+    },
+    {
+        "description": "Dream Ball SWSH07 #146 Reverse Holofoil",
+        "input": {
+            "name": "Dream Ball",
+            "variant": "146",
+            "edition": "SWSH07: Evolving Skies",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "146-203_246771_reverseholofoil"
+    },
+    {
+        "description": "Drifblim PLB #35 Normal",
+        "input": {
+            "name": "Drifblim",
+            "variant": "35",
+            "edition": "Plasma Blast",
+            "finish": "Normal"
+        },
+        "uuid": "35-101_84951"
+    },
+    {
+        "description": "Drifblim SV #57 Reverse Holofoil",
+        "input": {
+            "name": "Drifblim",
+            "variant": "57",
+            "edition": "Supreme Victors",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "57_84947_reverseholofoil"
+    },
+    {
+        "description": "Duraludon VMAX SWSH12-TG #TG21 Holofoil",
+        "input": {
+            "name": "Duraludon VMAX",
+            "variant": "TG21",
+            "edition": "SWSH12: Silver Tempest Trainer Gallery",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "tg21-tg30_452035_holofoil"
+    },
+    {
+        "description": "Dusk Stone SM10 #167 Reverse Holofoil",
+        "input": {
+            "name": "Dusk Stone",
+            "variant": "167",
+            "edition": "SM - Unbroken Bonds",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "167-214_189267_reverseholofoil"
+    },
+    {
+        "description": "Dusknoir WCD2025 #Jose Cruz Galindo-Resendiz Normal",
+        "input": {
+            "name": "Dusknoir",
+            "variant": "Jose Cruz Galindo-Resendiz",
+            "edition": "2025 World Championship Decks",
+            "finish": "Normal"
+        },
+        "uuid": "690484"
+    },
+    {
+        "description": "Eevee LC #074 Normal",
+        "input": {
+            "name": "Eevee",
+            "variant": "074",
+            "edition": "Legendary Collection",
+            "finish": "Normal"
+        },
+        "uuid": "074-110_85079"
+    },
+    {
+        "description": "Eevee SHF #052 Reverse Holofoil",
+        "input": {
+            "name": "Eevee",
+            "variant": "052",
+            "edition": "Shining Fates",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "052-072_232528_reverseholofoil"
+    },
+    {
+        "description": "Eevee SWSH09-TG #TG11 Holofoil",
+        "input": {
+            "name": "Eevee",
+            "variant": "TG11",
+            "edition": "SWSH09: Brilliant Stars Trainer Gallery",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "tg11-tg30_264218_holofoil"
+    },
+    {
+        "description": "Eevee TWM #135 Reverse Holofoil",
+        "input": {
+            "name": "Eevee",
+            "variant": "135",
+            "edition": "SV06: Twilight Masquerade",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "135-167_550179_reverseholofoil"
+    },
+    {
+        "description": "Eevee ex G22880 #075 Holofoil",
+        "input": {
+            "name": "Eevee ex",
+            "variant": "075",
+            "edition": "Prize Pack Series Cards",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "075-131_648359_holofoil"
+    },
+    {
+        "description": "Eevee on the Ball FUT2020 #2 Holofoil",
+        "input": {
+            "name": "Eevee on the Ball",
+            "variant": "2",
+            "edition": "Pokémon Futsal 2020",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "fut2020-2_holofoil"
+    },
+    {
+        "description": "Ekans TR #56 1st Edition",
+        "input": {
+            "name": "Ekans",
+            "variant": "56",
+            "edition": "Team Rocket",
+            "finish": "1st Edition"
+        },
+        "uuid": "56-82_85099_1stedition"
+    },
+    {
+        "description": "Electivire BCR #54 Reverse Holofoil",
+        "input": {
+            "name": "Electivire",
+            "variant": "54",
+            "edition": "Boundaries Crossed",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "54-149_85124_reverseholofoil"
+    },
+    {
+        "description": "Electric Generator WCD2024 #170 Jesse Parker Normal",
+        "input": {
+            "name": "Electric Generator",
+            "variant": "170 Jesse Parker",
+            "edition": "2024 World Championship Decks",
+            "finish": "Normal"
+        },
+        "uuid": "170-198_637572"
+    },
+    {
+        "description": "Electrike DRI #075 Normal",
+        "input": {
+            "name": "Electrike",
+            "variant": "075",
+            "edition": "SV10: Destined Rivals",
+            "finish": "Normal"
+        },
+        "uuid": "075-182_632885"
+    },
+    {
+        "description": "Electrike PR-1796 #28 Normal",
+        "input": {
+            "name": "Electrike",
+            "variant": "28",
+            "edition": "XY Trainer Kit: Pikachu Libre & Suicune",
+            "finish": "Normal"
+        },
+        "uuid": "28-30_118814"
+    },
+    {
+        "description": "Electrode G23330 # Normal",
+        "input": {
+            "name": "Electrode",
+            "edition": "My First Battle",
+            "finish": "Normal"
+        },
+        "uuid": "524066"
+    },
+    {
+        "description": "Electrode SHL #31 Reverse Holofoil",
+        "input": {
+            "name": "Electrode",
+            "variant": "31",
+            "edition": "Shining Legends",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "31-73_146684_reverseholofoil"
+    },
+    {
+        "description": "Emolga 2012BW #6 Holofoil",
+        "input": {
+            "name": "Emolga",
+            "variant": "6",
+            "edition": "McDonald's Collection 2012",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "2012bw-6_holofoil"
+    },
+    {
+        "description": "Erika's Gloom G1 #045 1st Edition",
+        "input": {
+            "name": "Erika's Gloom",
+            "variant": "045",
+            "edition": "Gym Heroes",
+            "finish": "1st Edition"
+        },
+        "uuid": "045-132_85295_1stedition"
+    },
+    {
+        "description": "Espeon CL #4 Reverse Holofoil",
+        "input": {
+            "name": "Espeon",
+            "variant": "4",
+            "edition": "Call of Legends",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "4-95_85324_reverseholofoil"
+    },
+    {
+        "description": "Espurr CRI #036 Reverse Holofoil",
+        "input": {
+            "name": "Espurr",
+            "variant": "036",
+            "edition": "ME04: Chaos Rising",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "036-086_693483_reverseholofoil"
+    },
+    {
+        "description": "Eternatus V SWSH11-TG #TG21 Holofoil",
+        "input": {
+            "name": "Eternatus V",
+            "variant": "TG21",
+            "edition": "SWSH11: Lost Origin Trainer Gallery",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "tg21-tg30_284294_holofoil"
+    },
+    {
+        "description": "Excadrill OBF #147 Normal",
+        "input": {
+            "name": "Excadrill",
+            "variant": "147",
+            "edition": "SV03: Obsidian Flames",
+            "finish": "Normal"
+        },
+        "uuid": "147-197_509934"
+    },
+    {
+        "description": "Excadrill SWSH08 #183 Reverse Holofoil",
+        "input": {
+            "name": "Excadrill",
+            "variant": "183",
+            "edition": "SWSH08: Fusion Strike",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "183-264_253331_reverseholofoil"
+    },
+    {
+        "description": "Exeggcute CRZ #057 Normal",
+        "input": {
+            "name": "Exeggcute",
+            "variant": "057",
+            "edition": "SWSH: Crown Zenith",
+            "finish": "Normal"
+        },
+        "uuid": "057-159_478171"
+    },
+    {
+        "description": "Exeggutor SI #13 Normal",
+        "input": {
+            "name": "Exeggutor",
+            "variant": "13",
+            "edition": "Southern Islands",
+            "finish": "Normal"
+        },
+        "uuid": "13-18_46470"
+    },
+    {
+        "description": "Farfetch'd SF #38 Reverse Holofoil",
+        "input": {
+            "name": "Farfetch'd",
+            "variant": "38",
+            "edition": "Stormfront",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "38-100_85387_reverseholofoil"
+    },
+    {
+        "description": "Fighting Energy BLW-1538 #28 Normal",
+        "input": {
+            "name": "Fighting Energy",
+            "variant": "28",
+            "edition": "BW Trainer Kit: Excadrill & Zoroark",
+            "finish": "Normal"
+        },
+        "uuid": "28-30_98683"
+    },
+    {
+        "description": "Fighting Energy WCD2006 #Miska Saari Normal",
+        "input": {
+            "name": "Fighting Energy",
+            "variant": "Miska Saari",
+            "edition": "2006 World Championship Decks",
+            "finish": "Normal"
+        },
+        "uuid": "477616"
+    },
+    {
+        "description": "Fire Energy WCD2011 #Christopher Kan Normal",
+        "input": {
+            "name": "Fire Energy",
+            "variant": "Christopher Kan",
+            "edition": "2011 World Championship Decks",
+            "finish": "Normal"
+        },
+        "uuid": "480399"
+    },
+    {
+        "description": "Fletchling PAL #163 Reverse Holofoil",
+        "input": {
+            "name": "Fletchling",
+            "variant": "163",
+            "edition": "SV02: Paldea Evolved",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "163-193_497582_reverseholofoil"
+    },
+    {
+        "description": "Fletchling PR-1532 #19 Normal",
+        "input": {
+            "name": "Fletchling",
+            "variant": "19",
+            "edition": "XY Trainer Kit: Sylveon & Noivern",
+            "finish": "Normal"
+        },
+        "uuid": "19-30_97984"
+    },
+    {
+        "description": "Float Stone WCD2016 #137 Shintaro Ito Normal",
+        "input": {
+            "name": "Float Stone",
+            "variant": "137 Shintaro Ito",
+            "edition": "2016 World Championship Decks",
+            "finish": "Normal"
+        },
+        "uuid": "137-162_481749"
+    },
+    {
+        "description": "Floette FLF #65 Reverse Holofoil",
+        "input": {
+            "name": "Floette",
+            "variant": "65",
+            "edition": "XY - Flashfire",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "65-106_91202_reverseholofoil"
+    },
+    {
+        "description": "Flygon PR-1423 #025 e-League Normal",
+        "input": {
+            "name": "Flygon",
+            "variant": "025 e-League",
+            "edition": "Nintendo Promos",
+            "finish": "Normal"
+        },
+        "uuid": "025_85523"
+    },
+    {
+        "description": "Fog Crystal SWSH06 #140 Reverse Holofoil",
+        "input": {
+            "name": "Fog Crystal",
+            "variant": "140",
+            "edition": "SWSH06: Chilling Reign",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "140-198_241835_reverseholofoil"
+    },
+    {
+        "description": "Forretress SK #056 Normal",
+        "input": {
+            "name": "Forretress",
+            "variant": "056",
+            "edition": "Skyridge",
+            "finish": "Normal"
+        },
+        "uuid": "056-144_85546"
+    },
+    {
+        "description": "Frillish NXD #34 Reverse Holofoil",
+        "input": {
+            "name": "Frillish",
+            "variant": "34",
+            "edition": "Next Destinies",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "34-99_85564_reverseholofoil"
+    },
+    {
+        "description": "Froakie BKT #46 Reverse Holofoil",
+        "input": {
+            "name": "Froakie",
+            "variant": "46",
+            "edition": "XY - BREAKthrough",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "46-162_107165_reverseholofoil"
+    },
+    {
+        "description": "Gallade SW #6 Holofoil",
+        "input": {
+            "name": "Gallade",
+            "variant": "6",
+            "edition": "Secret Wonders",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "6-132_85604_holofoil"
+    },
+    {
+        "description": "Gallade WCD2008 #2 Jason Klaczynski Normal",
+        "input": {
+            "name": "Gallade",
+            "variant": "2 Jason Klaczynski",
+            "edition": "2008 World Championship Decks",
+            "finish": "Normal"
+        },
+        "uuid": "2-17_479786"
+    },
+    {
+        "description": "Gallade WCD2010 #2 Michael Pramawat Normal",
+        "input": {
+            "name": "Gallade",
+            "variant": "2 Michael Pramawat",
+            "edition": "2010 World Championship Decks",
+            "finish": "Normal"
+        },
+        "uuid": "2-17_480045"
+    },
+    {
+        "description": "Gardevoir SWSH12 #069 Normal",
+        "input": {
+            "name": "Gardevoir",
+            "variant": "069",
+            "edition": "SWSH12: Silver Tempest",
+            "finish": "Normal"
+        },
+        "uuid": "069-195_451723"
+    },
+    {
+        "description": "Gastly RG #63 Normal",
+        "input": {
+            "name": "Gastly",
+            "variant": "63",
+            "edition": "EX FireRed & LeafGreen",
+            "finish": "Normal"
+        },
+        "uuid": "63-112_85650"
+    },
+    {
+        "description": "Gengar TTBB #057 2021 Copyright Date Holofoil",
+        "input": {
+            "name": "Gengar",
+            "variant": "057 2021 Copyright Date",
+            "edition": "Trick or Trade BOOster Bundle",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "057-198_283766_holofoil"
+    },
+    {
+        "description": "Gengar TTBB23 #066 2022 Copyright Date Holofoil",
+        "input": {
+            "name": "Gengar",
+            "variant": "066 2022 Copyright Date",
+            "edition": "Trick or Trade BOOster Bundle 2023",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "066-196_515661_holofoil"
+    },
+    {
+        "description": "Gible HIF-SV #SV38 Holofoil",
+        "input": {
+            "name": "Gible",
+            "variant": "SV38",
+            "edition": "Hidden Fates: Shiny Vault",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "sv38-sv94_197805_holofoil"
+    },
+    {
+        "description": "Gible POP-1432 #007 Normal",
+        "input": {
+            "name": "Gible",
+            "variant": "007",
+            "edition": "POP Series 6",
+            "finish": "Normal"
+        },
+        "uuid": "007-017_85699"
+    },
+    {
+        "description": "Giovanni's Nidorino G2 #045 1st Edition",
+        "input": {
+            "name": "Giovanni's Nidorino",
+            "variant": "045",
+            "edition": "Gym Challenge",
+            "finish": "1st Edition"
+        },
+        "uuid": "045-132_85723_1stedition"
+    },
+    {
+        "description": "Girafarig HS #64 Normal",
+        "input": {
+            "name": "Girafarig",
+            "variant": "64",
+            "edition": "HeartGold SoulSilver",
+            "finish": "Normal"
+        },
+        "uuid": "64-123_85732"
+    },
+    {
+        "description": "Girafarig TEF #066 Normal",
+        "input": {
+            "name": "Girafarig",
+            "variant": "066",
+            "edition": "SV05: Temporal Forces",
+            "finish": "Normal"
+        },
+        "uuid": "066-162_542810"
+    },
+    {
+        "description": "Glalie MT #25 Reverse Holofoil",
+        "input": {
+            "name": "Glalie",
+            "variant": "25",
+            "edition": "Mysterious Treasures",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "25-123_85755_reverseholofoil"
+    },
+    {
+        "description": "Glameow GE #68 Normal",
+        "input": {
+            "name": "Glameow",
+            "variant": "68",
+            "edition": "Great Encounters",
+            "finish": "Normal"
+        },
+        "uuid": "68-106_85759"
+    },
+    {
+        "description": "Gliscor LV.X LA #141 Holofoil",
+        "input": {
+            "name": "Gliscor LV.X",
+            "variant": "141",
+            "edition": "Legends Awakened",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "141-146_85777_holofoil"
+    },
+    {
+        "description": "Gloom SM03 #5 Reverse Holofoil",
+        "input": {
+            "name": "Gloom",
+            "variant": "5",
+            "edition": "SM - Burning Shadows",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "5-147_138275_reverseholofoil"
+    },
+    {
+        "description": "Golbat DX #31 Reverse Holofoil",
+        "input": {
+            "name": "Golbat",
+            "variant": "31",
+            "edition": "EX Deoxys",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "31-107_85794_reverseholofoil"
+    },
+    {
+        "description": "Goldeen N3 #45 1st Edition",
+        "input": {
+            "name": "Goldeen",
+            "variant": "45",
+            "edition": "Neo Revelation",
+            "finish": "1st Edition"
+        },
+        "uuid": "45-64_85801_1stedition"
+    },
+    {
+        "description": "Gourgeist PAR #078 Reverse Holofoil",
+        "input": {
+            "name": "Gourgeist",
+            "variant": "078",
+            "edition": "SV04: Paradox Rift",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "078-182_523744_reverseholofoil"
+    },
+    {
+        "description": "Gourgeist TTBB #077 Holofoil",
+        "input": {
+            "name": "Gourgeist",
+            "variant": "077",
+            "edition": "Trick or Trade BOOster Bundle",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "077-203_283795_holofoil"
+    },
+    {
+        "description": "Grass Energy PR-1536 #19 Normal",
+        "input": {
+            "name": "Grass Energy",
+            "variant": "19",
+            "edition": "XY Trainer Kit: Latias & Latios",
+            "finish": "Normal"
+        },
+        "uuid": "19-30_98322"
+    },
+    {
+        "description": "Graveler PR-1541 #2 Normal",
+        "input": {
+            "name": "Graveler",
+            "variant": "2",
+            "edition": "DP Trainer Kit: Manaphy & Lucario",
+            "finish": "Normal"
+        },
+        "uuid": "2-11_85893"
+    },
+    {
+        "description": "Great Ball BTA #119 #33 Charizard Stamped Normal",
+        "input": {
+            "name": "Great Ball",
+            "variant": "119 #33 Charizard Stamped",
+            "edition": "Battle Academy",
+            "finish": "Normal"
+        },
+        "uuid": "119-149_219070"
+    },
+    {
+        "description": "Greavard SVP #070 Holofoil",
+        "input": {
+            "name": "Greavard",
+            "variant": "070",
+            "edition": "SV: Scarlet & Violet Promo Cards",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "070_536072_holofoil"
+    },
+    {
+        "description": "Grotle PLS #2 Normal",
+        "input": {
+            "name": "Grotle",
+            "variant": "2",
+            "edition": "Plasma Storm",
+            "finish": "Normal"
+        },
+        "uuid": "2-135_85920"
+    },
+    {
+        "description": "Groudon EX WCD2015 #85 Alejandro Ng-Guzman Normal",
+        "input": {
+            "name": "Groudon EX",
+            "variant": "85 Alejandro Ng-Guzman",
+            "edition": "2015 World Championship Decks",
+            "finish": "Normal"
+        },
+        "uuid": "85-160_481194"
+    },
+    {
+        "description": "Groudon PRE #049 Reverse Holofoil",
+        "input": {
+            "name": "Groudon",
+            "variant": "049",
+            "edition": "SV: Prismatic Evolutions",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "049-131_610404_reverseholofoil"
+    },
+    {
+        "description": "Grubbin 2017SM #2 Holofoil",
+        "input": {
+            "name": "Grubbin",
+            "variant": "2",
+            "edition": "McDonald's Collection 2017",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "2017sm-2_holofoil"
+    },
+    {
+        "description": "Grumpig LA #56 Reverse Holofoil",
+        "input": {
+            "name": "Grumpig",
+            "variant": "56",
+            "edition": "Legends Awakened",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "56-146_85970_reverseholofoil"
+    },
+    {
+        "description": "Gulpin AR #40 Normal",
+        "input": {
+            "name": "Gulpin",
+            "variant": "40",
+            "edition": "Arceus",
+            "finish": "Normal"
+        },
+        "uuid": "40-99_85978"
+    },
+    {
+        "description": "Gyarados DRX #24 Reverse Holofoil",
+        "input": {
+            "name": "Gyarados",
+            "variant": "24",
+            "edition": "Dragons Exalted",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "24-124_86000_reverseholofoil"
+    },
+    {
+        "description": "Hariyama SEA #073 GYM Holofoil",
+        "input": {
+            "name": "Hariyama",
+            "variant": "073 GYM",
+            "edition": "Southeast Asia Exclusives",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "073-132_714567_holofoil"
+    },
+    {
+        "description": "Hatenna 2024SV #5 Normal",
+        "input": {
+            "name": "Hatenna",
+            "variant": "5",
+            "edition": "McDonald's Collection 2024",
+            "finish": "Normal"
+        },
+        "uuid": "2024sv-5"
+    },
+    {
+        "description": "Hatterene VMAX CRZ-GG #GG47 Holofoil",
+        "input": {
+            "name": "Hatterene VMAX",
+            "variant": "GG47",
+            "edition": "SWSH: Crown Zenith: Galarian Gallery",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "gg47-gg70_478074_holofoil"
+    },
+    {
+        "description": "Hau SMK1 #19 Lycanroc Half-Deck Normal",
+        "input": {
+            "name": "Hau",
+            "variant": "19 Lycanroc Half-Deck",
+            "edition": "SM Trainer Kit: Lycanroc & Alolan Raichu",
+            "finish": "Normal"
+        },
+        "uuid": "19-30_152840"
+    },
+    {
+        "description": "Haunter FO #21 Unlimited",
+        "input": {
+            "name": "Haunter",
+            "variant": "21",
+            "edition": "Fossil",
+            "finish": "Unlimited"
+        },
+        "uuid": "21-62_44429_unlimited"
+    },
+    {
+        "description": "Hawlucha EX FFI #64 Holofoil",
+        "input": {
+            "name": "Hawlucha EX",
+            "variant": "64",
+            "edition": "XY - Furious Fists",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "64-111_92241_holofoil"
+    },
+    {
+        "description": "Haxorus BLE #069 Cosmos Holo Holofoil",
+        "input": {
+            "name": "Haxorus",
+            "variant": "069 Cosmos Holo",
+            "edition": "Blister Exclusives",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "069-101_141252_holofoil"
+    },
+    {
+        "description": "Haxorus DRV #16 Holofoil",
+        "input": {
+            "name": "Haxorus",
+            "variant": "16",
+            "edition": "Dragon Vault",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "16-20_86034_holofoil"
+    },
+    {
+        "description": "Heatran GX WCD2019 #25 Shintaro Ito Normal",
+        "input": {
+            "name": "Heatran GX",
+            "variant": "25 Shintaro Ito",
+            "edition": "2019 World Championship Decks",
+            "finish": "Normal"
+        },
+        "uuid": "25-236_482073"
+    },
+    {
+        "description": "Heatran RUM #4 Normal",
+        "input": {
+            "name": "Heatran",
+            "variant": "4",
+            "edition": "Rumble",
+            "finish": "Normal"
+        },
+        "uuid": "4_86051"
+    },
+    {
+        "description": "Herdier BLW-1538 #19 Normal",
+        "input": {
+            "name": "Herdier",
+            "variant": "19",
+            "edition": "BW Trainer Kit: Excadrill & Zoroark",
+            "finish": "Normal"
+        },
+        "uuid": "19-30_98701"
+    },
+    {
+        "description": "Here Comes Team Rocket! CCC #15 Holofoil",
+        "input": {
+            "name": "Here Comes Team Rocket!",
+            "variant": "15",
+            "edition": "Celebrations: Classic Collection",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "15-82_250323_holofoil"
+    },
+    {
+        "description": "Hippowdon NXD #66 Reverse Holofoil",
+        "input": {
+            "name": "Hippowdon",
+            "variant": "66",
+            "edition": "Next Destinies",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "66-99_86086_reverseholofoil"
+    },
+    {
+        "description": "Hisuian Goodra VSTAR WCD2024 #136 Evan Pavelski Normal",
+        "input": {
+            "name": "Hisuian Goodra VSTAR",
+            "variant": "136 Evan Pavelski",
+            "edition": "2024 World Championship Decks",
+            "finish": "Normal"
+        },
+        "uuid": "136-196_637588"
+    },
+    {
+        "description": "Honedge KSS #21 Normal",
+        "input": {
+            "name": "Honedge",
+            "variant": "21",
+            "edition": "Kalos Starter Set",
+            "finish": "Normal"
+        },
+        "uuid": "21-39_86167"
+    },
+    {
+        "description": "Hoppip EX #112 Normal",
+        "input": {
+            "name": "Hoppip",
+            "variant": "112",
+            "edition": "Expedition",
+            "finish": "Normal"
+        },
+        "uuid": "112-165_86179"
+    },
+    {
+        "description": "Hydreigon SM04 #62 Reverse Holofoil",
+        "input": {
+            "name": "Hydreigon",
+            "variant": "62",
+            "edition": "SM - Crimson Invasion",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "62-111_149085_reverseholofoil"
+    },
+    {
+        "description": "Igglybuff HL #37 Reverse Holofoil",
+        "input": {
+            "name": "Igglybuff",
+            "variant": "37",
+            "edition": "EX Hidden Legends",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "37-101_86260_reverseholofoil"
+    },
+    {
+        "description": "Igglybuff PR-1418 #36 Normal",
+        "input": {
+            "name": "Igglybuff",
+            "variant": "36",
+            "edition": "WoTC Promo",
+            "finish": "Normal"
+        },
+        "uuid": "36-53_86259"
+    },
+    {
+        "description": "Illumise SS #38 Reverse Holofoil",
+        "input": {
+            "name": "Illumise",
+            "variant": "38",
+            "edition": "EX Sandstorm",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "38-100_86264_reverseholofoil"
+    },
+    {
+        "description": "Inkay 2014XY #6 Holofoil",
+        "input": {
+            "name": "Inkay",
+            "variant": "6",
+            "edition": "McDonald's Collection 2014",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "2014xy-6_holofoil"
+    },
+    {
+        "description": "Inkay SWSH06 #069 Reverse Holofoil",
+        "input": {
+            "name": "Inkay",
+            "variant": "069",
+            "edition": "SWSH06: Chilling Reign",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "069-198_241730_reverseholofoil"
+    },
+    {
+        "description": "Ivysaur BS2 #044 Normal",
+        "input": {
+            "name": "Ivysaur",
+            "variant": "044",
+            "edition": "Base Set 2",
+            "finish": "Normal"
+        },
+        "uuid": "044-130_42507"
+    },
+    {
+        "description": "Jacinthe POR #075 Reverse Holofoil",
+        "input": {
+            "name": "Jacinthe",
+            "variant": "075",
+            "edition": "ME03: Perfect Order",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "075-088_684393_reverseholofoil"
+    },
+    {
+        "description": "Junk Arm WCD2011 #87 Gustavo Wada Normal",
+        "input": {
+            "name": "Junk Arm",
+            "variant": "87 Gustavo Wada",
+            "edition": "2011 World Championship Decks",
+            "finish": "Normal"
+        },
+        "uuid": "87-102_480411"
+    },
+    {
+        "description": "Kabuto HP #67 Delta Species Reverse Holofoil",
+        "input": {
+            "name": "Kabuto",
+            "variant": "67 Delta Species",
+            "edition": "EX Holon Phantoms",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "67-110_86388_reverseholofoil"
+    },
+    {
+        "description": "Kabuto LM #36 Normal",
+        "input": {
+            "name": "Kabuto",
+            "variant": "36",
+            "edition": "EX Legend Maker",
+            "finish": "Normal"
+        },
+        "uuid": "36-92_86384"
+    },
+    {
+        "description": "Kadabra MEG #055 Reverse Holofoil",
+        "input": {
+            "name": "Kadabra",
+            "variant": "055",
+            "edition": "ME01: Mega Evolution",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "055-132_654394_reverseholofoil"
+    },
+    {
+        "description": "Kakuna SM9 #4 Normal",
+        "input": {
+            "name": "Kakuna",
+            "variant": "4",
+            "edition": "SM - Team Up",
+            "finish": "Normal"
+        },
+        "uuid": "4-181_183775"
+    },
+    {
+        "description": "Kangaskhan 30C #114 Holofoil",
+        "input": {
+            "name": "Kangaskhan",
+            "variant": "114",
+            "edition": "ME: 30th Celebration",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "114-128_716506_holofoil"
+    },
+    {
+        "description": "Kilowattrel PAF #146 Holofoil",
+        "input": {
+            "name": "Kilowattrel",
+            "variant": "146",
+            "edition": "SV: Paldean Fates",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "146-091_534584_holofoil"
+    },
+    {
+        "description": "Kilowattrel PAL #082 Reverse Holofoil",
+        "input": {
+            "name": "Kilowattrel",
+            "variant": "082",
+            "edition": "SV02: Paldea Evolved",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "082-193_497493_reverseholofoil"
+    },
+    {
+        "description": "Kilowattrel SVI #079 Reverse Holofoil",
+        "input": {
+            "name": "Kilowattrel",
+            "variant": "079",
+            "edition": "SV01: Scarlet & Violet Base Set",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "079-198_487935_reverseholofoil"
+    },
+    {
+        "description": "Kirlia 2023SV #15 Normal",
+        "input": {
+            "name": "Kirlia",
+            "variant": "15",
+            "edition": "McDonald's Collection 2023",
+            "finish": "Normal"
+        },
+        "uuid": "2023sv-15"
+    },
+    {
+        "description": "Kirlia RS #34 Normal",
+        "input": {
+            "name": "Kirlia",
+            "variant": "34",
+            "edition": "EX Ruby and Sapphire",
+            "finish": "Normal"
+        },
+        "uuid": "34-109_86459"
+    },
+    {
+        "description": "Klawf M23 #011 Holofoil",
+        "input": {
+            "name": "Klawf",
+            "variant": "011",
+            "edition": "McDonald's Promos 2023",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "011-015_516522_holofoil"
+    },
+    {
+        "description": "Krokorok BLW #64 Normal",
+        "input": {
+            "name": "Krokorok",
+            "variant": "64",
+            "edition": "Black and White",
+            "finish": "Normal"
+        },
+        "uuid": "64-114_86536"
+    },
+    {
+        "description": "Kyogre EX PRC #148 Full Art Holofoil",
+        "input": {
+            "name": "Kyogre EX",
+            "variant": "148 Full Art",
+            "edition": "XY - Primal Clash",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "148-160_96046_holofoil"
+    },
+    {
+        "description": "Lairon TM #37 Normal",
+        "input": {
+            "name": "Lairon",
+            "variant": "37",
+            "edition": "Triumphant",
+            "finish": "Normal"
+        },
+        "uuid": "37-102_86583"
+    },
+    {
+        "description": "Lampent TTBB24 #037 Normal",
+        "input": {
+            "name": "Lampent",
+            "variant": "037",
+            "edition": "Trick or Trade BOOster Bundle 2024",
+            "finish": "Normal"
+        },
+        "uuid": "037-167_570564"
+    },
+    {
+        "description": "Lanturn N1 #038 1st Edition",
+        "input": {
+            "name": "Lanturn",
+            "variant": "038",
+            "edition": "Neo Genesis",
+            "finish": "1st Edition"
+        },
+        "uuid": "038-111_86603_1stedition"
+    },
+    {
+        "description": "Lapras M19 #005 Holofoil",
+        "input": {
+            "name": "Lapras",
+            "variant": "005",
+            "edition": "McDonald's Promos 2019",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "005-012_200966_holofoil"
+    },
+    {
+        "description": "Lapras M22 #006 Normal",
+        "input": {
+            "name": "Lapras",
+            "variant": "006",
+            "edition": "McDonald's Promos 2022",
+            "finish": "Normal"
+        },
+        "uuid": "006-015_281485"
+    },
+    {
+        "description": "Latios POP #004 Holofoil",
+        "input": {
+            "name": "Latios",
+            "variant": "004",
+            "edition": "POP Series 7",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "004-017_86666_holofoil"
+    },
+    {
+        "description": "Leafeon GX SM05 #157 Holofoil",
+        "input": {
+            "name": "Leafeon GX",
+            "variant": "157",
+            "edition": "SM - Ultra Prism",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "157-156_157773_holofoil"
+    },
+    {
+        "description": "Ledyba SI #07 Reverse Holofoil",
+        "input": {
+            "name": "Ledyba",
+            "variant": "07",
+            "edition": "Southern Islands",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "07-18_46481_reverseholofoil"
+    },
+    {
+        "description": "Level Ball WCD2014 #89 Michikazu Tsuda Normal",
+        "input": {
+            "name": "Level Ball",
+            "variant": "89 Michikazu Tsuda",
+            "edition": "2014 World Championship Decks",
+            "finish": "Normal"
+        },
+        "uuid": "89-99_480894"
+    },
+    {
+        "description": "Lickitung MD #39 Normal",
+        "input": {
+            "name": "Lickitung",
+            "variant": "39",
+            "edition": "Majestic Dawn",
+            "finish": "Normal"
+        },
+        "uuid": "39-100_86721"
+    },
+    {
+        "description": "Lickitung SWSH11 #138 Normal",
+        "input": {
+            "name": "Lickitung",
+            "variant": "138",
+            "edition": "SWSH11: Lost Origin",
+            "finish": "Normal"
+        },
+        "uuid": "138-196_284061"
+    },
+    {
+        "description": "Lickitung TM #66 Reverse Holofoil",
+        "input": {
+            "name": "Lickitung",
+            "variant": "66",
+            "edition": "Triumphant",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "66-102_86723_reverseholofoil"
+    },
+    {
+        "description": "Lightning Energy PR-1540 #28 Normal",
+        "input": {
+            "name": "Lightning Energy",
+            "variant": "28",
+            "edition": "HGSS Trainer Kit: Gyarados & Raichu",
+            "finish": "Normal"
+        },
+        "uuid": "28-30_86780"
+    },
+    {
+        "description": "Lightning Energy WCD2013 #Yugo Sato Normal",
+        "input": {
+            "name": "Lightning Energy",
+            "variant": "Yugo Sato",
+            "edition": "2013 World Championship Decks",
+            "finish": "Normal"
+        },
+        "uuid": "714387"
+    },
+    {
+        "description": "Lilligant SM02 #5 Reverse Holofoil",
+        "input": {
+            "name": "Lilligant",
+            "variant": "5",
+            "edition": "SM - Guardians Rising",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "5-145_130690_reverseholofoil"
+    },
+    {
+        "description": "Lillipup SM12 #174 Normal",
+        "input": {
+            "name": "Lillipup",
+            "variant": "174",
+            "edition": "SM - Cosmic Eclipse",
+            "finish": "Normal"
+        },
+        "uuid": "174-236_201296"
+    },
+    {
+        "description": "Litten FPP #SM02 Normal",
+        "input": {
+            "name": "Litten",
+            "variant": "SM02",
+            "edition": "First Partner Pack",
+            "finish": "Normal"
+        },
+        "uuid": "sm02_231459"
+    },
+    {
+        "description": "Litwick PBL #036 Reverse Holofoil",
+        "input": {
+            "name": "Litwick",
+            "variant": "036",
+            "edition": "ME05: Pitch Black",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "036-084_704793_reverseholofoil"
+    },
+    {
+        "description": "Lombre CG #37 Reverse Holofoil",
+        "input": {
+            "name": "Lombre",
+            "variant": "37",
+            "edition": "EX Crystal Guardians",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "37-100_86818_reverseholofoil"
+    },
+    {
+        "description": "Lotad 2015XY #2 Holofoil",
+        "input": {
+            "name": "Lotad",
+            "variant": "2",
+            "edition": "McDonald's Collection 2015",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "2015xy-2_holofoil"
+    },
+    {
+        "description": "Lotad SS #67 Reverse Holofoil",
+        "input": {
+            "name": "Lotad",
+            "variant": "67",
+            "edition": "EX Sandstorm",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "67-100_86832_reverseholofoil"
+    },
+    {
+        "description": "Loudred EM #35 Normal",
+        "input": {
+            "name": "Loudred",
+            "variant": "35",
+            "edition": "EX Emerald",
+            "finish": "Normal"
+        },
+        "uuid": "35-106_86841"
+    },
+    {
+        "description": "Low Pressure System POP-1442 #011 Normal",
+        "input": {
+            "name": "Low Pressure System",
+            "variant": "011",
+            "edition": "POP Series 3",
+            "finish": "Normal"
+        },
+        "uuid": "011-017_86847"
+    },
+    {
+        "description": "Lucario GL WCD2010 #8 Yuta Komatsuda Normal",
+        "input": {
+            "name": "Lucario GL",
+            "variant": "8 Yuta Komatsuda",
+            "edition": "2010 World Championship Decks",
+            "finish": "Normal"
+        },
+        "uuid": "8-111_480072"
+    },
+    {
+        "description": "Luxray ex TWM #068 Holofoil",
+        "input": {
+            "name": "Luxray ex",
+            "variant": "068",
+            "edition": "SV06: Twilight Masquerade",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "068-167_550112_holofoil"
+    },
+    {
+        "description": "Lycanroc GX HIF-SV #SV66 Holofoil",
+        "input": {
+            "name": "Lycanroc GX",
+            "variant": "SV66",
+            "edition": "Hidden Fates: Shiny Vault",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "sv66-sv94_197820_holofoil"
+    },
+    {
+        "description": "M Lucario-EX XYA #55a Normal",
+        "input": {
+            "name": "M Lucario-EX",
+            "variant": "55a",
+            "edition": "Yellow A Alternate",
+            "finish": "Normal"
+        },
+        "uuid": "xya-55a"
+    },
+    {
+        "description": "Machop 2018SM #6 Holofoil",
+        "input": {
+            "name": "Machop",
+            "variant": "6",
+            "edition": "McDonald's Collection 2018",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "2018sm-6_holofoil"
+    },
+    {
+        "description": "Magikarp BS #035 Normal",
+        "input": {
+            "name": "Magikarp",
+            "variant": "035",
+            "edition": "Base Set",
+            "finish": "Normal"
+        },
+        "uuid": "035-102_42377"
+    },
+    {
+        "description": "Magikarp LTR #30 Normal",
+        "input": {
+            "name": "Magikarp",
+            "variant": "30",
+            "edition": "Legendary Treasures",
+            "finish": "Normal"
+        },
+        "uuid": "30-113_87037"
+    },
+    {
+        "description": "Magikarp PR-1540 #19 Normal",
+        "input": {
+            "name": "Magikarp",
+            "variant": "19",
+            "edition": "HGSS Trainer Kit: Gyarados & Raichu",
+            "finish": "Normal"
+        },
+        "uuid": "19-30_87034"
+    },
+    {
+        "description": "Magikarp RR-1428 #65 Normal",
+        "input": {
+            "name": "Magikarp",
+            "variant": "65",
+            "edition": "EX Team Rocket Returns",
+            "finish": "Normal"
+        },
+        "uuid": "65-109_87027"
+    },
+    {
+        "description": "Magmar BSS #036 1st Edition",
+        "input": {
+            "name": "Magmar",
+            "variant": "036",
+            "edition": "Base Set (Shadowless)",
+            "finish": "1st Edition"
+        },
+        "uuid": "036-102_107033_1stedition"
+    },
+    {
+        "description": "Magnemite N2 #26 1st Edition",
+        "input": {
+            "name": "Magnemite",
+            "variant": "26",
+            "edition": "Neo Discovery",
+            "finish": "1st Edition"
+        },
+        "uuid": "26_87065_1stedition"
+    },
+    {
+        "description": "Magneton RG #27 Reverse Holofoil",
+        "input": {
+            "name": "Magneton",
+            "variant": "27",
+            "edition": "EX FireRed & LeafGreen",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "27-112_87102_reverseholofoil"
+    },
+    {
+        "description": "Magneton SVP #153 Staff Holofoil",
+        "input": {
+            "name": "Magneton",
+            "variant": "153 Staff",
+            "edition": "SV: Scarlet & Violet Promo Cards",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "153_607015_holofoil"
+    },
+    {
+        "description": "Magnezone PR-1840 #083 Prerelease Normal",
+        "input": {
+            "name": "Magnezone",
+            "variant": "083 Prerelease",
+            "edition": "Deck Exclusives",
+            "finish": "Normal"
+        },
+        "uuid": "083-156_158201"
+    },
+    {
+        "description": "Maractus 2011BW #2 Holofoil",
+        "input": {
+            "name": "Maractus",
+            "variant": "2",
+            "edition": "McDonald's Collection 2011",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "2011bw-2_holofoil"
+    },
+    {
+        "description": "Martial Arts Dojo SM12 #268 Holofoil",
+        "input": {
+            "name": "Martial Arts Dojo",
+            "variant": "268",
+            "edition": "SM - Cosmic Eclipse",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "268-236_201634_holofoil"
+    },
+    {
+        "description": "Meditite DR #37 Reverse Holofoil",
+        "input": {
+            "name": "Meditite",
+            "variant": "37",
+            "edition": "EX Dragon",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "37-97_87278_reverseholofoil"
+    },
+    {
+        "description": "Meditite M15 #009 Holofoil",
+        "input": {
+            "name": "Meditite",
+            "variant": "009",
+            "edition": "McDonald's Promos 2015",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "009-012_110425_holofoil"
+    },
+    {
+        "description": "Mega Greninja ex MEP #081 Holofoil",
+        "input": {
+            "name": "Mega Greninja ex",
+            "variant": "081",
+            "edition": "ME: Mega Evolution Promo",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "081_704879_holofoil"
+    },
+    {
+        "description": "Meganium PR-1453 #HGSS08 Prime Holofoil",
+        "input": {
+            "name": "Meganium",
+            "variant": "HGSS08 Prime",
+            "edition": "HGSS Promos",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "hgss08_87295_holofoil"
+    },
+    {
+        "description": "Mesprit SWSH10 #066 Reverse Holofoil",
+        "input": {
+            "name": "Mesprit",
+            "variant": "066",
+            "edition": "SWSH10: Astral Radiance",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "066-189_272267_reverseholofoil"
+    },
+    {
+        "description": "Metang JTG #062 Normal",
+        "input": {
+            "name": "Metang",
+            "variant": "062",
+            "edition": "SV09: Journey Together",
+            "finish": "Normal"
+        },
+        "uuid": "062-159_623489"
+    },
+    {
+        "description": "Metang PK #35 Reverse Holofoil",
+        "input": {
+            "name": "Metang",
+            "variant": "35",
+            "edition": "EX Power Keepers",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "35-108_87377_reverseholofoil"
+    },
+    {
+        "description": "Mew EX LTR-1465 #RC24 Full Art Holofoil",
+        "input": {
+            "name": "Mew EX",
+            "variant": "RC24 Full Art",
+            "edition": "Legendary Treasures: Radiant Collection",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "rc24-rc25_87413_holofoil"
+    },
+    {
+        "description": "Mewtwo EX #056 Normal",
+        "input": {
+            "name": "Mewtwo",
+            "variant": "056",
+            "edition": "Expedition",
+            "finish": "Normal"
+        },
+        "uuid": "056-165_87420"
+    },
+    {
+        "description": "Miltank CRZ-GG #GG24 Holofoil",
+        "input": {
+            "name": "Miltank",
+            "variant": "GG24",
+            "edition": "SWSH: Crown Zenith: Galarian Gallery",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "gg24-gg70_478043_holofoil"
+    },
+    {
+        "description": "Minun HL #67 Normal",
+        "input": {
+            "name": "Minun",
+            "variant": "67",
+            "edition": "EX Hidden Legends",
+            "finish": "Normal"
+        },
+        "uuid": "67-101_87482"
+    },
+    {
+        "description": "Minun POP-1422 #012 Normal",
+        "input": {
+            "name": "Minun",
+            "variant": "012",
+            "edition": "POP Series 1",
+            "finish": "Normal"
+        },
+        "uuid": "012-017_87483"
+    },
+    {
+        "description": "Minun PR-1542 #6 Holofoil",
+        "input": {
+            "name": "Minun",
+            "variant": "6",
+            "edition": "EX Trainer Kit 2: Plusle & Minun",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "6-12_87486_holofoil"
+    },
+    {
+        "description": "Misty's Poliwag G2 #089 1st Edition",
+        "input": {
+            "name": "Misty's Poliwag",
+            "variant": "089",
+            "edition": "Gym Challenge",
+            "finish": "1st Edition"
+        },
+        "uuid": "089-132_87536_1stedition"
+    },
+    {
+        "description": "Misty's Shellder G1 #089 1st Edition",
+        "input": {
+            "name": "Misty's Shellder",
+            "variant": "089",
+            "edition": "Gym Heroes",
+            "finish": "1st Edition"
+        },
+        "uuid": "089-132_87545_1stedition"
+    },
+    {
+        "description": "Mr. Mime JU #22 1st Edition",
+        "input": {
+            "name": "Mr. Mime",
+            "variant": "22",
+            "edition": "Jungle",
+            "finish": "1st Edition"
+        },
+        "uuid": "22-64_106984_1stedition"
+    },
+    {
+        "description": "Mr. Mime SWSH11 #067 Reverse Holofoil",
+        "input": {
+            "name": "Mr. Mime",
+            "variant": "067",
+            "edition": "SWSH11: Lost Origin",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "067-196_283942_reverseholofoil"
+    },
+    {
+        "description": "Mudkip EX5-5 #4 Normal",
+        "input": {
+            "name": "Mudkip",
+            "variant": "4",
+            "edition": "Poké Card Creator Pack",
+            "finish": "Normal"
+        },
+        "uuid": "ex5.5-4"
+    },
+    {
+        "description": "Mudkip KWBP #004 Normal",
+        "input": {
+            "name": "Mudkip",
+            "variant": "004",
+            "edition": "Kids WB Promos",
+            "finish": "Normal"
+        },
+        "uuid": "004-005_162271"
+    },
+    {
+        "description": "Mudkip M15 #005 Holofoil",
+        "input": {
+            "name": "Mudkip",
+            "variant": "005",
+            "edition": "McDonald's Promos 2015",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "005-012_110427_holofoil"
+    },
+    {
+        "description": "Munchlax MD #68 Reverse Holofoil",
+        "input": {
+            "name": "Munchlax",
+            "variant": "68",
+            "edition": "Majestic Dawn",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "68-100_87638_reverseholofoil"
+    },
+    {
+        "description": "Munchlax RR #69 Normal",
+        "input": {
+            "name": "Munchlax",
+            "variant": "69",
+            "edition": "Rising Rivals",
+            "finish": "Normal"
+        },
+        "uuid": "69-111_87639"
+    },
+    {
+        "description": "Munchlax SM11 #173 Reverse Holofoil",
+        "input": {
+            "name": "Munchlax",
+            "variant": "173",
+            "edition": "SM - Unified Minds",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "173-236_195173_reverseholofoil"
+    },
+    {
+        "description": "Munkidori TTBB24 #095 Cosmos Holo Holofoil",
+        "input": {
+            "name": "Munkidori",
+            "variant": "095 Cosmos Holo",
+            "edition": "Trick or Trade BOOster Bundle 2024",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "095-167_570567_holofoil"
+    },
+    {
+        "description": "Naganadel GX SM06 #56 Holofoil",
+        "input": {
+            "name": "Naganadel GX",
+            "variant": "56",
+            "edition": "SM - Forbidden Light",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "56-131_165706_holofoil"
+    },
+    {
+        "description": "Naganadel GX WCD2019 #160 Henry Brand Normal",
+        "input": {
+            "name": "Naganadel GX",
+            "variant": "160 Henry Brand",
+            "edition": "2019 World Championship Decks",
+            "finish": "Normal"
+        },
+        "uuid": "160-236_482092"
+    },
+    {
+        "description": "Natu DX #66 Normal",
+        "input": {
+            "name": "Natu",
+            "variant": "66",
+            "edition": "EX Deoxys",
+            "finish": "Normal"
+        },
+        "uuid": "66-107_87684"
+    },
+    {
+        "description": "Nidoran F WCD2005 #70 Jeremy Maron Normal",
+        "input": {
+            "name": "Nidoran F",
+            "variant": "70 Jeremy Maron",
+            "edition": "2005 World Championship Decks",
+            "finish": "Normal"
+        },
+        "uuid": "70-112_477558"
+    },
+    {
+        "description": "Night Stretcher SFA #061 Normal",
+        "input": {
+            "name": "Night Stretcher",
+            "variant": "061",
+            "edition": "SV: Shrouded Fable",
+            "finish": "Normal"
+        },
+        "uuid": "061-064_560372"
+    },
+    {
+        "description": "Nincada DR #66 Normal",
+        "input": {
+            "name": "Nincada",
+            "variant": "66",
+            "edition": "EX Dragon",
+            "finish": "Normal"
+        },
+        "uuid": "66-97_87756"
+    },
+    {
+        "description": "No. 1 Trainer G24529 #2012 Normal",
+        "input": {
+            "name": "No. 1 Trainer",
+            "variant": "2012",
+            "edition": "Player Placement Trainer Promos",
+            "finish": "Normal"
+        },
+        "uuid": "662991"
+    },
+    {
+        "description": "No. 2 Trainer G24529 #2006 Normal",
+        "input": {
+            "name": "No. 2 Trainer",
+            "variant": "2006",
+            "edition": "Player Placement Trainer Promos",
+            "finish": "Normal"
+        },
+        "uuid": "662989"
+    },
+    {
+        "description": "Octillery WCD2017 #33 Zachary Bokhari Normal",
+        "input": {
+            "name": "Octillery",
+            "variant": "33 Zachary Bokhari",
+            "edition": "2017 World Championship Decks",
+            "finish": "Normal"
+        },
+        "uuid": "33-162_481891"
+    },
+    {
+        "description": "Onix M19 #009 Holofoil",
+        "input": {
+            "name": "Onix",
+            "variant": "009",
+            "edition": "McDonald's Promos 2019",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "009-012_200973_holofoil"
+    },
+    {
+        "description": "Onix SF #69 Normal",
+        "input": {
+            "name": "Onix",
+            "variant": "69",
+            "edition": "Stormfront",
+            "finish": "Normal"
+        },
+        "uuid": "69-100_87883"
+    },
+    {
+        "description": "Oranguru V SWSH10 #133 Holofoil",
+        "input": {
+            "name": "Oranguru V",
+            "variant": "133",
+            "edition": "SWSH10: Astral Radiance",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "133-189_272375_holofoil"
+    },
+    {
+        "description": "Pachirisu SM05 #49 Reverse Holofoil",
+        "input": {
+            "name": "Pachirisu",
+            "variant": "49",
+            "edition": "SM - Ultra Prism",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "49-156_157666_reverseholofoil"
+    },
+    {
+        "description": "Pansage 2012BW #2 Holofoil",
+        "input": {
+            "name": "Pansage",
+            "variant": "2",
+            "edition": "McDonald's Collection 2012",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "2012bw-2_holofoil"
+    },
+    {
+        "description": "Patrat WHT #072 Poke Ball Pattern Holofoil",
+        "input": {
+            "name": "Patrat",
+            "variant": "072 Poke Ball Pattern",
+            "edition": "SV: White Flare",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "072-086_642426_holofoil"
+    },
+    {
+        "description": "Pawmi SCR #056 Reverse Holofoil",
+        "input": {
+            "name": "Pawmi",
+            "variant": "056",
+            "edition": "SV07: Stellar Crown",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "056-142_567282_reverseholofoil"
+    },
+    {
+        "description": "Persian AOR #62 Reverse Holofoil",
+        "input": {
+            "name": "Persian",
+            "variant": "62",
+            "edition": "XY - Ancient Origins",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "62-98_101484_reverseholofoil"
+    },
+    {
+        "description": "Phanpy N4 #076 1st Edition",
+        "input": {
+            "name": "Phanpy",
+            "variant": "076",
+            "edition": "Neo Destiny",
+            "finish": "1st Edition"
+        },
+        "uuid": "076-105_87997_1stedition"
+    },
+    {
+        "description": "Phione DRM #30 Normal",
+        "input": {
+            "name": "Phione",
+            "variant": "30",
+            "edition": "Dragon Majesty",
+            "finish": "Normal"
+        },
+        "uuid": "30-70_175416"
+    },
+    {
+        "description": "Pichu BKP-2175 #045 Platinum Reverse Holofoil",
+        "input": {
+            "name": "Pichu",
+            "variant": "045 Platinum",
+            "edition": "Burger King Promos",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "045-100_188126_reverseholofoil"
+    },
+    {
+        "description": "Pichu HS #28 Reverse Holofoil",
+        "input": {
+            "name": "Pichu",
+            "variant": "28",
+            "edition": "HeartGold SoulSilver",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "28-123_88022_reverseholofoil"
+    },
+    {
+        "description": "Pichu POP-1446 #011 Normal",
+        "input": {
+            "name": "Pichu",
+            "variant": "011",
+            "edition": "POP Series 9",
+            "finish": "Normal"
+        },
+        "uuid": "011-017_88020"
+    },
+    {
+        "description": "Pidgeot EX EVO #64 Holofoil",
+        "input": {
+            "name": "Pidgeot EX",
+            "variant": "64",
+            "edition": "XY - Evolutions",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "64-108_124077_holofoil"
+    },
+    {
+        "description": "Pidgey POP-1452 #012 Normal",
+        "input": {
+            "name": "Pidgey",
+            "variant": "012",
+            "edition": "POP Series 4",
+            "finish": "Normal"
+        },
+        "uuid": "012-017_88049"
+    },
+    {
+        "description": "Pidove PGO #061 Normal",
+        "input": {
+            "name": "Pidove",
+            "variant": "061",
+            "edition": "Pokemon GO",
+            "finish": "Normal"
+        },
+        "uuid": "061-078_276985"
+    },
+    {
+        "description": "Pikachu 2015XY #6 Holofoil",
+        "input": {
+            "name": "Pikachu",
+            "variant": "6",
+            "edition": "McDonald's Collection 2015",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "2015xy-6_holofoil"
+    },
+    {
+        "description": "Pikachu 2016XY #6 Holofoil",
+        "input": {
+            "name": "Pikachu",
+            "variant": "6",
+            "edition": "McDonald's Collection 2016",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "2016xy-6_holofoil"
+    },
+    {
+        "description": "Pikachu 2019SM #6 Holofoil",
+        "input": {
+            "name": "Pikachu",
+            "variant": "6",
+            "edition": "McDonald's Collection 2019",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "2019sm-6_holofoil"
+    },
+    {
+        "description": "Pikachu 2021SWSH #25 Normal",
+        "input": {
+            "name": "Pikachu",
+            "variant": "25",
+            "edition": "McDonald's Collection 2021",
+            "finish": "Normal"
+        },
+        "uuid": "2021swsh-25"
+    },
+    {
+        "description": "Pikachu AR #71 Normal",
+        "input": {
+            "name": "Pikachu",
+            "variant": "71",
+            "edition": "Arceus",
+            "finish": "Normal"
+        },
+        "uuid": "71-99_88094"
+    },
+    {
+        "description": "Pikachu BS2 #087 Normal",
+        "input": {
+            "name": "Pikachu",
+            "variant": "087",
+            "edition": "Base Set 2",
+            "finish": "Normal"
+        },
+        "uuid": "087-130_42538"
+    },
+    {
+        "description": "Pikachu GEN-1729 #RC29 Full Art Holofoil",
+        "input": {
+            "name": "Pikachu",
+            "variant": "RC29 Full Art",
+            "edition": "Generations: Radiant Collection",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "rc29-rc32_113771_holofoil"
+    },
+    {
+        "description": "Pikachu M14 #005 Holofoil",
+        "input": {
+            "name": "Pikachu",
+            "variant": "005",
+            "edition": "McDonald's Promos 2014",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "005-012_110410_holofoil"
+    },
+    {
+        "description": "Pikachu M17 #005 Holofoil",
+        "input": {
+            "name": "Pikachu",
+            "variant": "005",
+            "edition": "McDonald's Promos 2017",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "005-012_152685_holofoil"
+    },
+    {
+        "description": "Pikachu M23 #006 Holofoil",
+        "input": {
+            "name": "Pikachu",
+            "variant": "006",
+            "edition": "McDonald's Promos 2023",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "006-015_516517_holofoil"
+    },
+    {
+        "description": "Pikachu POP-1439 #012 Holofoil",
+        "input": {
+            "name": "Pikachu",
+            "variant": "012",
+            "edition": "POP Series 5",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "012-017_88085_holofoil"
+    },
+    {
+        "description": "Pikachu PWCP #4 Snap Normal",
+        "input": {
+            "name": "Pikachu",
+            "variant": "4 Snap",
+            "edition": "Pikachu World Collection Promos",
+            "finish": "Normal"
+        },
+        "uuid": "4_161753"
+    },
+    {
+        "description": "Pikachu PWCP #PW4 Spanish Holofoil",
+        "input": {
+            "name": "Pikachu",
+            "variant": "PW4 Spanish",
+            "edition": "Pikachu World Collection Promos",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "pw-4_215156_holofoil"
+    },
+    {
+        "description": "Pikachu SAMPLE #016 Normal",
+        "input": {
+            "name": "Pikachu",
+            "variant": "016",
+            "edition": "e-Reader Sample Cards",
+            "finish": "Normal"
+        },
+        "uuid": "016-093_662103"
+    },
+    {
+        "description": "Pikachu SMP #SM234 Holofoil",
+        "input": {
+            "name": "Pikachu",
+            "variant": "SM234",
+            "edition": "SM Promos",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "sm234_200275_holofoil"
+    },
+    {
+        "description": "Pikachu UD #61 Normal",
+        "input": {
+            "name": "Pikachu",
+            "variant": "61",
+            "edition": "Undaunted",
+            "finish": "Normal"
+        },
+        "uuid": "61-90_88097"
+    },
+    {
+        "description": "Piplup BKP-2175 #071 Platinum Reverse Holofoil",
+        "input": {
+            "name": "Piplup",
+            "variant": "071 Platinum",
+            "edition": "Burger King Promos",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "071-100_188132_reverseholofoil"
+    },
+    {
+        "description": "Plusle POP-1442 #005 Normal",
+        "input": {
+            "name": "Plusle",
+            "variant": "005",
+            "edition": "POP Series 3",
+            "finish": "Normal"
+        },
+        "uuid": "005-017_88167"
+    },
+    {
+        "description": "Plusle UL #36 Reverse Holofoil",
+        "input": {
+            "name": "Plusle",
+            "variant": "36",
+            "edition": "Unleashed",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "36-95_88171_reverseholofoil"
+    },
+    {
+        "description": "Poke Ball CL-23323 #023 CLB Holofoil",
+        "input": {
+            "name": "Poke Ball",
+            "variant": "023 CLB",
+            "edition": "Trading Card Game Classic",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "023-034_528018_holofoil"
+    },
+    {
+        "description": "Porygon-Z PR-1421 #DP35 Holofoil",
+        "input": {
+            "name": "Porygon-Z",
+            "variant": "DP35",
+            "edition": "Diamond and Pearl Promos",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "dp35_88316_holofoil"
+    },
+    {
+        "description": "Potion KSS #37 Normal",
+        "input": {
+            "name": "Potion",
+            "variant": "37",
+            "edition": "Kalos Starter Set",
+            "finish": "Normal"
+        },
+        "uuid": "37-39_88349"
+    },
+    {
+        "description": "Primeape JU #43 Unlimited",
+        "input": {
+            "name": "Primeape",
+            "variant": "43",
+            "edition": "Jungle",
+            "finish": "Unlimited"
+        },
+        "uuid": "43-64_45146_unlimited"
+    },
+    {
+        "description": "Prinplup PR-1541 #6 Normal",
+        "input": {
+            "name": "Prinplup",
+            "variant": "6",
+            "edition": "DP Trainer Kit: Manaphy & Lucario",
+            "finish": "Normal"
+        },
+        "uuid": "6-12_88369"
+    },
+    {
+        "description": "Probopass POR #038 Reverse Holofoil",
+        "input": {
+            "name": "Probopass",
+            "variant": "038",
+            "edition": "ME03: Perfect Order",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "038-088_684423_reverseholofoil"
+    },
+    {
+        "description": "Professor Sycamore PR-1938 #107a Holo Holofoil",
+        "input": {
+            "name": "Professor Sycamore",
+            "variant": "107a Holo",
+            "edition": "Alternate Art Promos",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "107a-122_133813_holofoil"
+    },
+    {
+        "description": "Professor's Letter PR-1532 #28 Sylveon Normal",
+        "input": {
+            "name": "Professor's Letter",
+            "variant": "28 Sylveon",
+            "edition": "XY Trainer Kit: Sylveon & Noivern",
+            "finish": "Normal"
+        },
+        "uuid": "28-30_97993"
+    },
+    {
+        "description": "Professor's Research (Professor Juniper) PPP #085 Reverse Holofoil",
+        "input": {
+            "name": "Professor's Research (Professor Juniper)",
+            "variant": "085",
+            "edition": "Professor Program Promos",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "085-086_704476_reverseholofoil"
+    },
+    {
+        "description": "Psychic Energy PR-1536 #28 Latias Normal",
+        "input": {
+            "name": "Psychic Energy",
+            "variant": "28 Latias",
+            "edition": "XY Trainer Kit: Latias & Latios",
+            "finish": "Normal"
+        },
+        "uuid": "28-30_98328"
+    },
+    {
+        "description": "Psychic Energy SMK1 #27 Normal",
+        "input": {
+            "name": "Psychic Energy",
+            "variant": "27",
+            "edition": "SM Trainer Kit: Lycanroc & Alolan Raichu",
+            "finish": "Normal"
+        },
+        "uuid": "27-30_152860"
+    },
+    {
+        "description": "Psychic Energy WCD2018 #Magnus Pedersen Normal",
+        "input": {
+            "name": "Psychic Energy",
+            "variant": "Magnus Pedersen",
+            "edition": "2018 World Championship Decks",
+            "finish": "Normal"
+        },
+        "uuid": "482007"
+    },
+    {
+        "description": "Psyduck 2018SM #2 Holofoil",
+        "input": {
+            "name": "Psyduck",
+            "variant": "2",
+            "edition": "McDonald's Collection 2018",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "2018sm-2_holofoil"
+    },
+    {
+        "description": "Pumpkaboo SWSH07 #076 Normal",
+        "input": {
+            "name": "Pumpkaboo",
+            "variant": "076",
+            "edition": "SWSH07: Evolving Skies",
+            "finish": "Normal"
+        },
+        "uuid": "076-203_246857"
+    },
+    {
+        "description": "Pupitar AQ #056 Reverse Holofoil",
+        "input": {
+            "name": "Pupitar",
+            "variant": "056",
+            "edition": "Aquapolis",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "056-147_88446_reverseholofoil"
+    },
+    {
+        "description": "Purrloin M12 #009 Holofoil",
+        "input": {
+            "name": "Purrloin",
+            "variant": "009",
+            "edition": "McDonald's Promos 2012",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "009-012_88463_holofoil"
+    },
+    {
+        "description": "Purugly PR-1796 #19 Normal",
+        "input": {
+            "name": "Purugly",
+            "variant": "19",
+            "edition": "XY Trainer Kit: Pikachu Libre & Suicune",
+            "finish": "Normal"
+        },
+        "uuid": "19-30_118824"
+    },
+    {
+        "description": "Quilava BST #51 Normal",
+        "input": {
+            "name": "Quilava",
+            "variant": "51",
+            "edition": "EX Battle Stadium",
+            "finish": "Normal"
+        },
+        "uuid": "51_125131"
+    },
+    {
+        "description": "Raging Bolt SCR #111 Reverse Holofoil",
+        "input": {
+            "name": "Raging Bolt",
+            "variant": "111",
+            "edition": "SV07: Stellar Crown",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "111-142_567337_reverseholofoil"
+    },
+    {
+        "description": "Rainbow Energy CES #151 Reverse Holofoil",
+        "input": {
+            "name": "Rainbow Energy",
+            "variant": "151",
+            "edition": "SM - Celestial Storm",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "151-168_171012_reverseholofoil"
+    },
+    {
+        "description": "Rainbow Energy WCD2014 #131 Haruto Kobayashi Normal",
+        "input": {
+            "name": "Rainbow Energy",
+            "variant": "131 Haruto Kobayashi",
+            "edition": "2014 World Championship Decks",
+            "finish": "Normal"
+        },
+        "uuid": "131-146_480956"
+    },
+    {
+        "description": "Ralts BST #74 Normal",
+        "input": {
+            "name": "Ralts",
+            "variant": "74",
+            "edition": "EX Battle Stadium",
+            "finish": "Normal"
+        },
+        "uuid": "74_125136"
+    },
+    {
+        "description": "Ralts PLS #59 Normal",
+        "input": {
+            "name": "Ralts",
+            "variant": "59",
+            "edition": "Plasma Storm",
+            "finish": "Normal"
+        },
+        "uuid": "59-135_88565"
+    },
+    {
+        "description": "Ralts RS #66 Normal",
+        "input": {
+            "name": "Ralts",
+            "variant": "66",
+            "edition": "EX Ruby and Sapphire",
+            "finish": "Normal"
+        },
+        "uuid": "66-109_88554"
+    },
+    {
+        "description": "Rapid Strike Urshifu VMAX SWSH09-TG #TG21 Holofoil",
+        "input": {
+            "name": "Rapid Strike Urshifu VMAX",
+            "variant": "TG21",
+            "edition": "SWSH09: Brilliant Stars Trainer Gallery",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "tg21-tg30_264227_holofoil"
+    },
+    {
+        "description": "Rare Candy WCD2017 #129 Diego Cassiraga Normal",
+        "input": {
+            "name": "Rare Candy",
+            "variant": "129 Diego Cassiraga",
+            "edition": "2017 World Championship Decks",
+            "finish": "Normal"
+        },
+        "uuid": "129-149_481900"
+    },
+    {
+        "description": "Rattata RUM #15 Normal",
+        "input": {
+            "name": "Rattata",
+            "variant": "15",
+            "edition": "Rumble",
+            "finish": "Normal"
+        },
+        "uuid": "15_88620"
+    },
+    {
+        "description": "Rayquaza 2024SV #14 Normal",
+        "input": {
+            "name": "Rayquaza",
+            "variant": "14",
+            "edition": "McDonald's Collection 2024",
+            "finish": "Normal"
+        },
+        "uuid": "2024sv-14"
+    },
+    {
+        "description": "Regice CES #45 Reverse Holofoil",
+        "input": {
+            "name": "Regice",
+            "variant": "45",
+            "edition": "SM - Celestial Storm",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "45-168_170862_reverseholofoil"
+    },
+    {
+        "description": "Regigigas V CRZ #113 Holofoil",
+        "input": {
+            "name": "Regigigas V",
+            "variant": "113",
+            "edition": "SWSH: Crown Zenith",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "113-159_478142_holofoil"
+    },
+    {
+        "description": "Registeel PR-1539 #068 Pokemon League Reverse Holofoil",
+        "input": {
+            "name": "Registeel",
+            "variant": "068 Pokemon League",
+            "edition": "League & Championship Cards",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "068-111_158032_reverseholofoil"
+    },
+    {
+        "description": "Rhydon DP #60 Normal",
+        "input": {
+            "name": "Rhydon",
+            "variant": "60",
+            "edition": "Diamond and Pearl",
+            "finish": "Normal"
+        },
+        "uuid": "60-130_88734"
+    },
+    {
+        "description": "Roaring Moon M24 #011 Holofoil",
+        "input": {
+            "name": "Roaring Moon",
+            "variant": "011",
+            "edition": "McDonald's Promos 2024",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "011-015_614380_holofoil"
+    },
+    {
+        "description": "Rocket's Admin. WCD2006 #86 Jason Klaczynski Normal",
+        "input": {
+            "name": "Rocket's Admin.",
+            "variant": "86 Jason Klaczynski",
+            "edition": "2006 World Championship Decks",
+            "finish": "Normal"
+        },
+        "uuid": "86-109_477924"
+    },
+    {
+        "description": "Rocket's Scizor BOG #4 Normal",
+        "input": {
+            "name": "Rocket's Scizor",
+            "variant": "4",
+            "edition": "Best of game",
+            "finish": "Normal"
+        },
+        "uuid": "bog-4"
+    },
+    {
+        "description": "Rocket's Scizor PR-1455 #004 Winner Normal",
+        "input": {
+            "name": "Rocket's Scizor",
+            "variant": "004 Winner",
+            "edition": "Best of Promos",
+            "finish": "Normal"
+        },
+        "uuid": "004-009_167081"
+    },
+    {
+        "description": "Rotom POP-1446 #005 Normal",
+        "input": {
+            "name": "Rotom",
+            "variant": "005",
+            "edition": "POP Series 9",
+            "finish": "Normal"
+        },
+        "uuid": "005-017_88837"
+    },
+    {
+        "description": "Rotom SWSH08 #094 Normal",
+        "input": {
+            "name": "Rotom",
+            "variant": "094",
+            "edition": "SWSH08: Fusion Strike",
+            "finish": "Normal"
+        },
+        "uuid": "094-264_253250"
+    },
+    {
+        "description": "Roxanne WCD2022 #Sebastian Lashmet Normal",
+        "input": {
+            "name": "Roxanne",
+            "variant": "Sebastian Lashmet",
+            "edition": "2022 World Championship Decks",
+            "finish": "Normal"
+        },
+        "uuid": "484991"
+    },
+    {
+        "description": "Sableye UD #35 Reverse Holofoil",
+        "input": {
+            "name": "Sableye",
+            "variant": "35",
+            "edition": "Undaunted",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "35-90_88854_reverseholofoil"
+    },
+    {
+        "description": "Salamence PR-1423 #19 e-League Winner Holofoil",
+        "input": {
+            "name": "Salamence",
+            "variant": "19 e-League Winner",
+            "edition": "Nintendo Promos",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "19-97_213024_holofoil"
+    },
+    {
+        "description": "Salazzle - Darkrai Deck BA24 #140 Normal",
+        "input": {
+            "name": "Salazzle - Darkrai Deck",
+            "variant": "140",
+            "edition": "Battle Academy 2024",
+            "finish": "Normal"
+        },
+        "uuid": "140-197_556888"
+    },
+    {
+        "description": "Sceptile POP-1452 #005 Holofoil",
+        "input": {
+            "name": "Sceptile",
+            "variant": "005",
+            "edition": "POP Series 4",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "005-017_88948_holofoil"
+    },
+    {
+        "description": "Scolipede XY #53 Reverse Holofoil",
+        "input": {
+            "name": "Scolipede",
+            "variant": "53",
+            "edition": "XY Base Set",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "53-146_88971_reverseholofoil"
+    },
+    {
+        "description": "Scorbunny on the Ball FUT2020 #4 Holofoil",
+        "input": {
+            "name": "Scorbunny on the Ball",
+            "variant": "4",
+            "edition": "Pokémon Futsal 2020",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "fut2020-4_holofoil"
+    },
+    {
+        "description": "Scrafty PAF #061 Normal",
+        "input": {
+            "name": "Scrafty",
+            "variant": "061",
+            "edition": "SV: Paldean Fates",
+            "finish": "Normal"
+        },
+        "uuid": "061-091_534423"
+    },
+    {
+        "description": "Scraggy DEX #67 Reverse Holofoil",
+        "input": {
+            "name": "Scraggy",
+            "variant": "67",
+            "edition": "Dark Explorers",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "67-108_88984_reverseholofoil"
+    },
+    {
+        "description": "Scyther HIF #5 Normal",
+        "input": {
+            "name": "Scyther",
+            "variant": "5",
+            "edition": "Hidden Fates",
+            "finish": "Normal"
+        },
+        "uuid": "5-68_197647"
+    },
+    {
+        "description": "Seadra DF #37 Delta Species Reverse Holofoil",
+        "input": {
+            "name": "Seadra",
+            "variant": "37 Delta Species",
+            "edition": "EX Dragon Frontiers",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "37-101_89020_reverseholofoil"
+    },
+    {
+        "description": "Seadra FO #42 1st Edition",
+        "input": {
+            "name": "Seadra",
+            "variant": "42",
+            "edition": "Fossil",
+            "finish": "1st Edition"
+        },
+        "uuid": "42-62_44444_1stedition"
+    },
+    {
+        "description": "Sealeo MT #62 Normal",
+        "input": {
+            "name": "Sealeo",
+            "variant": "62",
+            "edition": "Mysterious Treasures",
+            "finish": "Normal"
+        },
+        "uuid": "62-123_89032"
+    },
+    {
+        "description": "Sentret LM #62 Normal",
+        "input": {
+            "name": "Sentret",
+            "variant": "62",
+            "edition": "EX Legend Maker",
+            "finish": "Normal"
+        },
+        "uuid": "62-92_89065"
+    },
+    {
+        "description": "Shauna BA22 #240 #21 Cinderace Stamped Normal",
+        "input": {
+            "name": "Shauna",
+            "variant": "240 #21 Cinderace Stamped",
+            "edition": "Battle Academy 2022",
+            "finish": "Normal"
+        },
+        "uuid": "240-264_268155"
+    },
+    {
+        "description": "Shedinja SWSH04 #066 Reverse Holofoil",
+        "input": {
+            "name": "Shedinja",
+            "variant": "066",
+            "edition": "SWSH04: Vivid Voltage",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "066-185_226470_reverseholofoil"
+    },
+    {
+        "description": "Shieldon PL #62 Normal",
+        "input": {
+            "name": "Shieldon",
+            "variant": "62",
+            "edition": "Platinum",
+            "finish": "Normal"
+        },
+        "uuid": "62-127_89151"
+    },
+    {
+        "description": "Shining Magikarp CCC #66 Holofoil",
+        "input": {
+            "name": "Shining Magikarp",
+            "variant": "66",
+            "edition": "Celebrations: Classic Collection",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "66-64_250327_holofoil"
+    },
+    {
+        "description": "Silent Lab WCD2015 #140 Alejandro Ng-Guzman Normal",
+        "input": {
+            "name": "Silent Lab",
+            "variant": "140 Alejandro Ng-Guzman",
+            "edition": "2015 World Championship Decks",
+            "finish": "Normal"
+        },
+        "uuid": "140-160_481251"
+    },
+    {
+        "description": "Silvally GX PR-1528 #090 Holofoil",
+        "input": {
+            "name": "Silvally GX",
+            "variant": "090",
+            "edition": "Jumbo Cards",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "090-111_211470_holofoil"
+    },
+    {
+        "description": "Sinistea TTBB23 #089 Normal",
+        "input": {
+            "name": "Sinistea",
+            "variant": "089",
+            "edition": "Trick or Trade BOOster Bundle 2023",
+            "finish": "Normal"
+        },
+        "uuid": "089-202_515675"
+    },
+    {
+        "description": "Skitty PR-1543 #6 Normal",
+        "input": {
+            "name": "Skitty",
+            "variant": "6",
+            "edition": "EX Trainer Kit 1: Latias & Latios",
+            "finish": "Normal"
+        },
+        "uuid": "6-10_89263"
+    },
+    {
+        "description": "Slaking DEP #18 Holofoil",
+        "input": {
+            "name": "Slaking",
+            "variant": "18",
+            "edition": "Detective Pikachu",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "18-18_186026_holofoil"
+    },
+    {
+        "description": "Slowking DS #28 Normal",
+        "input": {
+            "name": "Slowking",
+            "variant": "28",
+            "edition": "EX Delta Species",
+            "finish": "Normal"
+        },
+        "uuid": "28-113_89315"
+    },
+    {
+        "description": "Slowpoke CL #70 Normal",
+        "input": {
+            "name": "Slowpoke",
+            "variant": "70",
+            "edition": "Call of Legends",
+            "finish": "Normal"
+        },
+        "uuid": "70-95_89334"
+    },
+    {
+        "description": "Slowpoke GEN #32 Normal",
+        "input": {
+            "name": "Slowpoke",
+            "variant": "32",
+            "edition": "Generations",
+            "finish": "Normal"
+        },
+        "uuid": "32-83_113690"
+    },
+    {
+        "description": "Slowpoke M18 #005 Holofoil",
+        "input": {
+            "name": "Slowpoke",
+            "variant": "005",
+            "edition": "McDonald's Promos 2018",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "005-012_180453_holofoil"
+    },
+    {
+        "description": "Smeargle 2022SWSH #15 Holofoil",
+        "input": {
+            "name": "Smeargle",
+            "variant": "15",
+            "edition": "McDonald's Collection 2022",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "2022swsh-15_holofoil"
+    },
+    {
+        "description": "Smoochum SSP #075 Reverse Holofoil",
+        "input": {
+            "name": "Smoochum",
+            "variant": "075",
+            "edition": "SV08: Surging Sparks",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "075-191_590059_reverseholofoil"
+    },
+    {
+        "description": "Sneasel AQ #110 Normal",
+        "input": {
+            "name": "Sneasel",
+            "variant": "110",
+            "edition": "Aquapolis",
+            "finish": "Normal"
+        },
+        "uuid": "110-147_89368"
+    },
+    {
+        "description": "Sneasel N3 #24 1st Edition",
+        "input": {
+            "name": "Sneasel",
+            "variant": "24",
+            "edition": "Neo Revelation",
+            "finish": "1st Edition"
+        },
+        "uuid": "24-64_89366_1stedition"
+    },
+    {
+        "description": "Sneasel STS #60 Reverse Holofoil",
+        "input": {
+            "name": "Sneasel",
+            "variant": "60",
+            "edition": "XY - Steam Siege",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "60-114_121190_reverseholofoil"
+    },
+    {
+        "description": "Snorlax SWSH04 #131 Reverse Holofoil",
+        "input": {
+            "name": "Snorlax",
+            "variant": "131",
+            "edition": "SWSH04: Vivid Voltage",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "131-185_226587_reverseholofoil"
+    },
+    {
+        "description": "Snubbull UF #74 Normal",
+        "input": {
+            "name": "Snubbull",
+            "variant": "74",
+            "edition": "EX Unseen Forces",
+            "finish": "Normal"
+        },
+        "uuid": "74-115_89414"
+    },
+    {
+        "description": "Sobble MCAP #055 Premium Collection Holofoil",
+        "input": {
+            "name": "Sobble",
+            "variant": "055 Premium Collection",
+            "edition": "Miscellaneous Cards & Products",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "055-202_200311_holofoil"
+    },
+    {
+        "description": "Solosis BLK #037 Reverse Holofoil",
+        "input": {
+            "name": "Solosis",
+            "variant": "037",
+            "edition": "SV: Black Bolt",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "037-086_642489_reverseholofoil"
+    },
+    {
+        "description": "Spearow ROS #65 Reverse Holofoil",
+        "input": {
+            "name": "Spearow",
+            "variant": "65",
+            "edition": "XY - Roaring Skies",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "65-108_98101_reverseholofoil"
+    },
+    {
+        "description": "Spearow WCD2007 #61 Jun Hasebe Normal",
+        "input": {
+            "name": "Spearow",
+            "variant": "61 Jun Hasebe",
+            "edition": "2007 World Championship Decks",
+            "finish": "Normal"
+        },
+        "uuid": "61-100_479733"
+    },
+    {
+        "description": "Spheal PK #65 Reverse Holofoil",
+        "input": {
+            "name": "Spheal",
+            "variant": "65",
+            "edition": "EX Power Keepers",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "65-108_89447_reverseholofoil"
+    },
+    {
+        "description": "Squirtle 2021SWSH #17 Holofoil",
+        "input": {
+            "name": "Squirtle",
+            "variant": "17",
+            "edition": "McDonald's Collection 2021",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "2021swsh-17_holofoil"
+    },
+    {
+        "description": "Squirtle BLE #033 Premium Collection Holofoil",
+        "input": {
+            "name": "Squirtle",
+            "variant": "033 Premium Collection",
+            "edition": "Blister Exclusives",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "033-214_193275_holofoil"
+    },
+    {
+        "description": "Squirtle M21 #017 Holofoil",
+        "input": {
+            "name": "Squirtle",
+            "variant": "017",
+            "edition": "McDonald's 25th Anniversary Promos",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "017-025_232331_holofoil"
+    },
+    {
+        "description": "Squirtle MEP #039 Holofoil",
+        "input": {
+            "name": "Squirtle",
+            "variant": "039",
+            "edition": "ME: Mega Evolution Promo",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "039_684463_holofoil"
+    },
+    {
+        "description": "Squirtle SM10 #33 Reverse Holofoil",
+        "input": {
+            "name": "Squirtle",
+            "variant": "33",
+            "edition": "SM - Unbroken Bonds",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "33-214_189088_reverseholofoil"
+    },
+    {
+        "description": "Squirtle UL #63 Reverse Holofoil",
+        "input": {
+            "name": "Squirtle",
+            "variant": "63",
+            "edition": "Unleashed",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "63-95_89496_reverseholofoil"
+    },
+    {
+        "description": "Stantler N1 #076 1st Edition",
+        "input": {
+            "name": "Stantler",
+            "variant": "076",
+            "edition": "Neo Genesis",
+            "finish": "1st Edition"
+        },
+        "uuid": "076-111_89501_1stedition"
+    },
+    {
+        "description": "Stufful MEG #111 Normal",
+        "input": {
+            "name": "Stufful",
+            "variant": "111",
+            "edition": "ME01: Mega Evolution",
+            "finish": "Normal"
+        },
+        "uuid": "111-132_654450"
+    },
+    {
+        "description": "Swablu EM #67 Normal",
+        "input": {
+            "name": "Swablu",
+            "variant": "67",
+            "edition": "EX Emerald",
+            "finish": "Normal"
+        },
+        "uuid": "67-106_89655"
+    },
+    {
+        "description": "Swampert POP-1422 #005 Normal",
+        "input": {
+            "name": "Swampert",
+            "variant": "005",
+            "edition": "POP Series 1",
+            "finish": "Normal"
+        },
+        "uuid": "005-017_89677"
+    },
+    {
+        "description": "Swirlix GEN-1729 #RC19 Holofoil",
+        "input": {
+            "name": "Swirlix",
+            "variant": "RC19",
+            "edition": "Generations: Radiant Collection",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "rc19-rc32_113761_holofoil"
+    },
+    {
+        "description": "Swirlix M14 #009 Holofoil",
+        "input": {
+            "name": "Swirlix",
+            "variant": "009",
+            "edition": "McDonald's Promos 2014",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "009-012_110414_holofoil"
+    },
+    {
+        "description": "Swoobat LTR #65 Normal",
+        "input": {
+            "name": "Swoobat",
+            "variant": "65",
+            "edition": "Legendary Treasures",
+            "finish": "Normal"
+        },
+        "uuid": "65-113_89727"
+    },
+    {
+        "description": "Swoobat WHT #037 Normal",
+        "input": {
+            "name": "Swoobat",
+            "variant": "037",
+            "edition": "SV: White Flare",
+            "finish": "Normal"
+        },
+        "uuid": "037-086_642149"
+    },
+    {
+        "description": "TV Reporter POP-1447 #011 Normal",
+        "input": {
+            "name": "TV Reporter",
+            "variant": "011",
+            "edition": "POP Series 2",
+            "finish": "Normal"
+        },
+        "uuid": "011-017_90084"
+    },
+    {
+        "description": "Taillow DF #66 Delta Species Normal",
+        "input": {
+            "name": "Taillow",
+            "variant": "66 Delta Species",
+            "edition": "EX Dragon Frontiers",
+            "finish": "Normal"
+        },
+        "uuid": "66-101_89738"
+    },
+    {
+        "description": "Tandemaus SVI #160 Normal",
+        "input": {
+            "name": "Tandemaus",
+            "variant": "160",
+            "edition": "SV01: Scarlet & Violet Base Set",
+            "finish": "Normal"
+        },
+        "uuid": "160-198_488056"
+    },
+    {
+        "description": "Tauros MEW #128 Reverse Holofoil",
+        "input": {
+            "name": "Tauros",
+            "variant": "128",
+            "edition": "SV: Scarlet & Violet 151",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "128-165_516691_reverseholofoil"
+    },
+    {
+        "description": "Tauros POP-1447 #005 Normal",
+        "input": {
+            "name": "Tauros",
+            "variant": "005",
+            "edition": "POP Series 2",
+            "finish": "Normal"
+        },
+        "uuid": "005-017_89762"
+    },
+    {
+        "description": "Tauros SWSH03 #134 Normal",
+        "input": {
+            "name": "Tauros",
+            "variant": "134",
+            "edition": "SWSH03: Darkness Ablaze",
+            "finish": "Normal"
+        },
+        "uuid": "134-189_219329"
+    },
+    {
+        "description": "Team Flare Grunt PR-1938 #073a Holofoil",
+        "input": {
+            "name": "Team Flare Grunt",
+            "variant": "073a",
+            "edition": "Alternate Art Promos",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "073a-083_148351_holofoil"
+    },
+    {
+        "description": "Team Magma Grunt DCR #30 Normal",
+        "input": {
+            "name": "Team Magma Grunt",
+            "variant": "30",
+            "edition": "Double Crisis",
+            "finish": "Normal"
+        },
+        "uuid": "30-34_97076"
+    },
+    {
+        "description": "Team Magma's Camerupt DCR #2 Reverse Holofoil",
+        "input": {
+            "name": "Team Magma's Camerupt",
+            "variant": "2",
+            "edition": "Double Crisis",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "2-34_97048_reverseholofoil"
+    },
+    {
+        "description": "Team Magma's Camerupt WCD2004 #19 Tsuguyoshi Yamato Normal",
+        "input": {
+            "name": "Team Magma's Camerupt",
+            "variant": "19 Tsuguyoshi Yamato",
+            "edition": "2004 World Championship Decks",
+            "finish": "Normal"
+        },
+        "uuid": "19-95_477449"
+    },
+    {
+        "description": "Team Magma's Mightyena MA #37 Reverse Holofoil",
+        "input": {
+            "name": "Team Magma's Mightyena",
+            "variant": "37",
+            "edition": "EX Team Magma vs Team Aqua",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "37-95_89836_reverseholofoil"
+    },
+    {
+        "description": "Team Magma's Poochyena MA #65 Reverse Holofoil",
+        "input": {
+            "name": "Team Magma's Poochyena",
+            "variant": "65",
+            "edition": "EX Team Magma vs Team Aqua",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "65-95_89838_reverseholofoil"
+    },
+    {
+        "description": "Team Rocket's Meowth ASC #161 Normal",
+        "input": {
+            "name": "Team Rocket's Meowth",
+            "variant": "161",
+            "edition": "ME: Ascended Heroes",
+            "finish": "Normal"
+        },
+        "uuid": "161-217_675973"
+    },
+    {
+        "description": "Team Rocket's Meowth DRI #149 Normal",
+        "input": {
+            "name": "Team Rocket's Meowth",
+            "variant": "149",
+            "edition": "SV10: Destined Rivals",
+            "finish": "Normal"
+        },
+        "uuid": "149-182_630825"
+    },
+    {
+        "description": "Team Rocket's Petrel WCD2025 #Liao Fu Guan Normal",
+        "input": {
+            "name": "Team Rocket's Petrel",
+            "variant": "Liao Fu Guan",
+            "edition": "2025 World Championship Decks",
+            "finish": "Normal"
+        },
+        "uuid": "690271"
+    },
+    {
+        "description": "Terrakion WCD2012 #73 Shuto Itagaki Normal",
+        "input": {
+            "name": "Terrakion",
+            "variant": "73 Shuto Itagaki",
+            "edition": "2012 World Championship Decks",
+            "finish": "Normal"
+        },
+        "uuid": "73-101_480640"
+    },
+    {
+        "description": "Thievul SHFSV #SV082 Holofoil",
+        "input": {
+            "name": "Thievul",
+            "variant": "SV082",
+            "edition": "Shining Fates: Shiny Vault",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "sv082-sv122_232462_holofoil"
+    },
+    {
+        "description": "Tierno PR-1533 #19 Bisharp Normal",
+        "input": {
+            "name": "Tierno",
+            "variant": "19 Bisharp",
+            "edition": "XY Trainer Kit: Bisharp & Wigglytuff",
+            "finish": "Normal"
+        },
+        "uuid": "19-30_98167"
+    },
+    {
+        "description": "Togepi M16 #009 Holofoil",
+        "input": {
+            "name": "Togepi",
+            "variant": "009",
+            "edition": "McDonald's Promos 2016",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "009-012_275065_holofoil"
+    },
+    {
+        "description": "Togetic ASC #081 Normal",
+        "input": {
+            "name": "Togetic",
+            "variant": "081",
+            "edition": "ME: Ascended Heroes",
+            "finish": "Normal"
+        },
+        "uuid": "081-217_675893"
+    },
+    {
+        "description": "Torchic 2016XY #2 Holofoil",
+        "input": {
+            "name": "Torchic",
+            "variant": "2",
+            "edition": "McDonald's Collection 2016",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "2016xy-2_holofoil"
+    },
+    {
+        "description": "Torchic CG #66 Normal",
+        "input": {
+            "name": "Torchic",
+            "variant": "66",
+            "edition": "EX Crystal Guardians",
+            "finish": "Normal"
+        },
+        "uuid": "66-100_89958"
+    },
+    {
+        "description": "Torkoal - Armarouge 4 BA24 #035 Normal",
+        "input": {
+            "name": "Torkoal - Armarouge 4",
+            "variant": "035",
+            "edition": "Battle Academy 2024",
+            "finish": "Normal"
+        },
+        "uuid": "035-198_557070"
+    },
+    {
+        "description": "Tornadus SWSH09 #126 Reverse Holofoil",
+        "input": {
+            "name": "Tornadus",
+            "variant": "126",
+            "edition": "SWSH09: Brilliant Stars",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "126-172_263849_reverseholofoil"
+    },
+    {
+        "description": "Totodile M16 #005 Holofoil",
+        "input": {
+            "name": "Totodile",
+            "variant": "005",
+            "edition": "McDonald's Promos 2016",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "005-012_275061_holofoil"
+    },
+    {
+        "description": "Toucannon SM8 #166 Normal",
+        "input": {
+            "name": "Toucannon",
+            "variant": "166",
+            "edition": "SM - Lost Thunder",
+            "finish": "Normal"
+        },
+        "uuid": "166-214_178989"
+    },
+    {
+        "description": "Toxel SHFSV #SV041 Holofoil",
+        "input": {
+            "name": "Toxel",
+            "variant": "SV041",
+            "edition": "Shining Fates: Shiny Vault",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "sv041-sv122_232399_holofoil"
+    },
+    {
+        "description": "Toxtricity OBF #072 Reverse Holofoil",
+        "input": {
+            "name": "Toxtricity",
+            "variant": "072",
+            "edition": "SV03: Obsidian Flames",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "072-197_509844_reverseholofoil"
+    },
+    {
+        "description": "Toxtricity SWSH02 #069 Normal",
+        "input": {
+            "name": "Toxtricity",
+            "variant": "069",
+            "edition": "SWSH02: Rebel Clash",
+            "finish": "Normal"
+        },
+        "uuid": "069-192_213153"
+    },
+    {
+        "description": "Trapinch WCD2007 #84 Delta Species Jun Hasebe Normal",
+        "input": {
+            "name": "Trapinch",
+            "variant": "84 Delta Species Jun Hasebe",
+            "edition": "2007 World Championship Decks",
+            "finish": "Normal"
+        },
+        "uuid": "84-110_479737"
+    },
+    {
+        "description": "Tropical Tidal Wave PR-1453 #HGSS18 World Championships 2010 Top 32 Normal",
+        "input": {
+            "name": "Tropical Tidal Wave",
+            "variant": "HGSS18 World Championships 2010 Top 32",
+            "edition": "HGSS Promos",
+            "finish": "Normal"
+        },
+        "uuid": "hgss18_97699"
+    },
+    {
+        "description": "Tropius JTG #123 Reverse Holofoil",
+        "input": {
+            "name": "Tropius",
+            "variant": "123",
+            "edition": "SV09: Journey Together",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "123-159_623550_reverseholofoil"
+    },
+    {
+        "description": "Umbreon & Darkrai GX PR-1528 #SM241 Holofoil",
+        "input": {
+            "name": "Umbreon & Darkrai GX",
+            "variant": "SM241",
+            "edition": "Jumbo Cards",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "sm241_211453_holofoil"
+    },
+    {
+        "description": "Umbreon GX SM01 #142 Full Art Holofoil",
+        "input": {
+            "name": "Umbreon GX",
+            "variant": "142 Full Art",
+            "edition": "SM Base Set",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "142-149_127014_holofoil"
+    },
+    {
+        "description": "Umbreon PLF #64 Team Plasma Holofoil",
+        "input": {
+            "name": "Umbreon",
+            "variant": "64 Team Plasma",
+            "edition": "Plasma Freeze",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "64-116_90152_holofoil"
+    },
+    {
+        "description": "Unfezant BLK #073 Poke Ball Pattern Holofoil",
+        "input": {
+            "name": "Unfezant",
+            "variant": "073 Poke Ball Pattern",
+            "edition": "SV: Black Bolt",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "073-086_642765_holofoil"
+    },
+    {
+        "description": "Unown G WCD2009 #57 Jason Martinez Normal",
+        "input": {
+            "name": "Unown G",
+            "variant": "57 Jason Martinez",
+            "edition": "2009 World Championship Decks",
+            "finish": "Normal"
+        },
+        "uuid": "57-106_479969"
+    },
+    {
+        "description": "Unown U N2 #51 1st Edition",
+        "input": {
+            "name": "Unown U",
+            "variant": "51",
+            "edition": "Neo Discovery",
+            "finish": "1st Edition"
+        },
+        "uuid": "51-75_90236_1stedition"
+    },
+    {
+        "description": "Uxie 30C-24837 #43 Holofoil",
+        "input": {
+            "name": "Uxie",
+            "variant": "43",
+            "edition": "ME: 30th Celebration Classic Collection",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "43-146_716163_holofoil"
+    },
+    {
+        "description": "Uxie LV.X WCD2009 #146 Tsubasa Nakamura Normal",
+        "input": {
+            "name": "Uxie LV.X",
+            "variant": "146 Tsubasa Nakamura",
+            "edition": "2009 World Championship Decks",
+            "finish": "Normal"
+        },
+        "uuid": "146-146_479978"
+    },
+    {
+        "description": "Vanillish DEX #34 Reverse Holofoil",
+        "input": {
+            "name": "Vanillish",
+            "variant": "34",
+            "edition": "Dark Explorers",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "34-108_90265_reverseholofoil"
+    },
+    {
+        "description": "Venomoth SK #111 Reverse Holofoil",
+        "input": {
+            "name": "Venomoth",
+            "variant": "111",
+            "edition": "Skyridge",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "111-144_90300_reverseholofoil"
+    },
+    {
+        "description": "Vespiquen E4 RR #35 Normal",
+        "input": {
+            "name": "Vespiquen E4",
+            "variant": "35",
+            "edition": "Rising Rivals",
+            "finish": "Normal"
+        },
+        "uuid": "35-111_90331"
+    },
+    {
+        "description": "Vespiquen SM8 #32 Normal",
+        "input": {
+            "name": "Vespiquen",
+            "variant": "32",
+            "edition": "SM - Lost Thunder",
+            "finish": "Normal"
+        },
+        "uuid": "32-214_178833"
+    },
+    {
+        "description": "Victini 2022SWSH #5 Holofoil",
+        "input": {
+            "name": "Victini",
+            "variant": "5",
+            "edition": "McDonald's Collection 2022",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "2022swsh-5_holofoil"
+    },
+    {
+        "description": "Vigoroth PR-1533 #28 Normal",
+        "input": {
+            "name": "Vigoroth",
+            "variant": "28",
+            "edition": "XY Trainer Kit: Bisharp & Wigglytuff",
+            "finish": "Normal"
+        },
+        "uuid": "28-30_98175"
+    },
+    {
+        "description": "Vikavolt SM01 #52 Holofoil",
+        "input": {
+            "name": "Vikavolt",
+            "variant": "52",
+            "edition": "SM Base Set",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "52-149_126923_holofoil"
+    },
+    {
+        "description": "Vivillon BKT #15 Reverse Holofoil",
+        "input": {
+            "name": "Vivillon",
+            "variant": "15",
+            "edition": "XY - BREAKthrough",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "15-162_107134_reverseholofoil"
+    },
+    {
+        "description": "Vivillon XY #17 Meadow Pink Reverse Holofoil",
+        "input": {
+            "name": "Vivillon",
+            "variant": "17 Meadow Pink",
+            "edition": "XY Base Set",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "17-146_91249_reverseholofoil"
+    },
+    {
+        "description": "Wally's Compassion SEA #132 GYM Normal",
+        "input": {
+            "name": "Wally's Compassion",
+            "variant": "132 GYM",
+            "edition": "Southeast Asia Exclusives",
+            "finish": "Normal"
+        },
+        "uuid": "132-132_714870"
+    },
+    {
+        "description": "Warp Point WCD2004 #85 Kevin Nguyen Normal",
+        "input": {
+            "name": "Warp Point",
+            "variant": "85 Kevin Nguyen",
+            "edition": "2004 World Championship Decks",
+            "finish": "Normal"
+        },
+        "uuid": "85-95_477461"
+    },
+    {
+        "description": "Weedle BS #069 Normal",
+        "input": {
+            "name": "Weedle",
+            "variant": "069",
+            "edition": "Base Set",
+            "finish": "Normal"
+        },
+        "uuid": "069-102_42414"
+    },
+    {
+        "description": "Weedle BSS #069 1st Edition",
+        "input": {
+            "name": "Weedle",
+            "variant": "069",
+            "edition": "Base Set (Shadowless)",
+            "finish": "1st Edition"
+        },
+        "uuid": "069-102_107066_1stedition"
+    },
+    {
+        "description": "Weezing FCO #28 Normal",
+        "input": {
+            "name": "Weezing",
+            "variant": "28",
+            "edition": "XY - Fates Collide",
+            "finish": "Normal"
+        },
+        "uuid": "28-124_117788"
+    },
+    {
+        "description": "Wondrous Labyrinth Prism Star SM9 #158 Holofoil",
+        "input": {
+            "name": "Wondrous Labyrinth Prism Star",
+            "variant": "158",
+            "edition": "SM - Team Up",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "158-181_183962_holofoil"
+    },
+    {
+        "description": "Woobat EPO #36 Normal",
+        "input": {
+            "name": "Woobat",
+            "variant": "36",
+            "edition": "Emerging Powers",
+            "finish": "Normal"
+        },
+        "uuid": "36-98_90625"
+    },
+    {
+        "description": "Wooloo MCAP #222 Cosmos Holo Holofoil",
+        "input": {
+            "name": "Wooloo",
+            "variant": "222 Cosmos Holo",
+            "edition": "Miscellaneous Cards & Products",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "222-264_270463_holofoil"
+    },
+    {
+        "description": "Wormadam FCO #59 Reverse Holofoil",
+        "input": {
+            "name": "Wormadam",
+            "variant": "59",
+            "edition": "XY - Fates Collide",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "59-124_117816_reverseholofoil"
+    },
+    {
+        "description": "Wormadam Sandy Cloak POP #010 Normal",
+        "input": {
+            "name": "Wormadam Sandy Cloak",
+            "variant": "010",
+            "edition": "POP Series 7",
+            "finish": "Normal"
+        },
+        "uuid": "010-017_90643"
+    },
+    {
+        "description": "Wurmple EX5-5 #2 Normal",
+        "input": {
+            "name": "Wurmple",
+            "variant": "2",
+            "edition": "Poké Card Creator Pack",
+            "finish": "Normal"
+        },
+        "uuid": "ex5.5-2"
+    },
+    {
+        "description": "Wurmple KWBP #002 Normal",
+        "input": {
+            "name": "Wurmple",
+            "variant": "002",
+            "edition": "Kids WB Promos",
+            "finish": "Normal"
+        },
+        "uuid": "002-005_162269"
+    },
+    {
+        "description": "Wurmple ROS #3 Reverse Holofoil",
+        "input": {
+            "name": "Wurmple",
+            "variant": "3",
+            "edition": "XY - Roaring Skies",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "3-108_98039_reverseholofoil"
+    },
+    {
+        "description": "Zacian V SWSH10-TG #TG21 Holofoil",
+        "input": {
+            "name": "Zacian V",
+            "variant": "TG21",
+            "edition": "SWSH10: Astral Radiance Trainer Gallery",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "tg21-tg30_272493_holofoil"
+    },
+    {
+        "description": "Zacian V WCD #016 Normal",
+        "input": {
+            "name": "Zacian V",
+            "variant": "016",
+            "edition": "World Championship Decks",
+            "finish": "Normal"
+        },
+        "uuid": "016-025_542053"
+    },
+    {
+        "description": "Zapdos CL-23323 #012 Holofoil",
+        "input": {
+            "name": "Zapdos",
+            "variant": "012",
+            "edition": "Trading Card Game Classic",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "012-034_527947_holofoil"
+    },
+    {
+        "description": "Zapdos PGO #029 Reverse Holofoil",
+        "input": {
+            "name": "Zapdos",
+            "variant": "029",
+            "edition": "Pokemon GO",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "029-078_276954_reverseholofoil"
+    },
+    {
+        "description": "Zeraora 30C #057 Holofoil",
+        "input": {
+            "name": "Zeraora",
+            "variant": "057",
+            "edition": "ME: 30th Celebration",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "057-128_696831_holofoil"
+    },
+    {
+        "description": "Zoroark EPO #67 Holofoil",
+        "input": {
+            "name": "Zoroark",
+            "variant": "67",
+            "edition": "Emerging Powers",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "67-98_90750_holofoil"
+    },
+    {
+        "description": "Zoroark GX SHL #53 Holofoil",
+        "input": {
+            "name": "Zoroark GX",
+            "variant": "53",
+            "edition": "Shining Legends",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "53-73_146715_holofoil"
+    },
+    {
+        "description": "Zorua M11 #009 Holofoil",
+        "input": {
+            "name": "Zorua",
+            "variant": "009",
+            "edition": "McDonald's Promos 2011",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "009-012_90758_holofoil"
+    },
+    {
+        "description": "Zygarde SMP #SM15 Holofoil",
+        "input": {
+            "name": "Zygarde",
+            "variant": "SM15",
+            "edition": "SM Promos",
+            "foil": true,
+            "finish": "Holofoil"
+        },
+        "uuid": "sm15_129313_holofoil"
+    },
+    {
+        "description": "Zygarde SWSH12 #134 Normal",
+        "input": {
+            "name": "Zygarde",
+            "variant": "134",
+            "edition": "SWSH12: Silver Tempest",
+            "finish": "Normal"
+        },
+        "uuid": "134-195_451787"
+    },
+    {
+        "description": "a LEGEND pair's two numbers name the one jumbo",
+        "input": {
+            "name": "Darkrai & Cresselia Legend - 99/102 & 100/102",
+            "variant": "Single Oversized Promo",
+            "edition": "Jumbo Cards"
+        },
+        "uuid": "099-102-100-102_211448_holofoil"
+    },
+    {
+        "description": "a Radiant Collection card is reached from its parent set's name",
+        "input": {
+            "name": "Cinccino - RC19/RC25",
+            "edition": "BW Legendary Treasures"
+        },
+        "uuid": "rc19-rc25_84321_holofoil"
+    },
+    {
+        "description": "a Trainer Gallery card is reached from its parent set's name",
+        "input": {
+            "name": "Flareon - TG01/TG30",
+            "edition": "SWSH Brilliant Stars"
+        },
+        "uuid": "tg01-tg30_264210_holofoil"
+    },
+    {
+        "description": "a Trainer Gallery shelf with a marker hung off the number",
+        "input": {
+            "name": "Abomasnow",
+            "variant": "TG001C 1st Edition",
+            "edition": "SWSH10: Astral Radiance Trainer Gallery"
+        },
+        "uuid": "tg01-tg30_272472_holofoil"
+    },
+    {
+        "description": "a black star promo shelf the catalog files under its era's title",
+        "input": {
+            "name": "Cherrim",
+            "variant": "088 Prerelease Promo | SWSH088",
+            "edition": "SWSH Black Star Promos"
+        },
+        "uuid": "swsh088_234276_holofoil"
+    },
+    {
+        "description": "a holo wording picks the product sold only as holofoil",
+        "input": {
+            "name": "Blaziken",
+            "variant": "3 Holo",
+            "edition": "EX Battle Stadium"
+        },
+        "uuid": "3_125113_holofoil"
+    },
+    {
+        "description": "a lettered number reaches the alternate art filed apart",
+        "input": {
+            "name": "Garbodor",
+            "variant": "51a/145 Alt Art",
+            "edition": "SM Guardians Rising"
+        },
+        "uuid": "051a-145_191907_holofoil"
+    },
+    {
+        "description": "a lettered number's holo copy",
+        "input": {
+            "name": "Professor Sycamore",
+            "variant": "107a/122 Alt Art HOLO",
+            "edition": "XY BREAKpoint",
+            "foil": true
+        },
+        "uuid": "107a-122_133813_holofoil"
+    },
+    {
+        "description": "a lettered number's non-holo twin, which the catalog prices apart",
+        "input": {
+            "name": "Professor Sycamore",
+            "variant": "107a/122 Alt Art Non-Holo",
+            "edition": "XY BREAKpoint"
+        },
+        "uuid": "107a-122_133814"
+    },
+    {
+        "description": "a metal card with no number reaches the one metal printing",
+        "input": {
+            "name": "Pikachu",
+            "variant": "Metal Card",
+            "edition": "Celebrations"
+        },
+        "uuid": "058-102_252516_holofoil"
+    },
+    {
+        "description": "a metal card wording reaches the metal printing, not the set's own",
+        "input": {
+            "name": "Arceus V",
+            "variant": "122/172 Metal Card",
+            "edition": "Brilliant Stars"
+        },
+        "uuid": "122-172_454372_holofoil"
+    },
+    {
+        "description": "a non-holo wording picks the product sold as nonfoil",
+        "input": {
+            "name": "Blaziken",
+            "variant": "3 Non-Holo",
+            "edition": "EX Battle Stadium"
+        },
+        "uuid": "3_125112"
+    },
+    {
+        "description": "a number marker names the pattern printing",
+        "input": {
+            "name": "Umbreon",
+            "variant": "059M 1st Edition Master Ball Pattern",
+            "edition": "SV: Prismatic Evolutions"
+        },
+        "uuid": "059-131_610679_holofoil"
+    },
+    {
+        "description": "a placement outranks the year the plain copy is marked with",
+        "input": {
+            "name": "Champions Festival",
+            "variant": "XY91 2015 Quarter Finalist",
+            "edition": "XY Promos"
+        },
+        "uuid": "xy91_199317"
+    },
+    {
+        "description": "a pooled exclusives shelf lands a kit promo in deck exclusives",
+        "input": {
+            "name": "Chi-Yu",
+            "variant": "029h Holo Build & Battle Kit | 029/182",
+            "edition": "Theme Deck & Blisters Exclusives"
+        },
+        "uuid": "029-182_528309"
+    },
+    {
+        "description": "a set code shaped like a subset's is not one",
+        "input": {
+            "name": "Gyarados - 7/95",
+            "variant": "7",
+            "edition": "Call of Legends"
+        },
+        "uuid": "7-95_85999_holofoil"
+    },
+    {
+        "description": "a stamp in the name reaches the stamped promo",
+        "input": {
+            "name": "Psyduck (Detective Pikachu Stamp) - SM199",
+            "edition": "Promo"
+        },
+        "uuid": "sm199_206825_holofoil"
+    },
+    {
+        "description": "a stamp names the stamped copy before its mark",
+        "input": {
+            "name": "Archaludon - 107/142",
+            "variant": "107/142 Cosmos Holo Stellar Crown Stamp",
+            "edition": "Miscellaneous Cards & Products"
+        },
+        "uuid": "107-142_588382_holofoil"
+    },
+    {
+        "description": "a wording writing no number means the unnumbered twin",
+        "input": {
+            "name": "Metal Energy - 2008",
+            "variant": "Tristan Robinson",
+            "edition": "World Championship Decks"
+        },
+        "uuid": "479797"
+    },
+    {
+        "description": "an energy's copyright year reaches the set the catalog filed it in",
+        "input": {
+            "name": "Fire Energy",
+            "variant": "©2020 Reverse Holo | ©2020",
+            "edition": "Champion's Path",
+            "foil": true
+        },
+        "uuid": "208033_reverseholofoil"
+    },
+    {
+        "description": "an oversized wording reaches the jumbo past a pooled shelf",
+        "input": {
+            "name": "Salamence ex",
+            "variant": "114 Jumbo Oversized | 114/159",
+            "edition": "Theme Deck & Blisters Exclusives"
+        },
+        "uuid": "114-159_662000_holofoil"
+    },
+    {
+        "description": "an oversized wording reaches the jumbo, not the ordinary card",
+        "input": {
+            "name": "Koraidon ex",
+            "variant": "125 Jumbo Oversized | 125",
+            "edition": "Scarlet & Violet"
+        },
+        "uuid": "125-198_475654_holofoil"
+    },
+    {
+        "description": "negative: a card the pooled shelf does not carry",
+        "input": {
+            "name": "Chansey",
+            "variant": "003 Cosmos Holo | 003/102",
+            "edition": "Theme Deck & Blisters Exclusives"
+        },
+        "error": "unknown variant"
+    },
+    {
+        "description": "negative: a metal card wording where no metal printing is sold",
+        "input": {
+            "name": "Charizard ex",
+            "variant": "199 Metal Card",
+            "edition": "Scarlet & Violet 151"
+        },
+        "error": "unsupported"
+    },
+    {
+        "description": "negative: a name the catalog does not carry",
+        "input": {
+            "name": "Not A Pokemon Card At All",
+            "variant": "4/102",
+            "edition": "Base Set"
+        },
+        "error": "unknown card name"
+    },
+    {
+        "description": "negative: a per-set promos shelf naming no set does not widen",
+        "input": {
+            "name": "Moltres ex",
+            "variant": "014/135 Holo Promo | 14/135",
+            "edition": "Plasma Storm Promos"
+        },
+        "error": "unknown variant"
+    },
+    {
+        "description": "negative: a placement no copy at the number wears",
+        "input": {
+            "name": "Professor Turo's Scenario - 171/182",
+            "variant": "171/182 Staff",
+            "edition": "SV04: Paradox Rift"
+        },
+        "error": "unknown variant"
+    },
+    {
+        "description": "negative: a stamp wording refuses the unstamped printing",
+        "input": {
+            "name": "Rapidash",
+            "variant": "051pc Pokemon Center Stamped | 51",
+            "edition": "Wizards Black Star Promos"
+        },
+        "error": "unknown variant"
+    },
+    {
+        "description": "negative: an oversized wording with no number to tell two jumbos apart",
+        "input": {
+            "name": "Pikachu",
+            "variant": "XY-P Jumbo Oversized | XY-P",
+            "edition": "XY Promos"
+        },
+        "error": "unsupported"
+    },
+    {
+        "description": "negative: another set's total vetoes the number",
+        "input": {
+            "name": "Cascoon",
+            "variant": "44/130",
+            "edition": "Platinum"
+        },
+        "error": "unknown variant"
+    },
+    {
+        "description": "the bare prize pack series pools into its one set",
+        "input": {
+            "name": "Grotle",
+            "variant": "007 BRS 007",
+            "edition": "Play! Pokémon Prize Pack Series"
+        },
+        "uuid": "007-172_489316"
+    },
+    {
+        "description": "the catalog's misspelling reaches the corrected name",
+        "input": {
+            "name": "Dark Exeggcutor",
+            "variant": "033 033/105",
+            "edition": "Neo Destiny"
+        },
+        "uuid": "033-105_84593_unlimited"
+    },
+    {
+        "description": "the same number unlettered keeps the set's own card",
+        "input": {
+            "name": "Garbodor",
+            "variant": "51/145",
+            "edition": "SM Guardians Rising"
+        },
+        "uuid": "51-145_130957"
+    },
+    {
+        "description": "the same number with no marker keeps the plain printing",
+        "input": {
+            "name": "Umbreon",
+            "variant": "059 1st Edition",
+            "edition": "SV: Prismatic Evolutions"
+        },
+        "uuid": "059-131_610414_holofoil"
+    },
+    {
+        "description": "the shelf's card count over a card that keeps its original total",
+        "input": {
+            "name": "Blastoise",
+            "variant": "2/25",
+            "edition": "Celebrations: Classic Collection"
+        },
+        "uuid": "2-102_250319_holofoil"
+    },
+    {
+        "description": "the wizards black star promos reach the WoTC promo set",
+        "input": {
+            "name": "Mewtwo",
+            "variant": "014 14",
+            "edition": "Wizards Black Star Promos"
+        },
+        "uuid": "14-53_87417"
+    }
+]
