@@ -84,3 +84,45 @@ func TestSecretLairNumberOverStaleCardNumber(t *testing.T) {
 		})
 	}
 }
+
+// TestForeignBlackBorder pins foreign Revised and 4th Edition listings, whose
+// title alone says the border: a black-bordered listing lands on the set its
+// language was printed in, its land letter intact, and a white-bordered one,
+// which the catalog does not carry, is refused.
+func TestForeignBlackBorder(t *testing.T) {
+	b := realDatastore(t)
+	for _, tt := range []struct {
+		title, edition, language string
+		wantSet, wantNumber      string
+	}{
+		{"Control Magic (BB 1994)", "Revised", "Italian", "FBB", "52"},
+		{"Control Magic (BB 1994)", "Revised", "German", "FBBDE", "52"},
+		{"Island (A Purple) (BB 1994)", "Revised", "Italian", "FBB", "295"},
+		{"Island (C Dark Purple) (BB 1994)", "Revised", "French", "FBBFR", "297"},
+		{"Control Magic (WB)", "Revised", "Italian", "", ""},
+		{"Strip Mine (BB)", "4th Edition", "Korean", "4BBKO", "363"},
+		{"Strip Mine", "4th Edition", "Chinese Traditional", "4BBZHT", "363"},
+		{"Strip Mine (BB)", "4th Edition", "Portuguese", "4BBPT", "363"},
+	} {
+		card := ABUCard{DisplayTitle: tt.title, Edition: tt.edition, Language: []string{tt.language}}
+		in, err := preprocess(b, &card)
+		var cardID string
+		if err == nil {
+			cardID, err = matchCard(b, &card, in)
+		}
+		if tt.wantSet == "" {
+			if err == nil {
+				t.Errorf("%s in %s = %s, want refused", tt.title, tt.language, cardID)
+			}
+			continue
+		}
+		if err != nil {
+			t.Errorf("%s in %s: %v", tt.title, tt.language, err)
+			continue
+		}
+		co, _ := b.GetUUID(cardID)
+		if co.SetCode != tt.wantSet || co.Number != tt.wantNumber {
+			t.Errorf("%s in %s = %s #%s, want %s #%s", tt.title, tt.language, co.SetCode, co.Number, tt.wantSet, tt.wantNumber)
+		}
+	}
+}
