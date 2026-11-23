@@ -18,13 +18,14 @@ type responseChan struct {
 const trendsName = "TCGplayer Trends"
 
 var name2shorthand = map[string]string{
-	"TCG Low":          "TCGLow",
-	"TCG Market":       "TCGMarket",
-	"TCG Mid":          "TCGMid",
-	"TCG Direct Low":   "TCGDirectLow",
-	"TCG Direct":       "TCGDirect",
-	"TCG Direct (net)": "TCGDirectNet",
-	"TCGplayer":        "TCGPlayer",
-	"TCGplayer Direct": "TCGDirect",
-	"TCGplayer Trends": "TCGTrends",
+	"TCG Low":            "TCGLow",
+	"TCG Market":         "TCGMarket",
+	"TCG Mid":            "TCGMid",
+	"TCG Direct Low":     "TCGDirectLow",
+	"TCG Direct":         "TCGDirect",
+	"TCG Direct (net)":   "TCGDirectNet",
+	"TCGplayer":          "TCGPlayer",
+	"TCGplayer Direct":   "TCGDirect",
+	"TCGplayer Trends":   "TCGTrends",
+	"TCGplayer Item Low": "TCGItemLow",
 }
