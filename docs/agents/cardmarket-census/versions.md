@@ -22,9 +22,11 @@ all to the V.1 product, at CardTrader's numbers; Ebony Charm's V.1 and its
 corrected V.2, which the map gives one id in Mirage; and The List's Tetsuko
 Umezawa, Fugitive, which the map links to neither of its two candidates.
 
-It also places the three versions of each Foreign White Bordered basic, which
-the map does not carry, at CardTrader's numbers. The pictures on its blueprints
-show the art of the Revised printing with the same number on Scryfall.
+It also places the three versions of each Foreign Black Bordered and Foreign
+White Bordered basic at CardTrader's numbers. The pictures on its blueprints
+show the art of the Revised printing with the same number on Scryfall. The map
+carries none of the white-bordered ones and five of the black-bordered, four of
+them (Plains and Swamp, V.1 and V.2) on the next version's printing.
 
 It also places the Simplified Chinese alternate-art basics of Portal and a
 few Eighth and Tenth Edition alternate arts, which the map links to no
