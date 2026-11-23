@@ -701,7 +701,7 @@ found-but-invalid-promo-tag signal.
 
 Each game package has the same shape: a `Load()` datastore converter, a
 `rules.go` holding the `GameRules` implementation, a `register.go` whose
-`init()` calls `RegisterGame`, and (all but Pokemon) a golden replay suite
+`init()` calls `RegisterGame`, and a golden replay suite
 kept inside the package. Lorcana and Palworld stay at three source files;
 the other six add a `table.go` and/or a `promolabels.go` (the promo-type
 word list a game's storefronts spell out, checked against the published
@@ -850,11 +850,10 @@ functions take the backend first:
 
 ### 2.7 Testing - strategy & coverage map
 
-**What exists.** Eight of the nine games have a data-driven golden replay
+**What exists.** Every one of the nine games has a data-driven golden replay
 suite that matches a corpus of real inputs against expected UUIDs or errors,
 gated on an environment variable pointing at a real datastore, with a flag
-that regenerates expectations after intentional changes - only Pokemon has
-none yet:
+that regenerates expectations after intentional changes:
 
 | Game | Suite | Corpus | Env var | Regenerate |
 |---|---|---|---|---|
@@ -866,11 +865,11 @@ none yet:
 | Flesh and Blood | `matcher/fleshandblood/matcher_test.go` | `matcher/fleshandblood/testdata/fleshandblood_test_data.json` | `FLESHANDBLOOD_PATH` | `-update-fleshandblood` |
 | Gundam | `matcher/gundam/matcher_test.go` | `matcher/gundam/testdata/gundam_test_data.json` | `GUNDAM_PATH` | `-update-gundam` |
 | Palworld | `matcher/palworld/matcher_test.go` | `matcher/palworld/testdata/palworld_test_data.json` | `PALWORLD_PATH` | `-update-palworld` |
-| Pokemon | - none yet - | - | `POKEMON_PATH` | - |
+| Pokemon | `matcher/pokemon/matcher_test.go` | `matcher/pokemon/testdata/pokemon_test_data.json` | `POKEMON_PATH` | `-update-pokemon` |
 
 These are the regression harness for the heuristic tables. Run the relevant
 regeneration after a *deliberate* matching change and **review the diff** -
-never blindly accept it. All seven non-Magic suites run through one shared
+never blindly accept it. All eight non-Magic suites run through one shared
 runner, `internal/gametest.Replay`, and additionally carry hand-authored seed
 cases whose expected verdicts are baked by the regeneration rather than
 hard-coded, with a `"negative:"` description prefix declaring the author's

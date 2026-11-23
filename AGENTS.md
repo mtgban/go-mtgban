@@ -87,7 +87,7 @@ matcher/fleshandblood/     Flesh and Blood rules, loader, replay corpus
 matcher/gundam/            Gundam rules, loader, replay corpus
 matcher/onepiece/          One Piece rules, loader, replay corpus
 matcher/palworld/          Palworld rules, loader, replay corpus
-matcher/pokemon/           Pokemon rules, loader (no replay corpus yet)
+matcher/pokemon/           Pokemon rules, loader, replay corpus
 matcher/yugioh/            Yu-Gi-Oh rules, loader, replay corpus
 matcher/games/             meta-package that blank-imports all nine games
 matcher/sealed/            opening sealed product: picks, decklists and
@@ -211,9 +211,9 @@ two checkouts against each other rather than against a fixed assertion.
 
 ### The golden suites
 
-Eight of the nine games own a replay corpus of *(input card → expected
-verdict)* pairs under their own `testdata/` directory, each with its own
-regeneration flag; only Pokemon has none yet. The flag belongs to the test
+Every one of the nine games owns a replay corpus of *(input card →
+expected verdict)* pairs under its own `testdata/` directory, each with its
+own regeneration flag. The flag belongs to the test
 binary, not to `go test`, so the package has to come first - `go test -u
 ./matcher/magic/` fails with "no Go files in" the repository root, having
 read `-u` as a `go` flag and dropped the path.
@@ -230,6 +230,7 @@ go test ./matcher/yugioh/         -update-yugioh
 go test ./matcher/fleshandblood/ -update-fleshandblood
 go test ./matcher/gundam/         -update-gundam
 go test ./matcher/palworld/       -update-palworld
+go test ./matcher/pokemon/        -update-pokemon
 ```
 
 The Magic regeneration flag is the odd one out: it is the bare `-u` it has
@@ -239,7 +240,7 @@ always been, rather than `-update-magic`. Every other game follows
 Regenerate only after an *intentional* matching change, and read the
 resulting diff line by line. Every regenerator refuses to flip a case
 between success and error: a verdict-class flip fails the test and leaves
-the golden file untouched. The seven non-Magic games share one runner,
+the golden file untouched. The eight non-Magic games share one runner,
 `gametest.Replay`; each package registers its own flag and hands over its
 own hand-authored seed cases (`<game>Seeds`, e.g. `lorcanaSeeds`,
 `riftboundSeeds`), which the regeneration re-inserts and which pin the
