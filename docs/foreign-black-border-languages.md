@@ -12,8 +12,9 @@ once, under one of them, with the others in `foreignData`.
 
 - FBB and 4BB take the language US storefronts mostly sell: the per-set
   loop of `matcher/magic/mtgjson.go` gives each card that language's name
-  and image. A card never printed in it keeps its own (FBB's Forest #306a
-  exists in German alone).
+  and image. A card never printed in it keeps its own, and is filed in that
+  language's set alone (Forest #306a exists in German only, so FBBDE holds
+  it and FBB does not).
 - Every other language is a set of its own, minted by `duplicate` like
   LEGITA, holding only the cards printed in it. Its parent is the base set,
   so the site stacks it with the base under the base's own parent (Revised,

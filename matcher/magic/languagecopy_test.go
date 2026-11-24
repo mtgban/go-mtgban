@@ -354,6 +354,12 @@ func TestLanguageSets(t *testing.T) {
 				t.Errorf("%s #%s in %s: Match = %s %v", ls.base, card.Number, language, id, err)
 			}
 		}
+		// Cards mtgjson files in the language are the set's beside the copies
+		for _, card := range set.Cards {
+			if card.UUID == card.Identifiers["mtgjsonId"] {
+				want++
+			}
+		}
 		if want == 0 || len(set.Cards) != want {
 			t.Errorf("%s holds %d cards, want the %d %s printings of %s", code, len(set.Cards), want, language, ls.base)
 		}

@@ -1884,6 +1884,21 @@ func duplicate(sets map[string]*Set, name, base, code, tag, date string) {
 		}
 		dup.Cards[i].Identifiers = altIdentifiers
 	}
+
+	// A base card in the language set's own language is filed there instead,
+	// as the printing it is
+	if languageSet {
+		var kept []Card
+		for _, card := range sets[base].Cards {
+			if card.Language != langs[tag] {
+				kept = append(kept, card)
+				continue
+			}
+			card.SetCode = code
+			dup.Cards = append(dup.Cards, card)
+		}
+		sets[base].Cards = kept
+	}
 }
 
 // packLike gives a set the boosters of the one it is packed like, drawn from

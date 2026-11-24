@@ -2,6 +2,7 @@ package magic
 
 import (
 	"errors"
+	"slices"
 	"testing"
 
 	"github.com/mtgban/go-mtgban/matcher"
@@ -73,6 +74,50 @@ func TestLanguageRoutesEdition(t *testing.T) {
 		}
 		if co.SetCode != tt.wantSet {
 			t.Errorf("%s from %s in %s landed on %s, want %s", tt.name, tt.edition, tt.language, co.SetCode, tt.wantSet)
+		}
+	}
+}
+
+// A card printed in one of a set's languages alone is held by that language's
+// set, beside the cards printed in all of them.
+func TestLanguageSetHoldsItsOwnCards(t *testing.T) {
+	realDatastore(t)
+	const wald = "d44cd8fc-9f0c-533b-a2d2-83b30b2130a0"
+	for _, tt := range []struct {
+		number, edition, language, want string
+	}{
+		{"306a", "Foreign Black Border", "German", wald},
+		{"306a", "Foreign Black Border (German)", "", wald},
+		{"306", "Foreign Black Border", "German", "0fd7280a-90be-539d-ae3f-db6c93ecb549"},
+		{"306", "Foreign Black Border", "Italian", "54dcb147-244e-5220-85a0-9f9deaeefc77"},
+		{"306a", "Foreign Black Border", "French", ""},
+		{"306a", "Foreign Black Border", "Italian", ""},
+	} {
+		in := &matcher.InputCard{Name: "Forest", Edition: tt.edition, Variation: tt.number, Language: tt.language}
+		id, err := testBackend.Match(in)
+		if id != tt.want || (err != nil) != (tt.want == "") {
+			t.Errorf("Forest #%s from %s in %q = %q %v, want %q", tt.number, tt.edition, tt.language, id, err, tt.want)
+		}
+	}
+
+	// A vendor's Scryfall id names it too
+	id, err := testBackend.Match(&matcher.InputCard{ID: "38382bb9-3b8e-4819-9998-55dbf1ab0fd7", Language: "German"})
+	if err != nil || id != wald {
+		t.Errorf("German Forest #306a by its Scryfall id = %q %v", id, err)
+	}
+	co, err := testBackend.GetUUID(wald)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if co.SetCode != "FBBDE" || co.Edition != "Foreign Black Border (German)" || co.Language != "German" ||
+		co.PrintedName != "Wald" || !slices.Contains(co.Printings, "FBBDE") {
+		t.Errorf("Forest #306a is %s %q in %s, %q", co.SetCode, co.Edition, co.Language, co.PrintedName)
+	}
+	for _, ls := range languageSets {
+		for _, card := range testBackend.Sets[ls.base].Cards {
+			if card.Language == langs[ls.tag] {
+				t.Errorf("%s #%s %s is in %s, not %s", ls.base, card.Number, card.Language, ls.base, ls.code)
+			}
 		}
 	}
 }
