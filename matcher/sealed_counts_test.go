@@ -99,21 +99,26 @@ func TestCopiedCardsNameTheirOwnProducts(t *testing.T) {
 	}
 }
 
-// The foreign Revised products open like Revised's, from their own set alone,
-// and each card they draw names them, and no others, as where it comes from.
-func TestForeignRevisedPacksLikeRevised(t *testing.T) {
+// A set packed like another opens like it, from its own cards alone, and each
+// card names the products that draw it, and no others, as where it comes from.
+// The other sets copied from one of the two name no product.
+func TestCopiedSetsPackLikeTheOriginal(t *testing.T) {
 	realDatastore(t)
 	b := testBackend
 
-	total := func(code, product string) (float64, map[string]bool) {
+	total := func(product string) (float64, map[string]bool) {
 		t.Helper()
-		uuid, err := b.SearchSealedEquals(product)
+		uuids, err := b.SearchSealedEquals(product)
+		if err != nil {
+			t.Fatal(product, err)
+		}
+		co, err := b.GetUUID(uuids[0])
 		if err != nil {
 			t.Fatal(err)
 		}
-		counts, err := sealed.ProductCounts(b, code, uuid[0])
+		counts, err := sealed.ProductCounts(b, co.SetCode, co.UUID)
 		if err != nil {
-			t.Fatal(err)
+			t.Fatal(product, err)
 		}
 		var sum float64
 		drawn := map[string]bool{}
@@ -124,45 +129,57 @@ func TestForeignRevisedPacksLikeRevised(t *testing.T) {
 		return sum, drawn
 	}
 
-	for code, name := range map[string]string{
-		"FBB": "Foreign Black Border",
-		"FWB": "Foreign White Border",
+	boosters := []string{"Booster Pack", "Booster Box", "Booster Box Case"}
+	withStarters := append(slices.Clone(boosters), "Starter Deck", "Starter Deck Display")
+	for _, tt := range []struct {
+		code, name, like string
+		products         []string
+	}{
+		{"FBB", "Foreign Black Border", "Revised Edition", withStarters},
+		{"FWB", "Foreign White Border", "Revised Edition", withStarters},
+		{"4BB", "Fourth Edition Black Bordered", "Fourth Edition", withStarters},
+		{"LEGITA", "Legends Italian", "Legends", boosters},
+		{"DRKITA", "The Dark Italian", "The Dark", boosters},
+		{"RENDE", "Renaissance German", "Renaissance French", boosters},
 	} {
-		for _, product := range []string{"Booster Pack", "Booster Box", "Booster Box Case", "Starter Deck", "Starter Deck Display"} {
-			want, like := total("3ED", "Revised Edition "+product)
-			got, drawn := total(code, name+" "+product)
+		for _, product := range tt.products {
+			want, like := total(tt.like + " " + product)
+			got, drawn := total(tt.name + " " + product)
 			if math.Abs(got-want) > 1e-6 || len(drawn) != len(like) {
-				t.Errorf("%s %s opens to %v of %d cards, want %v of %d", name, product, got, len(drawn), want, len(like))
+				t.Errorf("%s %s opens to %v of %d cards, want %v of %d", tt.name, product, got, len(drawn), want, len(like))
 			}
 			for uuid := range drawn {
 				co, err := b.GetUUID(uuid)
-				if err != nil || co.SetCode != code {
-					t.Errorf("%s %s draws %v", name, product, co)
+				if err != nil || co.SetCode != tt.code {
+					t.Errorf("%s %s draws %v", tt.name, product, co)
 				}
 			}
 		}
 
-		_, drawn := total(code, name+" Booster Pack")
+		for _, code := range []string{tt.code, b.Sets[tt.code].ParentCode} {
+			for _, card := range b.Sets[code].Cards {
+				for _, source := range card.SourceProducts["nonfoil"] {
+					product, err := b.GetUUID(source)
+					if err != nil {
+						t.Fatal(err)
+					}
+					_, drawn := total(product.Name)
+					if !drawn[card.UUID] {
+						t.Errorf("%s %s does not come from %s", code, card.Name, product.Name)
+					}
+				}
+			}
+		}
+		_, drawn := total(tt.name + " Booster Pack")
 		for uuid := range drawn {
 			co, err := b.GetUUID(uuid)
-			if err != nil {
-				t.Fatal(err)
-			}
-			var sources []string
-			for _, source := range co.SourceProducts["nonfoil"] {
-				product, err := b.GetUUID(source)
-				if err != nil {
-					t.Fatal(err)
-				}
-				sources = append(sources, product.Name)
-			}
-			if !slices.Equal(sources, []string{name + " Booster Pack", name + " Starter Deck"}) {
-				t.Errorf("%s comes from %q", co, sources)
+			if err != nil || len(co.SourceProducts["nonfoil"]) == 0 {
+				t.Errorf("%v names no product", co)
 			}
 		}
 	}
 
-	for _, code := range []string{"FBBFR", "FBBDE", "FWBFR", "FWBDE"} {
+	for _, code := range []string{"FBBFR", "FBBDE", "FWBFR", "FWBDE", "4BBES", "4BBPT", "4BBKO", "4BBZHT", "4EDALT"} {
 		for _, card := range b.Sets[code].Cards {
 			if len(card.SourceProducts) > 0 {
 				t.Errorf("%s %s comes from %v", code, card.Name, card.SourceProducts)
