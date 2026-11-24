@@ -647,7 +647,7 @@ func (ss *Scraper) Load(ctx context.Context) error {
 
 		switch set.Code {
 		// Skip products without Sealed or Booster information
-		case "FBB", "4BB", "DRKITA", "LEGITA", "RIN", "4EDALT", "BCHR":
+		case "4BB", "DRKITA", "LEGITA", "RIN", "4EDALT", "BCHR":
 			continue
 		default:
 			// Skip filtered editions if set
