@@ -65,7 +65,8 @@ func TestVersionPrintingsAreReal(t *testing.T) {
 // Edition's black bordered Forest; Mark Justice's Plains V.3 and Chronicles'
 // Urza's Mine V.2, each linked to several printings; Foreign Black Bordered's
 // Plains V.1, linked to V.2's printing; Foreign White Bordered's Forest V.2,
-// which mtgjson does not link. A version the links get right still lands.
+// which mtgjson does not link. A version the links get right still lands, and
+// so does one VariantsTable places: Revised's Forest V.2.
 func TestResolveMappedReadsVersionPrintings(t *testing.T) {
 	b := realDatastore(t)
 	r := &resolver{backend: b, gameID: cm.GameMagic}
@@ -83,6 +84,7 @@ func TestResolveMappedReadsVersionPrintings(t *testing.T) {
 		{272488, "Urza's Mine (V.2)", "Chronicles: Japanese", "114b"},
 		{15470, "Plains (V.1)", "Foreign Black Bordered", "292"},
 		{16155, "Forest (V.2)", "Foreign White Bordered", "305"},
+		{5813, "Forest (V.2)", "Revised", "305"},
 	} {
 		got := r.resolveMapped(tt.id, cm.CatalogProduct{Name: tt.name}, cm.Expansion{Name: tt.expansion})
 		co, err := b.GetUUID(got.cardID)

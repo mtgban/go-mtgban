@@ -3308,8 +3308,8 @@ var ed3Variants = map[string]map[string]string{
 		"dark and gloomy":     "306",
 
 		"v.1": "304",
-		"v.3": "305",
-		"v.2": "306",
+		"v.2": "305",
+		"v.3": "306",
 	},
 	"Island": {
 		"a": "295",
