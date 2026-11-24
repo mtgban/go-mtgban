@@ -160,8 +160,8 @@ nothing - the EV is the value of the openable rest.
 
 Whole products and sets are skipped earlier, in `Load`:
 
-- Sets with no usable sealed or booster data: `FBB`, `4BB`, `DRKITA`,
-  `LEGITA`, `RIN`, `4EDALT`, `BCHR`.
+- Sets with no usable sealed or booster data: `4BB`, `DRKITA`, `LEGITA`,
+  `RIN`, `4EDALT`, `BCHR`.
 - Products of category `land_station`.
 - Products with `Japanese` in the name, whose contents are not the English
   ones the prices describe.
