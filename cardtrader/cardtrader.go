@@ -464,7 +464,7 @@ var tcgIDOverrides = map[int]int{
 // copyWords are the description words saying a listing's copy is not the one
 // its properties describe: an Italian copy, or a lot of mixed languages.
 var copyWords = map[string]bool{
-	"ita": true, "italian": true, "italiano": true, "italiana": true, "italiani": true,
+	"ita": true, "italian": true, "italiano": true, "italiana": true, "italiani": true, "italiane": true,
 	"mix": true, "mixed": true,
 }
 

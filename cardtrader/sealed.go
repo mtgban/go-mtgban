@@ -90,7 +90,7 @@ func (ct *Sealed) processEntry(ctx context.Context, channel chan<- resultChan, e
 				product.Properties.Altered,
 				product.Graded:
 				continue
-			case matcher.Contains(product.Description, "ita"),
+			case notTheListedCopy(product.Description),
 				matcher.Contains(product.Description, "empty booster"),
 				matcher.Contains(product.Description, "empty box"),
 				matcher.Contains(product.Description, "opened"),
