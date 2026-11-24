@@ -1249,7 +1249,7 @@ func PreprocessBuylist(b *matcher.Backend, card CSIPriceEntry) (*matcher.InputCa
 	// anchor before that pipeline mangles it, and refuses outright rather
 	// than fall into whatever single-face guess the rest of this function
 	// would otherwise make of one half of the name.
-	if strings.Contains(card.Name, "(Token)") && strings.Contains(card.Name, " // ") {
+	if isTokenPairName(card.Name) {
 		return preprocessTokenPairBuylist(b, card)
 	}
 
@@ -1487,8 +1487,6 @@ func PreprocessBuylist(b *matcher.Backend, card CSIPriceEntry) (*matcher.InputCa
 // one) is refused rather than left for the rest of PreprocessBuylist to
 // mistake for a single face.
 func preprocessTokenPairBuylist(b *matcher.Backend, card CSIPriceEntry) (*matcher.InputCard, error) {
-	isFoil := card.IsFoil == 1
-
 	tokenSet := magic.EditionTokenSetCode(b, card.ItemSet)
 	if tokenSet == "" && card.Code != "" {
 		tokenSet = magic.SetTokenSetCode(b, card.Code)
@@ -1496,28 +1494,41 @@ func preprocessTokenPairBuylist(b *matcher.Backend, card CSIPriceEntry) (*matche
 	if tokenSet == "" {
 		tokenSet = card.Code
 	}
-	if tokenSet != "" {
-		for _, number := range csiTokenPairNumbers(card.Number) {
-			if uuid := magic.MatchNativeTokenPair(b, tokenSet, number, card.Name); uuid != "" {
-				if id, err := b.MatchID(uuid, isFoil); err == nil {
-					return &matcher.InputCard{ID: id}, nil
-				}
+	return tokenPairCard(b, card.Name, card.ItemSet, tokenSet, csiTokenPairNumbers(card.Number), card.IsFoil == 1)
+}
+
+// tokenPairCard resolves a two-sided token listing to its pair, anchored on
+// the listing's first face at one of numbers in setCode, or else on both
+// face names within edition. A listing no pair answers is refused.
+func tokenPairCard(b *matcher.Backend, name, edition, setCode string, numbers []string, isFoil bool) (*matcher.InputCard, error) {
+	if setCode != "" {
+		for _, number := range numbers {
+			uuid := magic.MatchNativeTokenPair(b, setCode, number, name)
+			id, err := b.MatchID(uuid, isFoil)
+			if uuid != "" && err == nil {
+				return &matcher.InputCard{ID: id}, nil
 			}
-			if tcgID := magic.MatchTokenPairingBySetNumber(b, tokenSet, number, card.Name, isFoil); tcgID != "" {
-				if id, err := b.MatchID(tcgID, isFoil); err == nil {
-					return &matcher.InputCard{ID: id}, nil
-				}
+			tcgID := magic.MatchTokenPairingBySetNumber(b, setCode, number, name, isFoil)
+			id, err = b.MatchID(tcgID, isFoil)
+			if tcgID != "" && err == nil {
+				return &matcher.InputCard{ID: id}, nil
 			}
 		}
 	}
 
-	if pairID := magic.MatchTokenPairingByNamesAndEdition(b, card.Name, card.ItemSet, isFoil); pairID != "" {
-		if id, err := b.MatchID(pairID, isFoil); err == nil {
-			return &matcher.InputCard{ID: id}, nil
-		}
+	pairID := magic.MatchTokenPairingByNamesAndEdition(b, name, edition, isFoil)
+	id, err := b.MatchID(pairID, isFoil)
+	if pairID != "" && err == nil {
+		return &matcher.InputCard{ID: id}, nil
 	}
 
 	return nil, matcher.ErrUnsupported
+}
+
+// isTokenPairName reports whether a listing names a two-sided token sheet,
+// "Soldier (Token) // Beast (Token)", which only its pair prices.
+func isTokenPairName(name string) bool {
+	return strings.Contains(name, "(Token)") && strings.Contains(name, " // ")
 }
 
 // csiTokenPairNumbers returns the collector numbers worth anchoring a two-
