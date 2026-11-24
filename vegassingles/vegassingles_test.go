@@ -79,6 +79,71 @@ func TestMovedHostIsNamed(t *testing.T) {
 	}
 }
 
+// newPagedScraper returns a scraper reading a buylist of four one-product
+// pages, with answer deciding the status of each page past the first.
+func newPagedScraper(t *testing.T, answer func(offset string) int) *Vegassingles {
+	t.Helper()
+	pages := serveBuylist(t, GamePokemon, make([]HLProduct, 4), 1).Config.Handler
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		offset := r.URL.Query().Get("offset")
+		if offset != "0" {
+			status := answer(offset)
+			if status != http.StatusOK {
+				w.WriteHeader(status)
+				return
+			}
+		}
+		pages.ServeHTTP(w, r)
+	}))
+	t.Cleanup(server.Close)
+
+	vs, err := NewScraper(&matcher.Backend{Game: matcher.GamePokemon})
+	if err != nil {
+		t.Fatal(err)
+	}
+	vs.client.buylistURL = server.URL
+	vs.maxConcurrency = 1
+	return vs
+}
+
+// TestLostPageFailsLoad refuses a buylist missing one of its later pages.
+func TestLostPageFailsLoad(t *testing.T) {
+	// A 404 is not retried
+	vs := newPagedScraper(t, func(offset string) int {
+		if offset == "2" {
+			return http.StatusNotFound
+		}
+		return http.StatusOK
+	})
+
+	err := vs.Load(context.Background())
+	if err == nil || !strings.Contains(err.Error(), "1 of 3 later pages lost") {
+		t.Errorf("Load answered %v, want it to count the lost page", err)
+	}
+	if len(vs.Buylist()) != 0 || !vs.buylistDate.IsZero() {
+		t.Errorf("filed %d cards dated %v from a short crawl", len(vs.Buylist()), vs.buylistDate)
+	}
+}
+
+// TestCancelledCrawlFailsLoad refuses a buylist whose crawl was cancelled
+// past its first page, counting the pages never asked for as lost.
+func TestCancelledCrawlFailsLoad(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	vs := newPagedScraper(t, func(string) int {
+		cancel()
+		return http.StatusNotFound
+	})
+
+	err := vs.Load(ctx)
+	if !errors.Is(err, context.Canceled) || !strings.Contains(err.Error(), "3 of 3 later pages lost") {
+		t.Errorf("Load answered %v, want the cancellation and the lost pages", err)
+	}
+	if len(vs.Buylist()) != 0 || !vs.buylistDate.IsZero() {
+		t.Errorf("filed %d cards dated %v from a cancelled crawl", len(vs.Buylist()), vs.buylistDate)
+	}
+}
+
 // TestBuylistPricesEveryOffer walks a buylist the host serves fewer products
 // per page of than asked for, and files every offer on the printing its
 // product and finish name: the reverse holo and plain copies of one product
