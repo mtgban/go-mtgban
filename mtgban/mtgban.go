@@ -249,14 +249,8 @@ func ParseCondition(s string) (Condition, error) {
 	return grade, nil
 }
 
-// SlabCondition reads a grading service's score on a slab as a grade, PSA 9
-// as NM; a half point reads as the whole point below it.
-func SlabCondition(grader, score string) (Condition, bool) {
-	score, _, _ = strings.Cut(score, ".")
-	grade, found := slabGrades[grader][score]
-	return grade, found
-}
-
+// slabGrades is the condition Slab.Fold reads each grader's whole scores and
+// labels as.
 var slabGrades = map[string]map[string]Condition{
 	"PSA": {
 		"10": NM,

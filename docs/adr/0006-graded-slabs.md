@@ -255,7 +255,7 @@ lands beside it.
 
 ## Action items
 
-- [ ] go-mtgban: `Slab`, the grader list, `Slab.Fold()`, `add`'s refusal,
+- [x] go-mtgban: `Slab`, the grader list, `Slab.Fold()`, `add`'s refusal,
       `ScraperInfo.GradedMode`; `SlabCondition` removed once its callers
       have moved.
 - [ ] go-mtgban: Card Kingdom, ABU, Cool Stuff Inc and Hareruya set `Slab`

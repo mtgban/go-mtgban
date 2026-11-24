@@ -7,21 +7,25 @@ import (
 	"testing"
 )
 
-// Every label the grade table holds folds through Slab.Fold to the grade
-// SlabCondition gives it, read the way a scraper fills a Slab: a number
-// as the score, a word as the label.
-func TestFoldAgreesWithSlabCondition(t *testing.T) {
+// Every row of the grade table folds to its condition, read the way a
+// scraper fills a Slab: a number as the score, a word as the label. A half
+// point reads as the whole point below it.
+func TestFoldReadsTheGradeTable(t *testing.T) {
 	for grader, scores := range slabGrades {
-		for key := range scores {
-			want, _ := SlabCondition(grader, key)
-			slab := Slab{Grader: grader, Label: key}
+		for key, want := range scores {
+			slabs := []Slab{{Grader: grader, Label: key}}
 			score, err := strconv.ParseFloat(key, 64)
 			if err == nil {
-				slab = Slab{Grader: grader, Score: score}
+				slabs = []Slab{{Grader: grader, Score: score}}
+				if score < 10 {
+					slabs = append(slabs, Slab{Grader: grader, Score: score + 0.5})
+				}
 			}
-			got, found := slab.Fold()
-			if !found || got != want {
-				t.Errorf("%s %s: Fold gave %q, %v; SlabCondition gives %q", grader, key, got, found, want)
+			for _, slab := range slabs {
+				got, found := slab.Fold()
+				if !found || got != want {
+					t.Errorf("%+v: got %q, %v; want %q", slab, got, found, want)
+				}
 			}
 		}
 	}

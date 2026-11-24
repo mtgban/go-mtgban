@@ -419,7 +419,11 @@ func slabCondition(conditions string) (mtgban.Condition, bool) {
 	if match == nil {
 		return "", false
 	}
-	return mtgban.SlabCondition(match[1], match[2])
+	score, err := strconv.ParseFloat(match[2], 64)
+	if err != nil {
+		return "", false
+	}
+	return mtgban.Slab{Grader: match[1], Score: score}.Fold()
 }
 
 // bundleRe matches the wording of the bundle promotion, whatever count it
