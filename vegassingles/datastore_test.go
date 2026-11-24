@@ -12,8 +12,6 @@ import (
 	_ "github.com/mtgban/go-mtgban/matcher/pokemon"
 )
 
-// withMagic skips a test that reads the Magic datastore where none is
-// installed.
 var (
 	magicOnce sync.Once
 	magicErr  error
