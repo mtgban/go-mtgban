@@ -243,7 +243,8 @@ func buylistLanguage(name, notes string) string {
 }
 
 // csiForeignBlackBorder reads the "Black Bordered (foreign)" edition: the word
-// in a listing's note names its language, and that the set it was printed in
+// in a listing's note or bracket names its language, and the language names
+// the set it was printed in.
 var csiForeignBlackBorder = []struct{ word, edition, language string }{
 	{"Italian", "FBB", "Italian"},
 	{"French", "FBB", "French"},
