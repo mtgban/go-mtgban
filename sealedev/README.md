@@ -158,13 +158,11 @@ in a run prints them.
 These are dropped before pricing, so they cost nothing and contribute
 nothing - the EV is the value of the openable rest.
 
-Whole products and sets are skipped earlier, in `Load`:
+Whole products are skipped earlier, in `Load`:
 
-- Sets with no usable sealed or booster data: `4BB`, `DRKITA`, `LEGITA`,
-  `RIN`, `4EDALT`, `BCHR`.
 - Products of category `land_station`.
-- Products with `Japanese` in the name, whose contents are not the English
-  ones the prices describe.
+- Products with `Japanese` in the name that open to a card in another
+  language, as War of the Spark's do.
 
 ## Running it
 
