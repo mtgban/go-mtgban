@@ -1,6 +1,11 @@
 package starcitygames
 
-import "testing"
+import (
+	"errors"
+	"testing"
+
+	"github.com/mtgban/go-mtgban/matcher"
+)
 
 // TestResolveTwoSidedTokenPairing pins a two-sided token listing resolving
 // to the combined entity matcher/magic/tokenpairs.go derives for the same
@@ -407,5 +412,56 @@ func TestResolveTokenPairingBehindScryfallID(t *testing.T) {
 		if co.Foil != catalogFoil(p) {
 			t.Errorf("%s resolved to foil=%v, want %v", p.SKU, co.Foil, catalogFoil(p))
 		}
+	}
+}
+
+// TestRefuseTwoSidedTokenWithoutPrinting pins two-sided listings with no
+// printing of their own refused rather than priced as one face: both sku
+// numbers anchor a face but no pairing joins them in that finish, or one
+// token fills both sides of a sheet sold beside its single. Commander
+// 2015's same-face sheet is its single's own product and still lands.
+func TestRefuseTwoSidedTokenWithoutPrinting(t *testing.T) {
+	b := withMagic(t)
+
+	for _, p := range []CatalogProduct{
+		{
+			SKU: "SGL-MTG-GRN-T4T2-ENN", ScryfallID: "b27dc0bd-ba46-4a5c-9559-7c11eb4ec37b",
+			TCGPlayerID: "176795", Name: "{Goblin Token} // {Soldier Token}", Set: "Guilds of Ravnica",
+			Finish: "Non-foil", FinishGroup: "Non-foil", CollectorNumber: "T4T2",
+		},
+		{
+			SKU: "SGL-MTG-PIP-T22T16-ENF", ScryfallID: "0886657d-afb0-4f1f-9af7-960724793077",
+			Name: "{Radiation Token} // {Robot Token}", Set: "Fallout Commander",
+			Finish: "Foil", FinishGroup: "Foil", CollectorNumber: "T22",
+		},
+		{
+			SKU: "SGL-MTG-BLB-T03T03-ENN", ScryfallID: "81de52ef-7515-4958-abea-fb8ebdcef93c",
+			TCGPlayerID: "561349", Name: "{Rabbit Token} // {Rabbit Token}", Set: "Bloomburrow",
+			Finish: "Non-foil", FinishGroup: "Non-foil", CollectorNumber: "T03T03",
+		},
+	} {
+		p.Game, p.Rarity, p.ProductType, p.Language = "Magic: The Gathering", "Token", ProductTypeSingles, "English"
+		id, err := resolveProduct(b, GameMagic, p)
+		if !errors.Is(err, matcher.ErrUnsupported) {
+			t.Errorf("resolveProduct(%s) = %q, %v, want ErrUnsupported", p.SKU, id, err)
+		}
+	}
+
+	p := CatalogProduct{
+		SKU: "SGL-MTG-C15-T9T9-ENN", ScryfallID: "e290b7f1-1598-4581-96b1-f57419ec408e",
+		TCGPlayerID: "108187", Name: "{Dragon Token} // {Dragon Token}", Game: "Magic: The Gathering",
+		Set: "Commander 2015", Rarity: "Token", Finish: "Non-foil", FinishGroup: "Non-foil",
+		Language: "English", CollectorNumber: "T9T9", ProductType: ProductTypeSingles,
+	}
+	id, err := resolveProduct(b, GameMagic, p)
+	if err != nil {
+		t.Fatalf("resolveProduct(%s) = %v", p.SKU, err)
+	}
+	co, err := b.GetUUID(id)
+	if err != nil {
+		t.Fatalf("GetUUID(%s) = %v", id, err)
+	}
+	if co.Card.Name != "Dragon" || co.SetCode != "TC15" || co.Card.Number != "9" {
+		t.Errorf("%s resolved to %s #%s [%s], want Dragon #9 [TC15]", p.SKU, co.Card.Name, co.Card.Number, co.SetCode)
 	}
 }
