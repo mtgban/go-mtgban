@@ -118,9 +118,3 @@ var grnGuilds = []string{"Boros", "Dimir", "Golgari", "Izzet", "Selesnya"}
 
 // arnGuilds are the guilds printed in Ravnica Allegiance.
 var arnGuilds = []string{"Azorius", "Gruul", "Orzhov", "Rakdos", "Simic"}
-
-// paperFoilsFiledOnline lists, per set, the paper foils that MTGJSON (after
-// Scryfall) files as Arena-only with no finish, so they load as foils.
-var paperFoilsFiledOnline = map[string][]string{
-	"MBC": {"62", "64", "66"},
-}
