@@ -92,8 +92,8 @@ func TestResolveMagicRefusesOtherFaces(t *testing.T) {
 // #2, and only the first is the pair the datastore has.
 func TestOtherFaces(t *testing.T) {
 	b := &matcher.Backend{UUIDs: map[string]*matcher.CardObject{
-		"pair":  {Card: matcher.Card{Number: "1 // 2"}},
-		"other": {Card: matcher.Card{Number: "2 // 15"}},
+		"pair":  {Card: matcher.Card{Number: "1//2"}},
+		"other": {Card: matcher.Card{Number: "2//15"}},
 	}}
 	res := &resolver{backend: b, gameID: cm.GameMagic}
 	for _, tt := range []struct {

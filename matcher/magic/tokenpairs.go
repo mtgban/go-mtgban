@@ -408,7 +408,7 @@ func buildDerivedCard(co1, co2 *matcher.CardObject, home string, usableIDs []int
 	name := first.Name + " // " + second.Name
 	// Number may mix two sets' numbering on a cross-set pairing - cosmetic
 	// only; derived cards are excluded from every name/number index.
-	number := first.Number + " // " + second.Number
+	number := first.Number + "//" + second.Number
 	pairUUID := tokenPairUUID(uuidLo, uuidHi)
 
 	ids := make([]string, len(usableIDs))

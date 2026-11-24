@@ -499,7 +499,7 @@ func (r *resolver) otherFaces(product *cm.Product, cardID string) bool {
 	if err != nil {
 		return false
 	}
-	pairFront, pairBack, found := strings.Cut(co.Number, " // ")
+	pairFront, pairBack, found := strings.Cut(co.Number, "//")
 	if !found {
 		return false
 	}
