@@ -1094,25 +1094,17 @@ func catalogTreatment(variation string) string {
 	return csiTreatments.Replace(variation)
 }
 
-// csiRarities spells the storefront's Yu-Gi-Oh rarity names the way the
-// catalog does. Only the foil tiers disagree: the storefront drops the
-// "Rare" the catalog keeps, writes Starfoil as two words, and drops the
-// possessive s from Collector's. Everything else - Common, Rare, Mosaic
-// Rare - it already spells alike, so a name absent from this table passes
-// through as it stands.
 // csiUnknownPrintings names the listings this storefront sells under a
 // printing the catalog does not carry, keyed by the name and the shelf it
-// sits on.
+// sits on. The nearest printing to each is a different card at a different
+// price.
 //
-// Each is a rarity the set prints and the card at that number does not.
-// Gladiator Beast Octavius exists in Gladiator's Assault as a Secret Rare
-// and nothing else, and the Exodia of Limited Pack World Championship 2025
-// is one of that set's two Emblazoned rarities and never a plain Secret
-// Rare or Ultra Rare - EN000 is the only one of its 21 numbers without the
-// plain tiers, which is what says the card is Emblazoned-only rather than
-// half-published.
-// Each is priced at a quarter against the printing it lands on, $13.00,
-// $500.00 and $45.00, which is the price of a card that is not that card.
+// The first four name a Yu-Gi-Oh rarity the card was not printed in. Limited
+// Pack World Championship 2025 prints Exodia as Emblazoned Secret Rare and
+// Emblazoned Ultra Rare only, and Gladiator's Assault prints Octavius as a
+// Secret Rare only. Antimagischer Duft is a German copy of Anti-Spell
+// Fragrance, and the Grevin Museum Luffy is a One Piece giveaway the catalog
+// has no product for.
 //
 // They are listed one at a time because no rule separates them from a
 // decorated rarity a storefront spells shorter: "Secret Rare" for the
@@ -1209,6 +1201,12 @@ func catalogSpelling(name string) string {
 	return spelled + " (" + printing
 }
 
+// csiRarities spells the storefront's Yu-Gi-Oh rarity names the way the
+// catalog does. Only the foil tiers disagree: the storefront drops the
+// "Rare" the catalog keeps, writes Starfoil as two words, and drops the
+// possessive s from Collector's. Everything else - Common, Rare, Mosaic
+// Rare - it already spells alike, so a name absent from this table passes
+// through as it stands.
 var csiRarities = map[string]string{
 	"Star Foil":      "Starfoil Rare",
 	"Shatterfoil":    "Shatterfoil Rare",

@@ -9,7 +9,7 @@ import (
 	_ "github.com/mtgban/go-mtgban/matcher/games"
 )
 
-// TestUnknownPrinting pins the two listings dropped for naming a printing the
+// TestUnknownPrinting pins the listings dropped for naming a printing the
 // catalog does not carry, and the shelf each is keyed to: the same name on
 // another shelf is another card, and the printing sold beside each of them is
 // the one they would otherwise land on.
@@ -39,6 +39,11 @@ func TestUnknownPrinting(t *testing.T) {
 			desc:    "a rarity the card is not printed in",
 			name:    "Dark Magician Knight",
 			edition: "Promo", want: true,
+		},
+		{
+			desc:    "a German copy of Anti-Spell Fragrance",
+			name:    "Antimagischer Duft",
+			edition: "Turbo Pack 2", want: true,
 		},
 		{
 			desc:    "a Paris museum giveaway the catalog has no product for",

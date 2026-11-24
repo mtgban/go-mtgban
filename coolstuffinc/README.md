@@ -63,35 +63,15 @@ Three feeds, all live.
   out. Lorcana's sealed carries no `ItemSet` facet at all, which is why the
   sealed search goes by name rather than by shelf.
 
-A fourth, dead one used to sit here: `csiPricelistURL`
-(`gateway_json.php?k=`), `CSIClient`, `NewCSIClient`, `CSICard`, and
-`Preprocess(CSICard)` were a whole second retail API - keyed, unlike
-everything else in this package, with a scryfall id on every row - with
-zero callers anywhere in the repo. Removed outright rather than kept
-around as a maybe-someday alternate path.
-
-Deleting `Preprocess(CSICard)` did not delete its knowledge for free,
-though, and that is worth knowing on its own: five of its six edition
-cases named shelves CSI is still selling on today (`Black Bordered
-(foreign)`, `Ikoria: Lair of Behemoths: Variants`, `Portal 3 Kingdoms`,
-`Double Masters: Variants`, `Dominaria United: Variants` - confirmed
-against a live fetch of the shelf checkbox list), and the live retail
-path (`preprocess()`, used by `retailMagic`) carries no equivalent case
-for any of them. Checked live rows from all five against the real
-datastore: four resolve fine anyway - the live path's generic wording
-already covers what the dead function's special cases once bought it,
-`Godzilla`/`Showcase Frame`/foreign-refusal included, at least in the
-sense of "resolves without error," which is as far as this was checked.
-`Black Bordered (foreign)` alone does not: a listing in any of the six
-languages that shelf carries currently returns `ErrUnsupported` from
-`preprocess()` - Italian and Japanese included, which the dead function's
-own table would have routed to `FBB`/`4BB`, both real sets the datastore
-carries. Nothing is mispriced by this; the listing is silently dropped
-rather than priced onto the wrong card, which is presumably why nobody
-noticed. Fixing it needs an answer this package doesn't have: `Edition:
-"Foreign Black Border"` resolves a card correctly with no `Language` set,
-and *stops* resolving it the moment `Language: "Italian"` is added - a
-question for `matcher`'s own language filtering, not for this scraper.
+Retail (`preprocess()`, used by `retailMagic`) reads the shelf names
+`Ikoria: Lair of Behemoths: Variants`, `Portal 3 Kingdoms`, `Double Masters:
+Variants`, and `Dominaria United: Variants` through its generic wording,
+with no case of their own. `Black Bordered (foreign)` has its own case:
+`csiForeignBlackBorder` reads the language word in a listing's note or
+bracket, which names both the run (Italian, French, and German are `FBB`;
+Japanese, Spanish, Portuguese, Korean, and Chinese are `4BB`) and the
+language the matcher picks the set from (`FBBFR`, `4BBES`, and so on). A
+listing naming none of those languages is `ErrUnsupported`.
 
 ## fetchWhole - the resume saga
 
@@ -453,10 +433,6 @@ from the shelf collision this section is about.
   games - Gundam and Palworld have no `coolstuffinc_sealed_*` scraper
   option, though `NewScraperSealed` itself would accept either game (both
   are in `csiGames`).
-- The `Black Bordered (foreign)` shelf resolves to `ErrUnsupported` on
-  every listing it carries, in every language - see "Data sources" above
-  for the specifics. Not a mispricing, just a silent, total coverage gap
-  on a shelf CSI actively sells on.
 
 ## Environment
 
