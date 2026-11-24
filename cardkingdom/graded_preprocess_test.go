@@ -283,8 +283,28 @@ func TestParseGradedSlab(t *testing.T) {
 		},
 		{
 			title: "Academy Ruins (Time Spiral Foil TAG 9.5) #5396",
-			slab:  mtgban.Slab{Grader: "TAG", Label: "TAG 9.5"}, grade: mtgban.NM,
-			unread: "TAG 9.5",
+			slab:  mtgban.Slab{Grader: "TAG", Score: 9.5}, grade: mtgban.NM,
+		},
+		{
+			title: "Academy Ruins (Time Spiral Foil TAG) #5396",
+			slab:  mtgban.Slab{Grader: "TAG", Label: "TAG"}, grade: mtgban.NM,
+			unread: "TAG",
+		},
+		{
+			title: "Academy Ruins (Time Spiral Foil CGC Pristine) #5396",
+			slab:  mtgban.Slab{Grader: "CGC", Score: 10, Label: "Pristine"}, grade: mtgban.NM,
+		},
+		{
+			title: "Academy Ruins (Time Spiral Foil CGC 8.25) #5396",
+			slab:  mtgban.Slab{Grader: "CGC", Score: 8}, grade: mtgban.NM,
+		},
+		{
+			title: "Academy Ruins (Time Spiral Foil BGS Quad 10) #5396",
+			slab:  mtgban.Slab{Grader: "BGS", Score: 10, Label: "Black Label"}, grade: mtgban.NM,
+		},
+		{
+			title: "Academy Ruins (Time Spiral Foil BGS Quad 9) #5396",
+			slab:  mtgban.Slab{Grader: "BGS", Score: 9, Label: "Quad"}, grade: mtgban.NM,
 		},
 		{
 			title: "Windswept Heath (Onslaught Foil CGC) #3024",

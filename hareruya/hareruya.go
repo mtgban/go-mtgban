@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math"
 	"net/http"
 	"net/url"
 	"path"
@@ -39,9 +40,6 @@ var reAltered = regexp.MustCompile(`Singed|Signed|Ink|Water|サイン|欠け`)
 // after it ("BGS8.5", "CGC Pristine 10"). SGC and ARS are graders no Slab
 // names yet, read so their slabs are published unread rather than dropped.
 var reSlab = regexp.MustCompile(`^(PSA|BGS|CGC|TAG|SGC|ARS)\s*(.*)$`)
-
-// reSlabScore is a slab's score, 1 to 10 in half steps; a 10.5 is a 10.
-var reSlabScore = regexp.MustCompile(`^(10|[1-9])(\.0|\.5)?$`)
 
 // Hareruya prices Hareruya's singles.
 type Hareruya struct {
@@ -508,8 +506,10 @@ func cartClass(item *goquery.Selection) string {
 }
 
 // haCondition maps Hareruya's condition text to our grade and, for a copy in
-// a grading service's slab, the slab, which grades by its score. A slab it
-// cannot read is published as NM, and logged.
+// a grading service's slab, the slab, which grades by its score: a score
+// between two half steps, or past the 10, is the one below. A scored TAG slab
+// is NM, TAG having no grade table. A slab it cannot read is published as NM,
+// and logged.
 func (ha *Hareruya) haCondition(s string) (mtgban.Condition, *mtgban.Slab, error) {
 	match := reSlab.FindStringSubmatch(s)
 	if match == nil {
@@ -519,21 +519,28 @@ func (ha *Hareruya) haCondition(s string) (mtgban.Condition, *mtgban.Slab, error
 	slab := &mtgban.Slab{Grader: match[1]}
 	var label []string
 	for _, field := range strings.Fields(match[2]) {
-		if slab.Score == 0 && reSlabScore.MatchString(field) {
-			score, _ := strconv.ParseFloat(field, 64)
-			slab.Score = min(score, 10)
+		score, err := strconv.ParseFloat(field, 64)
+		if err == nil && slab.Score == 0 && score >= 1 && score < 11 {
+			slab.Score = min(math.Floor(score*2)/2, 10)
 			continue
 		}
 		label = append(label, field)
 	}
 	slab.Label = strings.Join(label, " ")
 	// CGC's Pristine is its top score, printed with the 10 or without it.
-	if slab.Grader == "CGC" && slab.Label == "Pristine" {
+	if slab.Grader == "CGC" && slab.Score == 0 && slab.Label == "Pristine" {
 		slab.Score = 10
+	}
+	// Four 10 subgrades are a Black Label.
+	if slab.Grader == "BGS" && slab.Score == 10 && slab.Label == "Quad" {
+		slab.Label = "Black Label"
 	}
 	grade, found := slab.Fold()
 	if found {
 		return grade, slab, nil
+	}
+	if slab.Grader == "TAG" && slab.Score > 0 {
+		return mtgban.NM, slab, nil
 	}
 	ha.printf(mtgban.UnreadSlabFormat, s)
 	return mtgban.NM, mtgban.UnreadSlab(match[1], s), nil
