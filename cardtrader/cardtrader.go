@@ -770,6 +770,12 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 				continue
 			}
 		}
+		if ct.gameID == GameYuGiOh && ygoQualifier(blueprint) {
+			co, err := ct.backend.GetUUID(cardID)
+			if err != nil || !slices.Contains(co.PromoTypes, "worldchampionship") {
+				continue
+			}
+		}
 		// A Flesh and Blood listing flagged in a treatment a sibling at the
 		// number is sold in is that sibling, not this printing: a Regular
 		// copy of Volzar's Cold Foil token is its Normal face. It lands on

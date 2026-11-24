@@ -1,9 +1,12 @@
 package cardtrader
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/mtgban/go-mtgban/matcher"
+
+	_ "github.com/mtgban/go-mtgban/matcher/yugioh"
 )
 
 // TestYgoNumber pins the collector numbers Card Trader writes its own way:
@@ -85,6 +88,72 @@ func TestYgoInserts(t *testing.T) {
 		foreign.Expansion.Name = shelf
 		if !unsupportedBlueprint(GameYuGiOh, &foreign) {
 			t.Errorf("the %s shelf should be unsupported for Yu-Gi-Oh", shelf)
+		}
+	}
+}
+
+// prizeDatastore is the published Yu-Gi-Oh datastore cut down to two 2025
+// prize cards: Gagaga Magician's YCS Stamp copy alone, and both of Blue-Eyes'.
+const prizeDatastore = `{"data": {
+ "game": "yugioh",
+ "sets": {"25YC": {"name": "Championship Prize Cards 2025", "releaseDate": "2025-01-01"}},
+ "cards": [
+  {"id": "25yc-enp04_637085_limited", "name": "Gagaga Magician", "setCode": "25YC", "number": "25YC-ENP04", "rarity": "Rare", "finish": "Limited", "externalLinks": {"tcgPlayerId": 637085}},
+  {"id": "25yc-enp01_637082_limited", "name": "Blue-Eyes White Dragon", "setCode": "25YC", "number": "25YC-ENP01", "rarity": "Rare", "finish": "Limited", "externalLinks": {"tcgPlayerId": 637082}},
+  {"id": "25yc-enp01_679562_limited", "name": "Blue-Eyes White Dragon", "setCode": "25YC", "number": "25YC-ENP01", "rarity": "Rare", "finish": "Limited", "variant": "World Championship Qualifier", "promoTypes": ["worldchampionship"], "externalLinks": {"tcgPlayerId": 679562}}
+ ]
+}}`
+
+// TestYgoQualifier pins that a World Championship Qualifier blueprint lands
+// on a qualifier row or nowhere, never on the YCS Stamp row its id names, and
+// that the YCS Stamp blueprint keeps that row.
+func TestYgoQualifier(t *testing.T) {
+	b, err := matcher.Open(matcher.GameYuGiOh, strings.NewReader(prizeDatastore))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for _, tt := range []struct {
+		id      int
+		name    string
+		version string
+		number  string
+		tcgID   int
+		want    string
+	}{
+		{342004, "Gagaga Magician", "Rare | World Championship Qualifier", "P04q", 637085, ""},
+		{346318, "Gagaga Magician", "Rare | YCS Stamp", "P04", 0, "25yc-enp04_637085_limited"},
+		{341992, "Blue-Eyes White Dragon", "Rare | World Championship Qualifier", "P01q", 637082, "25yc-enp01_679562_limited"},
+		{346315, "Blue-Eyes White Dragon", "Rare | YCS Stamp", "P01", 0, "25yc-enp01_637082_limited"},
+	} {
+		bp := &Blueprint{ID: tt.id, Name: tt.name, Version: tt.version, GameID: GameYuGiOh, TCGplayerID: tt.tcgID}
+		bp.Expansion.Name = "Championship Prize Cards 2025"
+		bp.Properties.Number = tt.number
+
+		var logged int
+		ct := &Market{
+			backend:     b,
+			gameID:      GameYuGiOh,
+			blueprints:  map[int]*Blueprint{bp.ID: bp},
+			logCallback: func(string, ...any) { logged++ },
+		}
+
+		p := Product{ID: 1, BlueprintID: bp.ID, Quantity: 1}
+		p.Price.Cents = 100
+		p.Price.Currency = "USD"
+		p.Properties.Condition = "Near Mint"
+		p.Properties.YuGiOhLanguage = "en"
+
+		ch := make(chan resultChan, 1)
+		ct.processProducts(ch, bp.ID, []Product{p})
+		close(ch)
+
+		var got string
+		for result := range ch {
+			got = result.cardID
+		}
+		if got != tt.want || logged != 0 {
+			t.Errorf("blueprint %d landed on %q with %d lines logged, want %q and none", tt.id, got, logged, tt.want)
 		}
 	}
 }
