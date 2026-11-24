@@ -586,7 +586,7 @@ func (b *Backend) Match(inCard *InputCard) (cardID string, err error) {
 	seen := map[string]bool{}
 	for _, uuid := range b.Hashes[Normalize(inCard.Name)] {
 		co, found := b.UUIDs[uuid]
-		if !found || co.Sealed {
+		if !found || co.Sealed || co.isDerivedPair() {
 			continue
 		}
 		i, admitted := slices.BinarySearchFunc(candidates, co.SetCode, func(set CandidateSet, code string) int {

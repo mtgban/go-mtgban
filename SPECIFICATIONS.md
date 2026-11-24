@@ -660,7 +660,8 @@ The pipeline:
    `CandidateSet` per code, sorted by code, from the name index: every
    printing filed under the name's `Normalize` spelling in those sets, once
    whatever finishes it is sold in, so printings spelled apart by case or
-   punctuation stay reachable.
+   punctuation stay reachable. A derived token pair is skipped, so a
+   listing reaches one by id alone.
 
    `DefaultRules` tries exact normalized edition names, then partial names,
    then all printings. `PromoWildcard` keeps all printings, as used by Gundam
@@ -824,6 +825,9 @@ verbatim, then any entry whose name normalizes the same (normalization folds
 case and punctuation, so "Mr. 1 (Daz.Bonez)" and "Mr.1 (Daz.Bonez)" are
 distinct cards sharing a bucket), and only then falls back to the first
 entry, which is the right answer for alias-only buckets such as flavor names.
+A derived token pair (`Identifiers["derivedTokenPair"]`) is filed under its
+own name, either face first, and in each face's bucket, where a search finds
+it; `entry4Name` passes over it at every step, the fallback included.
 
 Sealed products are modeled end-to-end, in `matcher/sealed`, whose
 functions take the backend first:

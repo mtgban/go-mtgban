@@ -1450,16 +1450,9 @@ func (ap *AllPrintings) newBackend() *matcher.Backend {
 		mSets[k] = toMtgSet(v)
 	}
 
-	// Mint the combined entity for every two-sided token sheet whose
-	// pairing data resolves safely, now that every id and uuid above is
-	// filed - an id a real printing already claims is refused rather than
-	// shadowed. Nothing here touches hashes or canonicalNames, and no
-	// derived uuid is added to allUUIDs: a derived entity reaches Match
-	// only by its own TCGplayer product id, never by name, and a consumer
-	// that wants every one of them (a future pricing pass, say) filters
-	// uuids for Identifiers["derivedTokenPair"] == "true" rather than
-	// reading a second index kept only for that - one fact, one place.
-	// See tokenpairs.go.
+	// Mint the combined entity of every two-sided token sheet whose pairing
+	// resolves safely, and file it for a search by its name, either face
+	// first, and by each face's. Match reaches one by id alone (tokenpairs.go).
 	derivedCards := deriveTokenPairs(ap.Data, uuids, externalIDs[matcher.IDSpaceTCGplayer])
 
 	for _, card := range derivedCards {
@@ -1468,7 +1461,30 @@ func (ap *AllPrintings) newBackend() *matcher.Backend {
 			edition = set.Name
 		}
 		generateCardUUIDs(card, uuids, edition)
+
+		first, second, _ := strings.Cut(card.Name, " // ")
+		for _, uuid := range []string{card.UUID, card.UUID + suffixFoil} {
+			_, minted := uuids[uuid]
+			if !minted {
+				continue
+			}
+			allUUIDs = append(allUUIDs, uuid)
+			for _, nameToAdd := range []string{card.Name, second + " // " + first, first, second} {
+				norm := matcher.Normalize(nameToAdd)
+				_, found := hashes[norm]
+				if !found {
+					names = append(names, norm)
+					fullNames = append(fullNames, nameToAdd)
+					lowerNames = append(lowerNames, strings.ToLower(nameToAdd))
+				}
+				if slices.Contains(hashes[norm], uuid) {
+					continue
+				}
+				hashes[norm] = append(hashes[norm], uuid)
+			}
+		}
 	}
+	sort.Strings(allUUIDs)
 
 	var b matcher.Backend
 

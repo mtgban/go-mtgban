@@ -249,11 +249,14 @@ func (b *Backend) entry4Name(name string) (*CardObject, bool) {
 	if !found {
 		return nil, false
 	}
-	var normalized *CardObject
+	var normalized, first *CardObject
 	for _, uuid := range uuids {
 		entry, found := b.UUIDs[uuid]
-		if !found {
+		if !found || entry.isDerivedPair() {
 			continue
+		}
+		if first == nil {
+			first = entry
 		}
 		if strings.EqualFold(entry.Name, name) {
 			return entry, true
@@ -265,8 +268,7 @@ func (b *Backend) entry4Name(name string) (*CardObject, bool) {
 	if normalized != nil {
 		return normalized, true
 	}
-	entry, found := b.UUIDs[uuids[0]]
-	return entry, found
+	return first, first != nil
 }
 
 // NameIsToken reports whether the card actually named this way is a token.

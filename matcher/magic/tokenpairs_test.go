@@ -1,6 +1,8 @@
 package magic
 
 import (
+	"slices"
+	"strings"
 	"testing"
 
 	"github.com/mtgban/go-mtgban/matcher"
@@ -20,14 +22,13 @@ func derivedUUIDs(b *matcher.Backend) []string {
 	return uuids
 }
 
-// TestDerivedTokenPairsDoNotTouchTheNameIndex pins the structural guarantee
-// the whole design rests on: a derived entity is real (GetUUID answers for
-// it) but invisible to everything that resolves a listing by name. A
-// combined token name is not unique inside its own set - a single-faced
-// token commonly pairs with several different partners on the same sheet -
-// so letting one leak into Hashes, CanonicalNames or a set's own Cards/
-// Tokens would let an ordinary listing alias against the wrong pairing.
-func TestDerivedTokenPairsDoNotTouchTheNameIndex(t *testing.T) {
+// TestDerivedTokenPairsAreSearchedNotMatched pins what a derived entity is
+// to a name: a search finds it by its own name, either face first, and by
+// each face's, while Match never answers with one. A combined token name is
+// not unique inside its own set - a single-faced token commonly pairs with
+// several partners on the same sheet - so a listing matched by name would
+// alias against the wrong pairing.
+func TestDerivedTokenPairsAreSearchedNotMatched(t *testing.T) {
 	realDatastore(t)
 
 	derived := derivedUUIDs(testBackend)
@@ -35,33 +36,28 @@ func TestDerivedTokenPairsDoNotTouchTheNameIndex(t *testing.T) {
 		t.Fatal("no derived token pairs in this datastore")
 	}
 
-	allUUIDs := make(map[string]bool, len(testBackend.AllUUIDs))
-	for _, uuid := range testBackend.AllUUIDs {
-		allUUIDs[uuid] = true
-	}
-	for _, uuid := range derived {
-		if allUUIDs[uuid] {
-			t.Errorf("derived uuid %s is in AllUUIDs, want kept out", uuid)
-		}
-	}
-
 	for _, uuid := range derived {
 		co, err := testBackend.GetUUID(uuid)
 		if err != nil {
 			t.Fatalf("GetUUID(%s) = %v, want a derived entity", uuid, err)
 		}
-		// CanonicalNames may already hold this normalized key for an
-		// unrelated real card - Normalize strips "//" the same way it
-		// strips a space, so "Zombie // Ogre" normalizes identically to
-		// AFR's own "Zombie Ogre". That collision is harmless and expected;
-		// what must never happen is the derived uuid being *reachable*
-		// through it, which Hashes below is the actual guarantee for.
-		norm := matcher.Normalize(co.Card.Name)
-		for _, id := range testBackend.Hashes[norm] {
-			if id == uuid {
-				t.Errorf("Hashes[%q] contains the derived uuid %s, want it absent", norm, uuid)
+		if !slices.Contains(testBackend.GetUUIDsInSet(co.SetCode), uuid) {
+			t.Errorf("%s is not among the uuids of %s", uuid, co.SetCode)
+		}
+		first, second, _ := strings.Cut(co.Name, " // ")
+		for _, name := range []string{co.Name, second + " // " + first, first, second} {
+			found, _ := testBackend.SearchEquals(name)
+			if !slices.Contains(found, uuid) {
+				t.Errorf("SearchEquals(%q) does not find %s", name, uuid)
 			}
 		}
+		for _, name := range []string{co.Name, first} {
+			id, err := testBackend.Match(&matcher.InputCard{Name: name, Edition: co.Edition, Foil: co.Foil})
+			if err == nil && slices.Contains(derived, id) {
+				t.Errorf("Match(%q in %q) = %s, a derived pairing", name, co.Edition, id)
+			}
+		}
+
 		set, found := testBackend.Sets[co.SetCode]
 		if !found {
 			continue
