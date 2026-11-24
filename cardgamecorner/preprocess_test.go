@@ -2,6 +2,7 @@ package cardgamecorner
 
 import (
 	"cmp"
+	"errors"
 	"testing"
 
 	"github.com/mtgban/go-mtgban/matcher"
@@ -661,5 +662,54 @@ func TestFoilStarTwin(t *testing.T) {
 		if err != nil || co.Number != tt.wantNum {
 			t.Errorf("foilStarTwin(%s) = %v, want %s", tt.name, co, tt.wantNum)
 		}
+	}
+}
+
+// A two-sided token lands on the pairing the datastore derives for it, never
+// on one of its faces, and is unsupported where no face anchors a pairing.
+func TestTokenPair(t *testing.T) {
+	b := realDatastore(t)
+	for _, tt := range []struct {
+		desc    string
+		card    Card
+		foil    bool
+		wantSet string
+		wantNum string
+	}{
+		{"both numbers stated", Card{Name: "Goat Token (W 0/1) // Construct Token (A 1/1)", Edition: "Commander: The Brothers' War: Extras", Number: "T 3/8", SetCode: "BRC"}, false, "TBRC", "3//8"},
+		{"the second face cut short", Card{Name: "Cat Warrior Token (G 2/2) // Elemental Token (G */", Edition: "Commander 2018", Number: "T 15/16", SetCode: "c18"}, false, "TC18", "15//16"},
+		{"a single slash", Card{Name: "Angel Token (W 4/4) / Cat Token (W 2/2)", Edition: "Commander 2018", Number: "T 03/05", SetCode: "c18"}, false, "TC18", "3//5"},
+		{"the first number wrong, the second face anchors", Card{Name: "Knight Token (WU 2/2) // Assassin Token (B 1/1 Dea", Edition: "Commander: March of the Machine: Extras", Number: "T 10/17", SetCode: "moc"}, false, "TMOM", "10//17"},
+		{"a shelf named by its set code alone", Card{Name: "Dog Token (W 1/1) // Cat Token (G 1/1)", Edition: "Secret Lair Commander Deck: Raining Cats and Dogs", Number: "1516", SetCode: "sld"}, true, "SLD", "1516//1517"},
+		{"a partner cut past its name", Card{Name: "Warrior Token (W 1/1) // Elspeth, Sun's Champion E", Edition: "Commander: March of the Machine: Extras", Number: "T 10/43", SetCode: "moc"}, false, "", ""},
+		{"a foil native card printed only nonfoil", Card{Name: "Copy Token // Horror Token", Edition: "Guilds of Ravnica: Guild Kits", Number: "T 1/2", SetCode: "gk1"}, true, "", ""},
+		{"a pairing the datastore lacks", Card{Name: "Human Soldier Token (W 1/1) // Food Token (V.1)", Edition: "The Lord of the Rings: Tales of Middle-earth: Extras", Number: "T 1/9", SetCode: "LTR"}, false, "", ""},
+	} {
+		t.Run(tt.desc, func(t *testing.T) {
+			finish := "Non Foil"
+			if tt.foil {
+				finish = "Foil"
+			}
+			card := tt.card
+			card.Variants = []Variant{{Foil: finish, Language: "EN"}}
+			input, err := preprocess(b, &card, 0)
+			if tt.wantSet == "" {
+				if !errors.Is(err, matcher.ErrUnsupported) {
+					t.Errorf("preprocess() = %v, %v, want unsupported", input, err)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatal(err)
+			}
+			id, err := b.Match(input)
+			if err != nil {
+				t.Fatal(err)
+			}
+			co, err := b.GetUUID(id)
+			if err != nil || co.SetCode != tt.wantSet || co.Number != tt.wantNum || co.Foil != tt.foil || co.Identifiers["derivedTokenPair"] != "true" {
+				t.Errorf("landed on %v, want the %s %s pairing", co, tt.wantSet, tt.wantNum)
+			}
+		})
 	}
 }

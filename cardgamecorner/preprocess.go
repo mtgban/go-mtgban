@@ -191,6 +191,11 @@ func preprocess(b *matcher.Backend, card *Card, index int) (*matcher.InputCard, 
 	// lookup the scraper itself runs on the name comes up empty.
 	cardName = unquote(cardName)
 
+	first, second := tokenPairFaces(cardName)
+	if second != "" {
+		return preprocessTokenPair(b, card, first, second, isFoil)
+	}
+
 	cn, found := cardTable[cardName]
 	if found {
 		cardName = cn
@@ -267,6 +272,86 @@ func preprocess(b *matcher.Backend, card *Card, index int) (*matcher.InputCard, 
 		Foil:      isFoil,
 		Language:  borderLanguages[card.Variants[index].Language],
 	}, nil
+}
+
+// tokenPairNumbersRe reads the collector numbers a two-sided token lists,
+// "T 15/16" for each face in the order the name gives them, or the first
+// face's alone.
+var tokenPairNumbersRe = regexp.MustCompile(`^(?:T\s*)?0*(\d+)(?:\s*/\s*0*(\d+))?$`)
+
+// tokenPairFaces splits a two-sided token listing, "Goat Token (W 0/1) //
+// Construct Token (A 1/1)" or "Angel Token (W 4/4) / Cat Token (W 2/2)",
+// into its two faces. It returns no second face for any other name.
+func tokenPairFaces(cardName string) (string, string) {
+	low := strings.ToLower(cardName)
+	if !strings.Contains(low, "token") && !strings.Contains(low, "emblem") {
+		return cardName, ""
+	}
+	for _, sep := range []string{" // ", " / "} {
+		first, second, found := strings.Cut(cardName, sep)
+		if found {
+			return first, second
+		}
+	}
+	return cardName, ""
+}
+
+// preprocessTokenPair lands a two-sided token on the pairing the datastore
+// derives for it, anchoring a face by the number the listing states in the
+// token set its shelf names, or its set code where the shelf names none, or
+// else both faces by name in the shelf's set. A sheet that anchors nowhere
+// is unsupported: no single face is the product on sale.
+func preprocessTokenPair(b *matcher.Backend, card *Card, first, second string, isFoil bool) (*matcher.InputCard, error) {
+	edition := card.Edition
+	lutName, found := editionTable[edition]
+	if found {
+		edition = lutName
+	}
+	tokenSet := magic.EditionTokenSetCode(b, edition)
+	if tokenSet == "" && card.SetCode != "" {
+		tokenSet = magic.SetTokenSetCode(b, strings.ToUpper(card.SetCode))
+	}
+
+	// Each number names the face in its own place in the name
+	m := tokenPairNumbersRe.FindStringSubmatch(card.Number)
+	if tokenSet != "" && m != nil {
+		anchors := [][2]string{{m[1], first + " // " + second}, {m[2], second + " // " + first}}
+		for _, anchor := range anchors {
+			if anchor[0] == "" {
+				continue
+			}
+			uuid := magic.MatchNativeTokenPair(b, tokenSet, anchor[0], anchor[1])
+			if uuid != "" {
+				id, err := b.MatchID(uuid, isFoil)
+				if err == nil && sameFinish(b, id, isFoil) {
+					return &matcher.InputCard{ID: id, Foil: isFoil}, nil
+				}
+			}
+			tcgID := magic.MatchTokenPairingBySetNumber(b, tokenSet, anchor[0], anchor[1], isFoil)
+			if tcgID != "" {
+				id, err := b.MatchID(tcgID, isFoil)
+				if err == nil {
+					return &matcher.InputCard{ID: id, Foil: isFoil}, nil
+				}
+			}
+		}
+	}
+
+	pairID := magic.MatchTokenPairingByNamesAndEdition(b, first+" // "+second, edition, isFoil)
+	if pairID != "" {
+		id, err := b.MatchID(pairID, isFoil)
+		if err == nil {
+			return &matcher.InputCard{ID: id, Foil: isFoil}, nil
+		}
+	}
+	return nil, matcher.ErrUnsupported
+}
+
+// sameFinish reports whether a printing is in the finish a listing asks
+// for: MatchID answers a foil request on a nonfoil-only card with that card.
+func sameFinish(b *matcher.Backend, id string, isFoil bool) bool {
+	co, err := b.GetUUID(id)
+	return err == nil && (!isFoil || co.Foil || co.Etched)
 }
 
 // borderLanguages are the languages of the Revised EU editions beside the

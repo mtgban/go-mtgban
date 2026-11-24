@@ -24,6 +24,7 @@ type Card struct {
 	SKU      string
 	Name     string
 	Edition  string
+	SetCode  string
 	Rarity   string
 	Extra    string
 	OrigName string
@@ -56,6 +57,7 @@ type single struct {
 	ModelEn  raw[string]   `json:"modelen"`
 	Image    raw[string]   `json:"image"`
 	Category raw[string]   `json:"category"`
+	Icon     raw[string]   `json:"icon"`
 	URL      raw[string]   `json:"url"`
 	Number   raw[string]   `json:"serialnumber"`
 	Rarity   raw[[]string] `json:"p2"`
@@ -67,6 +69,7 @@ func (s *single) card() Card {
 		SKU:      s.SKU.Raw,
 		Name:     s.ModelEn.Raw,
 		Edition:  s.Category.Raw,
+		SetCode:  s.Icon.Raw,
 		Extra:    s.Image.Raw,
 		OrigName: s.Model.Raw,
 		URL:      s.URL.Raw,
