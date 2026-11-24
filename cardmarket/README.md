@@ -441,6 +441,9 @@ carries it.
 - `CARDTRADER_TOKEN_BEARER` - the bridge Flesh and Blood, Pokemon, Yu-Gi-Oh,
   One Piece and Gundam require and Riftbound and Lorcana merely improve with,
   for all three scrapers alike
-  (`TestCardmarketNeedsItsBridge` pins the refusal).
+  (`TestCardmarketNeedsItsBridge` pins the refusal). Where it is required, a
+  bridge that lost one expansion to a failed fetch is refused too
+  (`TestCardmarketNeedsACompleteBridge`); an expansion CardTrader lists before
+  publishing its blueprints is not lost.
 - `CARDMARKET_MARKET_PATH` - overrides the checked-in live-listing fixture
   `market_replay_test.go` reads by default.

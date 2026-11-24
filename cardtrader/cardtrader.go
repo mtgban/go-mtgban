@@ -884,7 +884,8 @@ func (ct *Market) Load(ctx context.Context) error {
 		ct.printf("-> only targeting edition %s", ct.targetEdition)
 	}
 	blueprintsRaw, expansionsRaw, err := BlueprintsForGameID(ctx, ct.client, ct.gameID, ct.targetEdition, ct.maxConcurrency, ct.printf)
-	if err != nil {
+	// An expansion that did not load only goes unpriced.
+	if err != nil && !errors.Is(err, ErrIncomplete) {
 		return err
 	}
 	ct.printf("Retrieved %d global sets", len(expansionsRaw))

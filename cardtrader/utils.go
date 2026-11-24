@@ -2,6 +2,7 @@ package cardtrader
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"regexp"
 	"slices"
@@ -171,11 +172,18 @@ func ConvertProducts(b *matcher.Backend, blueprints map[int]*Blueprint, products
 	return inventory
 }
 
+// ErrIncomplete marks a blueprint fetch that lost one expansion or more: the
+// error wrapping it names them, and what did load is returned beside it.
+var ErrIncomplete = errors.New("incomplete blueprints")
+
 // BlueprintsForGame fetches every blueprint of a game, a few expansions at
-// a time, skipping the expansions that fail to fetch rather than aborting
-// the lot. A non-empty targetEdition narrows the fetch to that expansion
-// by name or code; logf, when given, reports the skips. The expansions
-// are returned too, since callers key edition names off them.
+// a time, and skips the expansions that fail again when asked alone rather
+// than aborting the lot. A fetch that lost any this way returns the rest
+// along with an error wrapping ErrIncomplete, for the caller to refuse or put
+// up with; an expansion Card Trader publishes no blueprints for yet is not
+// lost. A non-empty targetEdition narrows the fetch to that expansion by name
+// or code; logf, when given, reports the skips. The expansions are returned
+// too, since callers key edition names off them.
 func BlueprintsForGame(ctx context.Context, client *CTAuthClient, game matcher.Game, targetEdition string, logf func(string, ...any)) ([]Blueprint, []Expansion, error) {
 	gameID, found := ctGames[game]
 	if !found {
@@ -221,30 +229,57 @@ func BlueprintsForGameID(ctx context.Context, client *CTAuthClient, gameID int, 
 	type fetched struct {
 		index      int
 		blueprints []Blueprint
+		err        error
 	}
 	perExpansion := make([][]Blueprint, len(expansions))
-	mtgban.WorkerPool(ctx, concurrency, wanted,
-		func(ctx context.Context, i int, results chan<- fetched) error {
-			exp := expansions[i]
-			bp, err := client.Blueprints(ctx, exp.ID)
-			if err != nil {
-				return fmt.Errorf("skipping %d %s due to %s", exp.ID, exp.Name, err.Error())
-			}
-			results <- fetched{i, bp}
-			return nil
-		},
-		func(f fetched) {
-			perExpansion[f.index] = f.blueprints
-		},
-		logf,
-	)
+	fetch := func(concurrency int, indices []int, failed string) []int {
+		var lost []int
+		mtgban.WorkerPool(ctx, concurrency, indices,
+			func(ctx context.Context, i int, results chan<- fetched) error {
+				bp, err := client.Blueprints(ctx, expansions[i].ID)
+				results <- fetched{i, bp, err}
+				return nil
+			},
+			func(f fetched) {
+				if f.err == nil {
+					perExpansion[f.index] = f.blueprints
+					return
+				}
+				verb := failed
+				if errors.Is(f.err, errUnpublished) {
+					verb = "skipping"
+				} else {
+					lost = append(lost, f.index)
+				}
+				if logf != nil {
+					exp := expansions[f.index]
+					logf("%s %d %s due to %s", verb, exp.ID, exp.Name, f.err.Error())
+				}
+			},
+			logf,
+		)
+		slices.Sort(lost)
+		return lost
+	}
+	// The workers together can keep one request rate limited until its
+	// retries run out, so an expansion is lost only if it fails alone too.
+	lost := fetch(concurrency, wanted, "refetching")
+	lost = fetch(1, lost, "skipping")
 	// A cancelled walk leaves expansions undispatched; fail rather than
 	// hand back a partial catalog.
 	err = ctx.Err()
 	if err != nil {
 		return nil, nil, err
 	}
-	return slices.Concat(perExpansion...), expansions, nil
+
+	if len(lost) > 0 {
+		var names []string
+		for _, i := range lost {
+			names = append(names, fmt.Sprintf("%d %s", expansions[i].ID, expansions[i].Name))
+		}
+		err = fmt.Errorf("%w: lost %d of %d expansions: %s", ErrIncomplete, len(lost), len(wanted), strings.Join(names, ", "))
+	}
+	return slices.Concat(perExpansion...), expansions, err
 }
 
 // gameLanguage and gameFoil read a listing's language and foil flag for the

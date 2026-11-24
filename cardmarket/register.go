@@ -60,7 +60,8 @@ func WithTargetProduct(product string) mtgban.Option {
 
 // BridgeUse says how much a game's Index and Market scraper leans on the
 // TCGplayer bridge, for bantool to decide whether the bridge - a cardtrader
-// crawl - is worth building, and whether a failure to build it is fatal.
+// crawl - is worth building, and whether a failure to build it, whole or in
+// part, is fatal.
 type BridgeUse int
 
 const (
@@ -73,7 +74,7 @@ const (
 	BridgeHelps
 	// BridgeRequired means same-name products abound and the catalog alone
 	// cannot tell them apart, so a name route lands products on sibling
-	// printings; without a bridge the scraper cannot run.
+	// printings; without a complete bridge the scraper cannot run.
 	BridgeRequired
 )
 

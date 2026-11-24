@@ -160,6 +160,9 @@ func enableStores(scrapers map[string]*scraperOption, game matcher.Game, store, 
 	return nil
 }
 
+// blueprintsForGame is how cardtraderBridge fetches, for a test to replace.
+var blueprintsForGame = cardtrader.BlueprintsForGame
+
 // cardtraderBridge maps every Cardmarket product id to the TCGplayer id of
 // the same product, read off cardtrader's blueprints - the one source
 // linking the two marketplaces' ids - with the corrections that package
@@ -167,15 +170,19 @@ func enableStores(scrapers map[string]*scraperOption, game matcher.Game, store, 
 // sealed alike, so the same bridge serves both cardmarket scrapers; they
 // receive it as plain data, and the composition of the two vendors happens
 // here and nowhere else.
-func cardtraderBridge(game matcher.Game) (map[int]int, error) {
+//
+// A bridge that lost an expansion leaves its products to the name route, so
+// needComplete refuses one; otherwise a short bridge is returned as is, the
+// expansions it lost logged.
+func cardtraderBridge(game matcher.Game, needComplete bool) (map[int]int, error) {
 	ctTokenBearer := os.Getenv("CARDTRADER_TOKEN_BEARER")
 	if ctTokenBearer == "" {
 		return nil, errors.New("missing CARDTRADER_TOKEN_BEARER env var")
 	}
 	client := cardtrader.NewCTAuthClient(ctTokenBearer)
 
-	blueprints, _, err := cardtrader.BlueprintsForGame(context.Background(), client, game, "", log.Printf)
-	if err != nil {
+	blueprints, _, err := blueprintsForGame(context.Background(), client, game, "", log.Printf)
+	if err != nil && (needComplete || !errors.Is(err, cardtrader.ErrIncomplete)) {
 		return nil, err
 	}
 
@@ -289,7 +296,7 @@ func scraperResources(b *matcher.Backend, key string) ([]mtgban.Option, error) {
 
 		switch cardmarket.BridgeUseOf(game) {
 		case cardmarket.BridgeRequired:
-			bridge, err := cardtraderBridge(game)
+			bridge, err := cardtraderBridge(game, true)
 			if err != nil {
 				return nil, err
 			}
@@ -300,7 +307,7 @@ func scraperResources(b *matcher.Backend, key string) ([]mtgban.Option, error) {
 			// will not answer costs those printings and nothing else, and
 			// the run goes ahead saying so rather than failing and pricing
 			// nothing.
-			bridge, err := cardtraderBridge(game)
+			bridge, err := cardtraderBridge(game, false)
 			if err != nil {
 				log.Printf("bridge unavailable, naming what the catalog can on its own: %v", err)
 			} else {
@@ -312,7 +319,7 @@ func scraperResources(b *matcher.Backend, key string) ([]mtgban.Option, error) {
 		if cardmarket.SealedBridgeUseOf(game) == cardmarket.BridgeUnused {
 			break
 		}
-		bridge, err := cardtraderBridge(game)
+		bridge, err := cardtraderBridge(game, true)
 		if err != nil {
 			return nil, err
 		}
@@ -324,7 +331,7 @@ func scraperResources(b *matcher.Backend, key string) ([]mtgban.Option, error) {
 		}
 		// The bridge only settles what the wording cannot, so a cardtrader
 		// that will not answer costs those printings and nothing else.
-		bridge, err := cardtraderBridge(game)
+		bridge, err := cardtraderBridge(game, false)
 		if err != nil {
 			log.Printf("bridge unavailable, naming what the wording can on its own: %v", err)
 			bridge = map[int]int{}

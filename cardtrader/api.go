@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/mtgban/go-mtgban/matcher"
@@ -506,6 +507,10 @@ func (ct *CTAuthClient) ProductsForBlueprint(ctx context.Context, id int) ([]Pro
 	return out[id], nil
 }
 
+// errUnpublished is Card Trader's answer for an expansion it lists but has no
+// blueprints for yet, as it does for the first hours of a new one.
+var errUnpublished = errors.New("no blueprints published")
+
 // Blueprints returns every catalog entry in one expansion.
 func (ct *CTAuthClient) Blueprints(ctx context.Context, expansionID int) ([]Blueprint, error) {
 	link := ctBlueprintsURL + fmt.Sprint(expansionID)
@@ -531,6 +536,9 @@ func (ct *CTAuthClient) Blueprints(ctx context.Context, expansionID int) ([]Blue
 		var blueprintError BlueprintError
 		bpErr := json.Unmarshal(data, &blueprintError)
 		if bpErr == nil {
+			if blueprintError.ErrorCode == "not_found" && strings.HasPrefix(blueprintError.Extra.Message, "Data is not ready for blueprints_exp_") {
+				return nil, fmt.Errorf("%w: %s", errUnpublished, blueprintError.Extra.Message)
+			}
 			return nil, fmt.Errorf("%s", blueprintError.Extra.Message)
 		}
 		return nil, fmt.Errorf("unmarshal error for blueprints (from edition id %d), got: %s", expansionID, string(data))
