@@ -54,7 +54,22 @@ func TestSlabCondition(t *testing.T) {
 		{[]string{"Graded"}, "", false, false, mtgban.NM, slab{Label: "Graded"}, "Graded"},
 		{[]string{"Graded", "CGC"}, "SP", false, false, mtgban.NM, slab{Grader: "CGC", Label: "CGC SP"}, "CGC SP"},
 		{[]string{"Graded", "CGC", "CGC Less than 8"}, "SP", false, false, mtgban.NM, slab{Grader: "CGC", Label: "CGC Less than 8 SP"}, "CGC Less than 8 SP"},
-		{[]string{"Graded", "BGS", "BGS Quad 9"}, "MINT", false, false, mtgban.NM, slab{Grader: "BGS", Label: "BGS Quad 9"}, "BGS Quad 9"},
+		{[]string{"Graded", "BGS", "BGS Quad 9"}, "MINT", false, false, mtgban.NM, slab{Grader: "BGS", Score: 9, Label: "Quad"}, ""},
+		// A word beside the score is its label.
+		{[]string{"Graded", "CGC", "CGC Pristine 10"}, "MINT", false, false, mtgban.NM, slab{Grader: "CGC", Score: 10, Label: "Pristine"}, ""},
+		{[]string{"Graded", "CGC", "CGC Pristine"}, "MINT", false, false, mtgban.NM, slab{Grader: "CGC", Score: 10, Label: "Pristine"}, ""},
+		{[]string{"Graded", "CGC", "CGC Authentic Altered"}, "MINT", false, false, mtgban.PO, slab{Grader: "CGC", Label: "Authentic Altered"}, ""},
+		{[]string{"Graded", "BGS", "BGS Pristine"}, "MINT", false, false, mtgban.NM, slab{Grader: "BGS", Label: "BGS Pristine"}, "BGS Pristine"},
+		{[]string{"Graded", "PSA", "PSA Authentic"}, "MINT", false, false, mtgban.NM, slab{Grader: "PSA", Label: "PSA Authentic"}, "PSA Authentic"},
+		// TAG has no grade table; a score is kept, at NM.
+		{[]string{"Graded", "TAG", "TAG 9.5"}, "MINT", false, false, mtgban.NM, slab{Grader: "TAG", Score: 9.5}, ""},
+		{[]string{"Graded", "TAG", "TAG Pristine 10"}, "MINT", false, false, mtgban.NM, slab{Grader: "TAG", Score: 10, Label: "Pristine"}, ""},
+		{[]string{"Graded", "TAG"}, "PLD", false, false, mtgban.NM, slab{Grader: "TAG", Label: "TAG"}, "TAG"},
+		{[]string{"Graded", "TAG", "TAG Less than 8"}, "NM", false, false, mtgban.NM, slab{Grader: "TAG", Label: "TAG Less than 8 NM"}, "TAG Less than 8 NM"},
+		// A grader outside the supported ones is unread, whatever ABU's condition.
+		{[]string{"Graded", "SGC", "SGC 9"}, "PLD", false, false, mtgban.NM, slab{Label: "SGC 9"}, "SGC 9"},
+		{[]string{"SGC 9", "Graded", "SGC"}, "NM", false, false, mtgban.NM, slab{Label: "SGC 9"}, "SGC 9"},
+		{[]string{"Dual Land", "Graded", "SGC"}, "NM", false, false, mtgban.NM, slab{Label: "SGC"}, "SGC"},
 		// A score off the half steps reads as the one below it.
 		{[]string{"Graded", "BGS", "BGS 9.25"}, "MINT", false, false, mtgban.NM, slab{Grader: "BGS", Score: 9}, ""},
 		{[]string{"Graded", "BGS", "BGS 8.75"}, "MINT", false, false, mtgban.SP, slab{Grader: "BGS", Score: 8.5}, ""},

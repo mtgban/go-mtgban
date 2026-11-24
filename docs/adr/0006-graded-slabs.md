@@ -105,15 +105,27 @@ seller, with a `Slab` holding what could be read and the store's wording in
 `Label`; a grader outside the list leaves `Grader` empty. The scraper logs it
 loudly with that wording (`unsupported slab "SGC 10", published as NM`). The
 listing is not lost while support for a new grader is added, and the log
-line is what says it is due. This replaces today's mix, where Card Kingdom,
-ABU and Hareruya drop such a slab and Cool Stuff Inc files it as a raw NM
-copy under CSIUnique.
+line is what says it is due. Card Kingdom, ABU and Hareruya read one wording
+as one slab, each in its own helper:
+
+- One field is the score, rounded down to a half step and held at 10 (11 and
+  up is a typo); the rest of the wording is the label.
+- CGC Pristine with no score is a 10. BGS Quad 10, four 10 subgrades, is a
+  10 labelled Black Label.
+- TAG is in the grader list with no column in the fold table. A TAG slab with
+  a score keeps its grader, score and label and is published as NM without a
+  log line: there is nothing in it left to read. One with no score is unread.
+- A grader outside the list is an unread slab, also at ABU, where a slab that
+  names no grader at all is graded by its shelf condition.
+
+This replaces today's mix, where Card Kingdom, ABU and Hareruya drop such a
+slab and Cool Stuff Inc files it as a raw NM copy under CSIUnique.
 
 `add` gains one rule: an entry whose `Slab` has a non-empty `Grader` outside
 the list, or a non-zero `Score` that is not 1-10 in half steps, or that has a
 `Slab` and an empty `Conditions`, is refused with `ErrInvalidCondition`,
 ahead of the default that turns an empty condition into NM. A slab is never
-silently NM: the scraper chooses NM for an unread slab and says so. `add`
+NM by default: the scraper chooses NM, and says so for an unread slab. `add`
 keeps entries whose slabs differ apart, a slab beside a raw copy included,
 before any duplicate check, so the slab is part of the key under every `Add`:
 only the same slab twice can merge, or be refused as a duplicate. Card

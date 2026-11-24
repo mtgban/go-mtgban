@@ -2,6 +2,7 @@ package cardkingdom
 
 import (
 	"errors"
+	"math"
 	"regexp"
 	"slices"
 	"strconv"
@@ -802,20 +803,18 @@ var gradedScryfallIDs = map[string]string{
 }
 
 var supportedScores = []string{
-	"PSA", "BGS", "CGC",
+	"PSA", "BGS", "CGC", "TAG",
 }
-
-// reSlabScore is a slab's score as a title prints it, in half steps. A 10.5
-// is a 10.
-var reSlabScore = regexp.MustCompile(`^(10|[1-9])(\.[05])?$`)
 
 // reOtherSlab is the grade of a service outside supportedScores, closing the
 // title's parenthesis or the edition split off it: "SGC 9.5".
 var reOtherSlab = regexp.MustCompile(`\b([A-Z]{3,4}) \d{1,2}(\.\d+)?\+?(\)|$)`)
 
 // parseGradedSlab reads the slab off a graded listing's title, "CGC Pristine
-// 10" as a CGC 10 labelled Pristine, and its grade. A slab that does not fold
-// is an unread one, graded NM, and unread is the wording to log it by.
+// 10" as a CGC 10 labelled Pristine, and its grade. A score between two half
+// steps, or past the 10, is the one below. A scored TAG slab is NM, TAG having
+// no grade table. A slab that does not fold is an unread one, graded NM, and
+// unread is the wording to log it by.
 func parseGradedSlab(title string) (slab *mtgban.Slab, grade mtgban.Condition, unread string) {
 	for _, grader := range supportedScores {
 		_, after, found := strings.Cut(title, grader)
@@ -827,18 +826,29 @@ func parseGradedSlab(title string) (slab *mtgban.Slab, grade mtgban.Condition, u
 		slab = &mtgban.Slab{Grader: grader}
 		var label []string
 		for _, field := range strings.Fields(wording) {
-			if slab.Score == 0 && reSlabScore.MatchString(field) {
-				score, _ := strconv.ParseFloat(field, 64)
-				slab.Score = min(score, 10)
+			score, err := strconv.ParseFloat(field, 64)
+			if err == nil && slab.Score == 0 && score >= 1 && score < 11 {
+				slab.Score = min(math.Floor(score*2)/2, 10)
 				continue
 			}
 			label = append(label, field)
 		}
 		slab.Label = strings.Join(label, " ")
+		// CGC's Pristine is its top score, printed with the 10 or without it.
+		if slab.Grader == "CGC" && slab.Score == 0 && slab.Label == "Pristine" {
+			slab.Score = 10
+		}
+		// Four 10 subgrades are a Black Label.
+		if slab.Grader == "BGS" && slab.Score == 10 && slab.Label == "Quad" {
+			slab.Label = "Black Label"
+		}
 
 		grade, found = slab.Fold()
 		if found {
 			return slab, grade, ""
+		}
+		if slab.Grader == "TAG" && slab.Score > 0 {
+			return slab, mtgban.NM, ""
 		}
 		unread = strings.TrimSpace(grader + wording)
 		return mtgban.UnreadSlab(grader, unread), mtgban.NM, unread
