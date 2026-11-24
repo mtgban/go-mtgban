@@ -469,9 +469,9 @@ func Preprocess(b *matcher.Backend, card cardkingdom.Product) (*matcher.InputCar
 
 	// A two-sided token sheet prints one physical card for a pairing
 	// matcher/magic may already carry a combined entity for - resolve
-	// that precisely, by id, before falling back to the one-face collapse
-	// below. See magic.MatchTokenPairing (shared with every other vendor
-	// package resolving its own two-sided token listings the same way).
+	// that precisely, by id, before the refusal below. See
+	// magic.MatchTokenPairing (shared with every other vendor package
+	// resolving its own two-sided token listings the same way).
 	if isTwoSidedToken {
 		if id := magic.MatchTokenPairing(b, card.ScryfallID, card.Name, isFoil); id != "" {
 			return &matcher.InputCard{ID: id, Foil: isFoil}, nil
@@ -524,19 +524,12 @@ func Preprocess(b *matcher.Backend, card cardkingdom.Product) (*matcher.InputCar
 		}
 	}
 
-	// Drop one side of dfc tokens, without doubling the suffix when the
-	// kept face already carries it, and leaving alone the split cards a
-	// T-prefixed set code sweeps in: the set carries those under both faces
+	// A sheet with no pairing left is not either of its faces, so it is
+	// refused rather than priced as one; the split cards a T-prefixed set
+	// code sweeps in are left alone, the set carries those under both faces
 	if isTwoSidedToken &&
 		len(b.MatchInSetNumber(card.Name, setCode, number)) == 0 {
-		if strings.Contains(card.Name, " // ") {
-			card.Name = strings.Split(card.Name, " // ")[0]
-		} else {
-			card.Name = strings.Split(card.Name, " - ")[0]
-		}
-		if !strings.HasSuffix(card.Name, "Token") {
-			card.Name += " Token"
-		}
+		return nil, matcher.ErrUnsupported
 	}
 	// Tokens are filed under their own set code when the datastore carries
 	// one, while a code it does not carry names the set the tokens are
