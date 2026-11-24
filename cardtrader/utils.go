@@ -714,6 +714,13 @@ var ygoNoRow = map[int]bool{
 	208974: true,
 }
 
+// ygoQualifier reports whether a blueprint's version says it is a World
+// Championship Qualifier copy. The TCGplayer id sent names the YCS Stamp copy
+// of the same number, so an answer is kept only when it is a qualifier row.
+func ygoQualifier(bp *Blueprint) bool {
+	return matcher.Contains(bp.Version, "World Championship Qualifier")
+}
+
 // ygoShelfNumberRe matches the numbers Card Trader writes on the shelves
 // that pool several sets, with the set's own index ahead of the card's:
 // "5-001" on the Duelist League shelf is DL5-EN001, "1-E002" is DL1-E002,
