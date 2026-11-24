@@ -62,3 +62,38 @@ func TestProductCountsCountTheCopiesHeld(t *testing.T) {
 		t.Fatalf("checked %d products, %d entries already held more than once; want both", checked, nested)
 	}
 }
+
+// A card copied into a set of its own names only products that draw it, and
+// not those its original comes from.
+func TestCopiedCardsNameTheirOwnProducts(t *testing.T) {
+	realDatastore(t)
+	b := testBackend
+
+	draws := map[string]map[string]bool{}
+	for _, code := range []string{
+		"FBBFR", "FBBDE", "FWB", "FWBFR", "FWBDE", "4BBES", "4BBPT", "4BBKO", "4BBZHT",
+		"RENDE", "LEGITA", "DRKITA", "4EDALT",
+	} {
+		for _, card := range b.Sets[code].Cards {
+			for _, source := range card.SourceProducts["nonfoil"] {
+				if draws[source] == nil {
+					draws[source] = map[string]bool{}
+					product, err := b.GetUUID(source)
+					if err != nil {
+						t.Fatal(err)
+					}
+					counts, err := sealed.ProductCounts(b, product.SetCode, source)
+					if err != nil {
+						t.Fatal(err)
+					}
+					for _, count := range counts {
+						draws[source][count.UUID] = true
+					}
+				}
+				if !draws[source][card.UUID] {
+					t.Errorf("%s %s names %s, which does not draw it", code, card.Name, source)
+				}
+			}
+		}
+	}
+}
