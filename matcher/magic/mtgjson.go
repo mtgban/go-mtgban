@@ -797,7 +797,7 @@ func (ap *AllPrintings) newBackend() *matcher.Backend {
 		// Load all possible card names
 		for _, card := range set.Cards {
 			cardNames[card.Name] = true
-			if !slices.Contains(card.PromoTypes, "playtest") {
+			if !slices.Contains(card.PromoTypes, PromoTypePlaytest) {
 				key := matcher.Normalize(card.Name)
 				oracle := card.Identifiers["scryfallOracleId"]
 				if !slices.Contains(cardOracles[key], oracle) {
@@ -915,7 +915,7 @@ func (ap *AllPrintings) newBackend() *matcher.Backend {
 
 			// A playtest card named like a different card is carried as
 			// "<name> Playtest", so the plain name keeps answering for it
-			if !fromTokens && slices.Contains(card.PromoTypes, "playtest") &&
+			if !fromTokens && slices.Contains(card.PromoTypes, PromoTypePlaytest) &&
 				slices.ContainsFunc(cardOracles[matcher.Normalize(card.Name)], func(oracle string) bool {
 					return oracle != card.Identifiers["scryfallOracleId"]
 				}) {
