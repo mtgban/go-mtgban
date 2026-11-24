@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/mtgban/go-mtgban/matcher"
+	"github.com/mtgban/go-mtgban/matcher/magic"
 	"github.com/mtgban/go-mtgban/matcher/sealed"
 )
 
@@ -46,6 +47,10 @@ var promoTags = []string{
 }
 
 func preprocess(b *matcher.Backend, cardName, edition, variant string) (*matcher.InputCard, error) {
+	first, second, found := strings.Cut(cardName, " // ")
+	low := strings.ToLower(cardName)
+	isTokenPair := found && (strings.Contains(low, "token") || strings.Contains(low, "emblem"))
+
 	m := tokenLetter.FindStringSubmatch(cardName)
 	if m != nil {
 		number, found := tokenLetters[edition][m[1]+" "+m[2]]
@@ -67,6 +72,9 @@ func preprocess(b *matcher.Backend, cardName, edition, variant string) (*matcher
 		matcher.Contains(cardName, "Deprecated") ||
 		strings.Contains(cardName, "Does not exist") {
 		return nil, errors.New("unsupported")
+	}
+	if isTokenPair {
+		return preprocessTokenPair(b, first, second, edition, variant)
 	}
 
 	isFoil := strings.Contains(variant, "Foil")
@@ -226,6 +234,57 @@ func preprocess(b *matcher.Backend, cardName, edition, variant string) (*matcher
 		Edition:   edition,
 		Foil:      isFoil,
 	}, nil
+}
+
+// tokenPairNumber reads the collector number a face of a two-sided token is
+// listed with, "Dragon Token (005)".
+var tokenPairNumber = regexp.MustCompile(`\(0*(\d+)\)$`)
+
+// preprocessTokenPair lands a two-sided token, "Dragon Token (005) // Goblin
+// Token (006)", on the pairing the datastore derives for it, anchoring a
+// face by the number it is listed with in the edition's token set, or else
+// both faces by name in the edition. A sheet that anchors nowhere is
+// unsupported: no single face is the product on sale.
+func preprocessTokenPair(b *matcher.Backend, first, second, edition, variant string) (*matcher.InputCard, error) {
+	isFoil := strings.Contains(variant, "Foil")
+	tokenSet := magic.EditionTokenSetCode(b, edition)
+	for _, faces := range [][2]string{{first, second}, {second, first}} {
+		m := tokenPairNumber.FindStringSubmatch(faces[0])
+		if tokenSet == "" || m == nil {
+			continue
+		}
+		listing := faces[0] + " // " + faces[1]
+		uuid := magic.MatchNativeTokenPair(b, tokenSet, m[1], listing)
+		if uuid != "" {
+			id, err := b.MatchID(uuid, isFoil)
+			if err == nil && sameFinish(b, id, isFoil) {
+				return &matcher.InputCard{ID: id, Foil: isFoil}, nil
+			}
+		}
+		tcgID := magic.MatchTokenPairingBySetNumber(b, tokenSet, m[1], listing, isFoil)
+		if tcgID != "" {
+			id, err := b.MatchID(tcgID, isFoil)
+			if err == nil {
+				return &matcher.InputCard{ID: id, Foil: isFoil}, nil
+			}
+		}
+	}
+
+	pairID := magic.MatchTokenPairingByNamesAndEdition(b, first+" // "+second, edition, isFoil)
+	if pairID != "" {
+		id, err := b.MatchID(pairID, isFoil)
+		if err == nil {
+			return &matcher.InputCard{ID: id, Foil: isFoil}, nil
+		}
+	}
+	return nil, matcher.ErrUnsupported
+}
+
+// sameFinish reports whether a printing is in the finish a listing asks
+// for: MatchID answers a foil request on a nonfoil-only card with that card.
+func sameFinish(b *matcher.Backend, id string, isFoil bool) bool {
+	co, err := b.GetUUID(id)
+	return err == nil && (!isFoil || co.Foil || co.Etched)
 }
 
 // mb1PLSTBooster is the Mystery Booster sealed product mb1PLSTNumber reads
