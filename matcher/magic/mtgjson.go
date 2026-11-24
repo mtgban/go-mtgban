@@ -1961,6 +1961,8 @@ func duplicateCards(sets map[string]*Set, base, code, tag string, numbers []stri
 		// its original only by the tag behind its number
 		if code != base {
 			dupeCard.SetCode = code
+			// The original's products hold the original
+			dupeCard.SourceProducts = nil
 		} else {
 			dupeCard.Number += strings.ToLower(tag)
 		}
