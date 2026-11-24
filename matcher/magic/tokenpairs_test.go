@@ -135,22 +135,82 @@ func TestDerivedTokenPairResolvesByProductID(t *testing.T) {
 func TestDerivedTokenPairExclusions(t *testing.T) {
 	realDatastore(t)
 
-	// C14's own Angel #1 carries 94180 as its own tcgplayerProductId; a
-	// pairing that also names 94180 must lose that id entirely rather than
-	// steal it.
-	uuid := testBackend.ConvertID(matcher.IDSpaceTCGplayer, "94180")
+	// A25's star Fish // Kraken carries 162899 as its own
+	// tcgplayerProductId; the Fish #5 // Kraken #6 pairing that also names
+	// 162899 must lose that id entirely rather than steal it.
+	uuid := testBackend.ConvertID(matcher.IDSpaceTCGplayer, "162899")
 	if uuid == "" {
-		t.Fatal("94180 not present in this datastore")
+		t.Fatal("162899 not present in this datastore")
 	}
 	co, err := testBackend.GetUUID(uuid)
 	if err != nil {
 		t.Fatalf("GetUUID(%s) = %v", uuid, err)
 	}
 	if co.Identifiers["derivedTokenPair"] == "true" {
-		t.Error("id 94180 resolves to a derived entity, want the real C14 Angel it already named")
+		t.Error("id 162899 resolves to a derived entity, want the real A25 Fish // Kraken it already named")
 	}
-	if co.Card.Name != "Angel" || co.SetCode != "TC14" {
-		t.Errorf("id 94180 = %s|%s, want Angel|TC14", co.Card.Name, co.SetCode)
+	if co.Card.Name != "Fish // Kraken" || co.Number != "5★" {
+		t.Errorf("id 162899 = %s|#%s, want Fish // Kraken|#5★", co.Card.Name, co.Number)
+	}
+}
+
+// TestDerivedTokenPairTakesItsFaceProduct pins a product mtgjson files on
+// one face, or both, while tokenProducts names it only as the two-sided
+// product: the pairing owns the id and the faces lose it. A face's own
+// single-sided product stays the face's.
+func TestDerivedTokenPairTakesItsFaceProduct(t *testing.T) {
+	realDatastore(t)
+
+	for _, probe := range []struct {
+		tcgID  string
+		foil   bool
+		name   string
+		number string
+		faces  []string
+	}{
+		{"94180", false, "Angel // Cat", "1//2", []string{"20ac0df6-bb34-549c-8fa5-5d43da39e9de"}},
+		{"94696", false, "Elf Warrior // Gargoyle", "24//27", []string{"07163036-315e-554a-bfc0-16028503d1be"}},
+		{"533867", true, "Dog // Cat", "1516//1517", []string{"b038f379-b2fa-52ba-b9f9-b689ab164edd", "d455d547-bb4c-5999-8561-b7cbe0ac2871"}},
+	} {
+		id, err := testBackend.MatchID(probe.tcgID, probe.foil)
+		if err != nil {
+			t.Errorf("MatchID(%s, foil=%v) = %v", probe.tcgID, probe.foil, err)
+			continue
+		}
+		co, err := testBackend.GetUUID(id)
+		if err != nil {
+			t.Errorf("GetUUID(%s) = %v", id, err)
+			continue
+		}
+		if co.Identifiers["derivedTokenPair"] != "true" || co.Card.Name != probe.name || co.Number != probe.number || co.Foil != probe.foil {
+			t.Errorf("id %s = %s|#%s foil=%v, want the pairing %s|#%s foil=%v", probe.tcgID, co.Card.Name, co.Number, co.Foil, probe.name, probe.number, probe.foil)
+		}
+		if VerifyTokenPairingFinish(testBackend, probe.tcgID, probe.foil) != probe.tcgID {
+			t.Errorf("VerifyTokenPairingFinish(%s, foil=%v) refuses the pairing", probe.tcgID, probe.foil)
+		}
+		for _, face := range probe.faces {
+			fco, err := testBackend.GetUUID(face)
+			if err != nil {
+				t.Errorf("GetUUID(%s) = %v", face, err)
+				continue
+			}
+			if fco.Identifiers["tcgplayerProductId"] != "" {
+				t.Errorf("face %s|#%s still carries product %s", fco.Card.Name, fco.Number, fco.Identifiers["tcgplayerProductId"])
+			}
+		}
+	}
+
+	// 2XM Angel #3 is sold alone as 220044, beside the pairings it is a face of
+	for _, foil := range []bool{false, true} {
+		id, err := testBackend.MatchID("220044", foil)
+		if err != nil {
+			t.Errorf("MatchID(220044, foil=%v) = %v", foil, err)
+			continue
+		}
+		co, _ := testBackend.GetUUID(id)
+		if co.Identifiers["mtgjsonId"] != "20ed6cbc-ff63-5be7-acee-c6e34d490685" || co.Foil != foil {
+			t.Errorf("id 220044 foil=%v = %s|#%s, want the 2XM Angel #3 token", foil, co.Card.Name, co.Number)
+		}
 	}
 }
 
@@ -574,31 +634,31 @@ func TestTokenPairIDByBothNamesCollision(t *testing.T) {
 }
 
 // TestDeriveTokenPairsMintsWithNoUsableID pins a pairing minted without its id:
-// mtgjson's own tokenProducts entry links Germ (TC16 #10) and Spirit (TC16 #6)
-// under tcgplayerProductId 125098, but that id is also independently claimed by
-// an unrelated card elsewhere in the datastore, so deriveTokenPairs's own
+// mtgjson's own tokenProducts entry links Fish (TA25 #5) and Kraken (TA25 #6)
+// under tcgplayerProductId 162899, but that id is also claimed by the star
+// Fish // Kraken, a printing outside the pairing, so deriveTokenPairs's own
 // "don't let one id price two different things" guard refuses to hand it to
 // this pairing. The pairing itself, which the tokenProducts entry confirms is
 // real, id or no id, must still be minted rather than the whole row dropped.
 func TestDeriveTokenPairsMintsWithNoUsableID(t *testing.T) {
 	realDatastore(t)
 
-	germ := testBackend.MatchInSetNumber("Germ", "TC16", "10")
-	spirit := testBackend.MatchInSetNumber("Spirit", "TC16", "6")
-	if len(germ) != 1 || len(spirit) != 1 {
-		t.Fatal("Germ/Spirit TC16 #10/#6 not present in this datastore")
+	fish := testBackend.MatchInSetNumber("Fish", "TA25", "5")
+	kraken := testBackend.MatchInSetNumber("Kraken", "TA25", "6")
+	if len(fish) != 1 || len(kraken) != 1 {
+		t.Fatal("Fish/Kraken TA25 #5/#6 not present in this datastore")
 	}
 
-	id := MatchTokenPairingByUUIDs(testBackend, germ[0].UUID, spirit[0].UUID, false)
+	id := MatchTokenPairingByUUIDs(testBackend, fish[0].UUID, kraken[0].UUID, false)
 	if id == "" {
-		t.Fatal("MatchTokenPairingByUUIDs(Germ, Spirit) = \"\", want the derived pairing mtgjson's own tokenProducts entry confirms - a contested id must not drop the row it belongs to")
+		t.Fatal("MatchTokenPairingByUUIDs(Fish, Kraken) = \"\", want the derived pairing mtgjson's own tokenProducts entry confirms - a contested id must not drop the row it belongs to")
 	}
 	co, err := testBackend.GetUUID(id)
 	if err != nil {
 		t.Fatalf("GetUUID(%s) = %v", id, err)
 	}
 	if _, found := co.Identifiers["tcgplayerProductId"]; found {
-		t.Errorf("resolved to %s with a tcgplayerProductId, want none: id 125098 is claimed by another card, so this pairing must mint without one", co.Name)
+		t.Errorf("resolved to %s with a tcgplayerProductId, want none: id 162899 is claimed by another printing, so this pairing must mint without one", co.Name)
 	}
 }
 
@@ -635,6 +695,81 @@ func TestDeriveTokenPairsCrossSetFallsBackRatherThanDrops(t *testing.T) {
 	}
 	if derived[0].SetCode != "TAAA" {
 		t.Errorf("derived pairing filed under %q, want the first face's token set TAAA", derived[0].SetCode)
+	}
+}
+
+// heldFaceFixture builds two token faces a and b that tokenProducts names
+// together as product 1, with a holding 1 as its own id, plus any extra
+// printings also holding 1. single names 1 again as a's one-part product.
+func heldFaceFixture(single bool, extra ...string) (map[string]*Set, map[string]*matcher.CardObject) {
+	const a, b = "00000000-0000-5000-8000-00000000000a", "00000000-0000-5000-8000-00000000000b"
+	printing := func(uuid, name string, ids map[string]string) *matcher.CardObject {
+		ids["mtgjsonId"] = uuid
+		return &matcher.CardObject{Card: matcher.Card{
+			UUID: uuid, SetCode: "TAAA", Name: name, Number: "1", Layout: "token", Identifiers: ids,
+		}}
+	}
+	uuids := map[string]*matcher.CardObject{
+		a: printing(a, "Dinosaur", map[string]string{"tcgplayerProductId": "1"}),
+		b: printing(b, "Gnome", map[string]string{}),
+	}
+	for _, uuid := range extra {
+		uuids[uuid] = printing(uuid, "Dinosaur", map[string]string{"tcgplayerProductId": "1"})
+	}
+	products := []TokenProduct{{
+		Identifiers: map[string]string{"tcgplayerProductId": "1"},
+		TokenParts:  []TokenPart{{UUID: a}, {UUID: b}},
+	}}
+	if single {
+		products = append(products, TokenProduct{
+			Identifiers: map[string]string{"tcgplayerProductId": "1"},
+			TokenParts:  []TokenPart{{UUID: a}},
+		})
+	}
+	sets := map[string]*Set{
+		"TAAA": {Code: "TAAA", Tokens: []Card{{UUID: a, TokenProducts: products}, {UUID: b}}},
+	}
+	return sets, uuids
+}
+
+// TestDeriveTokenPairsLeavesFaceProductOfAnotherShape pins that a face keeps
+// an id tokenProducts also names as the face sold alone: the pairing mints
+// without it.
+func TestDeriveTokenPairsLeavesFaceProductOfAnotherShape(t *testing.T) {
+	const a = "00000000-0000-5000-8000-00000000000a"
+	sets, uuids := heldFaceFixture(true)
+	tcgIDs := map[string]string{"1": a}
+
+	derived := deriveTokenPairs(sets, uuids, tcgIDs)
+	if len(derived) != 1 {
+		t.Fatalf("deriveTokenPairs minted %d pairings, want 1", len(derived))
+	}
+	if id, found := derived[0].Identifiers["tcgplayerProductId"]; found {
+		t.Errorf("pairing took product %s, want none: 1 also sells the face alone", id)
+	}
+	if tcgIDs["1"] != a || uuids[a].Identifiers["tcgplayerProductId"] != "1" {
+		t.Errorf("product 1 files at %q and the face holds %q, want both left on the face", tcgIDs["1"], uuids[a].Identifiers["tcgplayerProductId"])
+	}
+}
+
+// TestDeriveTokenPairsRefusesOutsideHolder pins that a pairing takes no id a
+// printing outside it also holds, whichever holder filed the id first.
+func TestDeriveTokenPairsRefusesOutsideHolder(t *testing.T) {
+	const a, c = "00000000-0000-5000-8000-00000000000a", "00000000-0000-5000-8000-00000000000c"
+	for _, first := range []string{a, c} {
+		sets, uuids := heldFaceFixture(false, c)
+		tcgIDs := map[string]string{"1": first}
+
+		derived := deriveTokenPairs(sets, uuids, tcgIDs)
+		if len(derived) != 1 {
+			t.Fatalf("filed at %s: deriveTokenPairs minted %d pairings, want 1", first, len(derived))
+		}
+		if id, found := derived[0].Identifiers["tcgplayerProductId"]; found {
+			t.Errorf("filed at %s: pairing took product %s, want none: %s holds it too", first, id, c)
+		}
+		if tcgIDs["1"] != first || uuids[a].Identifiers["tcgplayerProductId"] != "1" {
+			t.Errorf("filed at %s: product 1 files at %q and the face holds %q, want both unchanged", first, tcgIDs["1"], uuids[a].Identifiers["tcgplayerProductId"])
+		}
 	}
 }
 

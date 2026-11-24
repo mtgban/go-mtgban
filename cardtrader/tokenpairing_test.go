@@ -165,14 +165,13 @@ func TestTokenPairNumbers(t *testing.T) {
 	}
 }
 
-// TestPreprocessResolvesPairingWithNoUsableID pins a real blueprint
-// resolving to a derived pairing that mtgjson's own tokenProducts entry
-// names but that carries no usable TCGplayer id (every id it names is
-// already claimed by some other, unrelated card - see deriveTokenPairs's
-// own comment on usableIDs). No Card Trader-specific code exists for this
+// TestPreprocessResolvesPairingWithItsFaceProduct pins a real blueprint
+// resolving to a derived pairing whose TCGplayer product mtgjson files on
+// one of its faces, C17 Cat Dragon #9: the pairing takes that id from the
+// face (see deriveTokenPairs). No Card Trader-specific code exists for this
 // case: the same number-anchored resolution that already finds an
 // ordinary, id-bearing derived pairing reaches this one too.
-func TestPreprocessResolvesPairingWithNoUsableID(t *testing.T) {
+func TestPreprocessResolvesPairingWithItsFaceProduct(t *testing.T) {
 	b := realDatastore(t)
 
 	bp := Blueprint{ID: 46667, Name: "Dragon // Cat Dragon", CategoryID: CategoryMagicTokens}
@@ -190,8 +189,8 @@ func TestPreprocessResolvesPairingWithNoUsableID(t *testing.T) {
 	if co.Identifiers["derivedTokenPair"] != "true" {
 		t.Errorf("blueprint %d resolved to %s (%s), want a derived token pairing", bp.ID, card.ID, co.Name)
 	}
-	if _, found := co.Identifiers["tcgplayerProductId"]; found {
-		t.Errorf("blueprint %d resolved to %s (%s), want no tcgplayerProductId", bp.ID, card.ID, co.Name)
+	if co.Identifiers["tcgplayerProductId"] != "139794" {
+		t.Errorf("blueprint %d resolved to %s (%s) with product %q, want 139794", bp.ID, card.ID, co.Name, co.Identifiers["tcgplayerProductId"])
 	}
 	if co.SetCode != "TC17" {
 		t.Errorf("blueprint %d resolved to set %s, want TC17", bp.ID, co.SetCode)
