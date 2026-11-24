@@ -422,25 +422,27 @@ func TestPreprocessTokenPairingBySetNumber(t *testing.T) {
 }
 
 // TestPreprocessSurgeFoilStarredDuplicate pins the skuFixupTable entries
-// redirecting these two Warhammer 40,000 surge-foil skus to the ★-suffixed
+// redirecting these Warhammer 40,000 surge-foil skus to the ★-suffixed
 // duplicate number the token set actually catalogues as the foil printing -
-// the bare number these skus name is filed nonfoil-only.
+// the bare number these skus name is filed nonfoil-only - and the sheet
+// being anchored there rather than at the scryfall id's nonfoil face.
 func TestPreprocessSurgeFoilStarredDuplicate(t *testing.T) {
 	b := realDatastore(t)
 	for _, tt := range []struct {
-		sku  string
-		name string
-		want string
+		sku        string
+		scryfallID string
+		name       string
+		want       string
 	}{
-		{"SFT40K-015", "Plaguebearer of Nurgle Token // Astartes Warrior Token", "cfce7c69-c5d6-565d-8661-efa842b3147d"},
-		{"SFT40K-016", "Spawn Token // Plaguebearer of Nurgle Token", "014c729a-bbdc-5569-afe8-7155ec517de7"},
+		{"SFT40K-016", "bc938f2e-2d6e-4afd-9a88-34eeaf0b51e3", "Spawn Token // Plaguebearer of Nurgle Token", "57472526-d8d2-554f-8e42-c7c7b36d7de1"},
 	} {
 		t.Run(tt.sku, func(t *testing.T) {
 			theCard, err := Preprocess(b, cardkingdom.Product{
-				SKU:     tt.sku,
-				Name:    tt.name,
-				Edition: "Warhammer 40,000",
-				IsFoil:  true,
+				SKU:        tt.sku,
+				ScryfallID: tt.scryfallID,
+				Name:       tt.name,
+				Edition:    "Warhammer 40,000",
+				IsFoil:     true,
 			})
 			if err != nil {
 				t.Fatalf("Preprocess: %v", err)
@@ -451,7 +453,7 @@ func TestPreprocessSurgeFoilStarredDuplicate(t *testing.T) {
 			}
 			if cardID != tt.want {
 				co, _ := b.GetUUID(cardID)
-				t.Errorf("Match(%v) = %s (%v), want the ★-suffixed foil printing", theCard, cardID, co)
+				t.Errorf("Match(%v) = %s (%v), want the pairing of the ★-suffixed foil printings", theCard, cardID, co)
 			}
 		})
 	}
@@ -482,10 +484,82 @@ func TestPreprocessListAngelToken(t *testing.T) {
 	}
 }
 
+// TestPreprocessTokenSheetPairs pins the two-sided sheets that reach the
+// printing carrying both faces: an emblem backed by a token, named in a
+// parenthetical or in the variation; mtgjson's own double-faced token named
+// by the scryfall id; and The List's own copy of a face, anchored in PLST.
+func TestPreprocessTokenSheetPairs(t *testing.T) {
+	b := realDatastore(t)
+	for _, tt := range []struct {
+		desc    string
+		product cardkingdom.Product
+		want    string
+	}{
+		{
+			desc: "an emblem in a parenthetical",
+			product: cardkingdom.Product{
+				SKU:        "TC14-035",
+				ScryfallID: "4c29f6a1-42a5-433f-9c09-c160b096f8e1",
+				Name:       "Emblem (Nixilis) - Zombie (Black) Token",
+				Edition:    "Commander 2014",
+			},
+			want: "b7c1cfb6-550e-5d4f-a7fc-88a41cced5d5",
+		},
+		{
+			desc: "an emblem in the variation",
+			product: cardkingdom.Product{
+				SKU:        "TMD1-004",
+				ScryfallID: "8360fc12-57c0-4701-8e19-0878ed5abb4f",
+				Name:       "Emblem - Soldier Token",
+				Edition:    "Modern Event Deck",
+				Variation:  "Elspeth, Knight-Errant",
+			},
+			want: "abc55646-c4b7-5786-a695-9ed06a31f543",
+		},
+		{
+			desc: "a double-faced token the id names",
+			product: cardkingdom.Product{
+				SKU:        "F17-010",
+				ScryfallID: "05934d59-7e98-4fff-8ccb-70cd1a61c6fd",
+				Name:       "Vampire Token - Treasure Token",
+				Edition:    "Promotional",
+				Variation:  "FNM Foil",
+				IsFoil:     true,
+			},
+			want: "942f48a1-c4aa-5d19-9c4f-3fcce06d77f8",
+		},
+		{
+			desc: "The List's own copy of the face",
+			product: cardkingdom.Product{
+				SKU:       "MTC18-022",
+				Name:      "Horror Token // Inkling Token",
+				Edition:   "Mystery Booster/The List",
+				Variation: "022 // 004",
+			},
+			want: "46e091d8-5c18-5a6a-962d-75fad308ea66",
+		},
+	} {
+		t.Run(tt.desc, func(t *testing.T) {
+			theCard, err := Preprocess(b, tt.product)
+			if err != nil {
+				t.Fatalf("Preprocess(%v) = %v", tt.product, err)
+			}
+			cardID, err := b.Match(theCard)
+			if err != nil {
+				t.Fatalf("Match(%v) = %v", theCard, err)
+			}
+			if cardID != tt.want {
+				co, _ := b.GetUUID(cardID)
+				t.Errorf("Match(%v) = %s (%v), want %s", theCard, cardID, co, tt.want)
+			}
+		})
+	}
+}
+
 // TestPreprocessEmblems pins the three shapes CK spells an emblem in, each
 // against the uuid the datastore files at the address the sku names: the
 // planeswalker left in the variation, the planeswalker abbreviated into a
-// parenthetical on a card shared with another token, and the Mythic Edition
+// parenthetical, and the Mythic Edition
 // numbering that diverges from mtgjson's so only the name can carry the row.
 func TestPreprocessEmblems(t *testing.T) {
 	b := realDatastore(t)
@@ -509,12 +583,12 @@ func TestPreprocessEmblems(t *testing.T) {
 		{
 			desc: "a parenthetical short name against the full one",
 			product: cardkingdom.Product{
-				SKU:     "TC14-035",
-				Name:    "Emblem (Nixilis) - Zombie (Black) Token",
-				Edition: "Commander 2014",
+				SKU:     "TAKH-025",
+				Name:    "Emblem (Gideon)",
+				Edition: "Amonkhet",
 			},
-			name: "Ob Nixilis of the Black Oath Emblem",
-			uuid: "5f895769-4c30-5d4e-a7ad-51ebb7cbf63e",
+			name: "Gideon of the Trials Emblem",
+			uuid: "84f5dfde-13b4-5244-9a34-938d9e470857",
 		},
 		{
 			// CK numbers this G6 printing 006A, so the number cannot
