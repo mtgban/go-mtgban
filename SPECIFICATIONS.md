@@ -914,9 +914,9 @@ that asymmetry:
 
 | Layer | Targets | Test type | Needs dataset? | Today |
 |-------|---------|-----------|----------------|-------|
-| **Money path** (top risk) | `Arbit`, `Mismatch`, `add()` invariants, profitability formula | unit / golden on synthetic records | **No**, runs in CI | 32 tests in `arbit*_test.go`, plus `Add*` and sort in `base_test.go` |
+| **Money path** (top risk) | `Arbit`, `Mismatch`, `add()` invariants, profitability formula | unit / golden on synthetic records | **No**, runs in CI | 34 tests in `arbit*_test.go`, plus `Add*` and sort in `base_test.go` |
 | **Matcher** (data integrity) | `Match`/`MatchID`, normalization, variants/editions, sealed API | data-backed regression replay | **Yes** - one per game | replay + unit |
-| **Scraper preprocess** (breadth) | per-store title → `InputCard` → `Match` | table tests on captured fixtures | partial | 19 of 24 packages |
+| **Scraper preprocess** (breadth) | per-store title → `InputCard` → `Match` | table tests on captured fixtures | partial | 21 of 25 packages |
 
 Principles: (1) **the money path is unit-tested**, with in-test records and
 no datastore dependency; (2)
@@ -929,11 +929,11 @@ breadth over depth** - a few fixture table tests for the gnarliest
 preprocessors catch the realistic break; `cardmarket` and `cardtrader` have
 grown well past table-test fixtures into dozens of narrow, named `*_test.go`
 files each. `abugames`, `cardgamecorner`, `cardkingdom`, `cardmarket`,
-`gamenerdz`, `mintcard`, `starcitygames` and `tcgplayer` have a
+`gamenerdz`, `mintcard`, `mtgseattle`, `starcitygames`, and `tcgplayer` have a
 `preprocess_test.go` to copy the table-test shape from; about a dozen more
 packages carry tests of some other shape (a `*_test.go` covering a specific
-fix) without one, and `arcanafrisia`, `cardsphere`, `mtgstocks`,
-`secretdeskorrigans` and `toamagic` have none.
+fix) without one, and `cardsphere`, `mtgstocks`, `secretdeskorrigans`, and
+`toamagic` have none.
 
 **CI provisions all nine datastores.** `.github/workflows/ci.yml` runs one
 `cache-<game>` job per game. Only `cache-datastore` (Magic) uses the reusable
@@ -990,10 +990,11 @@ row.
 | `tcgplayer` | OAuth via `go-tcgplayer` + cookie-authed marketplace APIs | Largest: the table-driven market, index and sealed scrapers every game prices through (see below), plus the SYP-list and per-seller scrapers; TCG Direct modeled as a Vendor with net-after-fees pricing |
 | `cardmarket` | `Index` takes no credentials; `Market` and `Sealed` use OAuth 1.0 HMAC-SHA1 (gentle retry) | `Index` is a **Market** (`MarketNames → MKM Low/Trend`, `MetadataOnly`, `Family="MKM"`); `Market` prices live listings and `Sealed` sealed product; EUR→USD; Magic plus seven more games (all but Palworld), each built from an `matcher.Game` and mapped to Cardmarket's id inside the package |
 | `cardtrader` | Bearer token | `Market` (**Market**, 3 seller tiers, each with a graded twin (`CTGraded`, `CT0Graded`, `CT1DRGraded`) whose slabs are read from the listing's description, `Family="CT"`, `CountryFlag="EU"`); all eight non-Magic games, each built from an `matcher.Game` and mapped to Card Trader's id inside the package; `Sealed` mirror; bulk upload + cart APIs |
-| `cardkingdom` | Public pricelist via `go-cardkingdom` (file/URL-fed, no own client) | Full 4-condition buylist from its published grade schedule, with price ratios; `CreditMultiplier 1.3`; singles + `sealed.go` + `graded.go` are three scrapers |
+| `cardkingdom` | Public pricelist via `go-cardkingdom` (file/URL-fed, no own client) | Full 4-condition buylist from its published grade schedule, with price ratios; `CreditMultiplier 1.3`; singles + `sealed.go` + `graded.go` (slabs, as `CKGraded`) are three scrapers |
 | `manapool` | Public JSON API | Three scrapers: `Manapool` (aggregate, `MatchID` by Scryfall id, `NoQuantityInventory`), `Index` (`MetadataOnly`) and `Sealed` |
 | `merlion` | Public buylist CSV | Riftbound buylist-only; matches by the TCGplayer id in each product link, and reads the finish out of the condition column |
 | `arcanafrisia` | Public buylist endpoint | Buylist-only EU vendor, shorthand `AF`; matches by Scryfall id and maps the store's NM/EX/GD grades onto NM/SP/MP |
+| `trolltrader` | Public Shopify storefront, one request a second | UK store, shorthand `TTC`, Magic retail alone (GBP, `NoQuantityInventory`); matches by MTGJSON set code and collector number; see [trolltrader/README.md](trolltrader/README.md) |
 | `cardsphere` | Session cookie (gentle 3s) | Unregistered, not run by bantool; buylist-only; `BuyPrice ×0.87` fee **and** `CreditMultiplier 1.1` |
 | `mtgstocks` | Public API, fixed `curl` User-Agent | Unregistered, not run by bantool; MetadataOnly index (average/market interests) |
 
@@ -1033,15 +1034,16 @@ index for every buylist grade by its own status, with HP filed at MP too since
 SCG grades none, and at PL where SCG makes no PL bid, serialized detection, sealed,
 plus Lorcana, Riftbound and Flesh and Blood, which its `scgGames` table maps
 onto SCG's numeric game ids), `coolstuffinc` (seven of the eight non-Magic
-games - every one but Flesh and Blood - `CreditMultiplier 1.25`),
-`hareruya` (JPY, **bespoke 403 → 5-min backoff**), `cardgamecorner` (EUR,
-Italian, retail alone, in seven games), `abugames`
-(Solr, MINT-aware grading, each buylist grade a floor, so every grade is filed
-at the best offer at it or below, the one PLD skips included, `InfoForScraper`, graded
-slabs as `ABUGraded`), `mtgseattle` (`CreditMultiplier 1.33`), `mintcard` (rides TCG SKUs,
+games - every one but Flesh and Blood - `CreditMultiplier 1.25`, the
+slabs it can grade as `CSIGraded`, other slabs and one-off copies as
+`CSIUnique`), `hareruya` (JPY, **bespoke 403 → 5-min backoff**, slabs as
+`HAGraded`), `cardgamecorner` (EUR, Italian, retail alone, in seven games),
+`abugames` (Solr, MINT-aware grading, each buylist grade a floor, so every
+grade is filed at the best offer at it or below, the one PLD skips included,
+`InfoForScraper`, graded slabs as `ABUGraded`), `mtgseattle`
+(`CreditMultiplier 1.33`), `mintcard` (rides TCG SKUs,
 `CreditMultiplier 1.1`), `vegassingles` (buylist alone, read from Hippolink by
-TCGplayer product id), `manaleak` (GBP),
-`miniaturemarket` (sealed-only),
+TCGplayer product id), `manaleak` (GBP), `miniaturemarket` (sealed-only),
 and the unregistered `secretdeskorrigans` (CAD, French) and `toamagic`
 (Spanish), which bantool does not run.
 
@@ -1122,10 +1124,10 @@ embeds live credentials.
 
 **CI** (`.github/workflows/`). `ci.yml` runs a datastore-free style job on its
 own - **Check formatting** (`gofmt -s -l .`), **Vet** (`go vet ./...`),
-`go test -race ./...`, **revive** and **staticcheck** - alongside nine
-per-game jobs that each restore their own datastore from cache (§2.7);
-Magic's job runs `go test ./... -v` over the whole tree, and the other eight
-each run a scoped list: their `matcher/<game>` suite, a few scraper
+`go test -race ./...`, **revive**, **staticcheck**, and **govulncheck** -
+alongside nine per-game jobs that each restore their own datastore from cache
+(§2.7); Magic's job runs `go test ./... -v` over the whole tree, and the other
+eight each run a scoped list: their `matcher/<game>` suite, a few scraper
 packages and `internal/vocabulary`. Nightly, `race-magic` reruns the whole
 tree under `-race` with the Magic datastore, one package at a time, and writes
 each package's coverage to the run's summary. There are well past a hundred

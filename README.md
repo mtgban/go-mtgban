@@ -46,10 +46,10 @@ copyright, and contributors get a discount on the commercial license.
 BAN commits to always keeping an AGPL version available.
 [LICENSING.md](LICENSING.md) has the full terms.
 
-## The two core modules
+## The modules
 
-Everything else in the repository, one package per store plus the tools
-under `cmd/`, is built on these two packages.
+`mtgban` and `matcher` are the core. Everything else in the repository is
+built on these two packages.
 
 | Package | What it solves | Reference |
 | --- | --- | --- |

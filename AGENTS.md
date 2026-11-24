@@ -119,10 +119,11 @@ gofmt -s -l .               # must print nothing
 go vet ./...
 go run github.com/mgechev/revive@v1.17.1 -set_exit_status -config .revive.toml ./...
 go run honnef.co/go/tools/cmd/staticcheck@2026.2.2 ./...
+go run golang.org/x/vuln/cmd/govulncheck@latest ./...
 go test ./... -v
 ```
 
-Run all six before committing. CI (`.github/workflows/ci.yml`) runs every
+Run all seven before committing. CI (`.github/workflows/ci.yml`) runs every
 one, plus a datastore-free `go test -race ./...` and, nightly, the whole tree
 under `-race` with the Magic datastore, reporting coverage. The formatting
 check is a hard gate: the job lists the offending files and exits non-zero,
@@ -131,11 +132,11 @@ review comment. The tree is gofmt-clean today; keep it that way.
 
 Do not narrow the test or vet invocation to a subset of packages. Tests live
 in `mtgban/`, in `matcher/`, every one of its nine `matcher/<game>`
-sub-packages and `matcher/sealed`, and in 19 of the 24 scraper packages
-(only `arcanafrisia`, `cardsphere`, `mtgstocks`, `secretdeskorrigans` and
-`toamagic` have none).
+sub-packages and `matcher/sealed`, and in 21 of the 25 scraper packages
+(only `cardsphere`, `mtgstocks`, `secretdeskorrigans`, and `toamagic` have
+none).
 A subset run can pass while CI fails. `matcher/magic` carries the largest
-test suite of any package in the repo, nearly forty `*_test.go` files with
+test suite of any package in the repo, fifty `*_test.go` files with
 the Magic replay suite among them (see "The golden suites" below).
 
 ### Datastores
@@ -143,12 +144,12 @@ the Magic replay suite among them (see "The golden suites" below).
 The matcher suites exercise real data, one datastore per game, located through
 environment variables:
 
-- `ALLPRINTINGS5_PATH` - MTGJSON `AllPrintings5.json`. Feeds the core
-  `matcher` suite and `matcher/magic`, both of which load it through
-  `magic.Load`, as well as every scraper suite that needs a real Magic
-  datastore to test its `preprocess.go` (abugames, cardgamecorner,
-  cardkingdom, cardmarket, cardtrader, coolstuffinc, gamenerdz, hareruya,
-  manapool, mintcard, sealedev, starcitygames, strikezone, tcgplayer,
+- `ALLPRINTINGS5_PATH` - MTGJSON `AllPrintings.json`. Feeds the core `matcher`
+  suite and `matcher/magic`, both of which load it through `magic.Load`, as
+  well as every scraper suite that needs a real Magic datastore to test its
+  `preprocess.go` (abugames, cardgamecorner, cardkingdom, cardmarket,
+  cardtrader, coolstuffinc, gamenerdz, hareruya, manaleak, manapool, mintcard,
+  mtgseattle, sealedev, starcitygames, strikezone, tcgplayer, trolltrader, and
   vegassingles; grep a package's tests for `ALLPRINTINGS5_PATH` rather than
   for a skip message, which is not worded the same everywhere). Magic is the
   one game whose datastore is not built by `datastore-gen`.
