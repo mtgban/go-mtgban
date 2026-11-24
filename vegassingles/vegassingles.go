@@ -164,8 +164,7 @@ func (vs *Vegassingles) processProduct(product HLProduct) bool {
 }
 
 // scrape reads every page of the game's buylist. The first page says how
-// many there are, and failing it fails the run; a later page that will not
-// load is logged and skipped.
+// many there are, and a run that loses any of them fails.
 func (vs *Vegassingles) scrape(ctx context.Context) error {
 	first, err := vs.client.GetBuylistPage(ctx, vs.game, 0)
 	if err != nil {
@@ -182,6 +181,7 @@ func (vs *Vegassingles) scrape(ctx context.Context) error {
 	}
 
 	products := first.Products
+	var loaded int
 	mtgban.WorkerPool(ctx, vs.maxConcurrency, offsets,
 		func(ctx context.Context, offset int, results chan<- []HLProduct) error {
 			page, err := vs.client.GetBuylistPage(ctx, vs.game, offset)
@@ -192,10 +192,21 @@ func (vs *Vegassingles) scrape(ctx context.Context) error {
 			return nil
 		},
 		func(page []HLProduct) {
+			loaded++
 			products = append(products, page...)
 		},
 		vs.printf,
 	)
+
+	// A cancelled crawl also loses the pages it never asked for
+	lost := len(offsets) - loaded
+	err = ctx.Err()
+	if err != nil {
+		return fmt.Errorf("%d of %d later pages lost: %w", lost, len(offsets), err)
+	}
+	if lost > 0 {
+		return fmt.Errorf("%d of %d later pages lost", lost, len(offsets))
+	}
 
 	var wrongFinish int
 	for _, product := range products {
