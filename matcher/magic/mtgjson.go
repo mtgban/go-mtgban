@@ -1302,6 +1302,10 @@ func (ap *AllPrintings) newBackend() *matcher.Backend {
 			allSets = append(allSets, ls.code)
 		}
 	}
+	// After the language sets are made, so that none inherits these sources
+	for _, packed := range packedLike {
+		packLike(ap.Data, packed.code, packed.like)
+	}
 
 	if ap.Data["SLD"] != nil {
 		sldDupes := duplicateCards(ap.Data, "SLD", "SLD", "JPN", sldJPNLangDupes)
@@ -1879,6 +1883,72 @@ func duplicate(sets map[string]*Set, name, base, code, tag, date string) {
 			altIdentifiers[k] = v
 		}
 		dup.Cards[i].Identifiers = altIdentifiers
+	}
+}
+
+// packLike gives a set the boosters of the one it is packed like, drawn from
+// its own cards, and has its products that hold none yet open them. A product
+// opens what the other set's of its kind does.
+func packLike(sets map[string]*Set, code, like string) {
+	set, base := sets[code], sets[like]
+	if set == nil || base == nil || set.Booster != nil {
+		return
+	}
+
+	byNumber := map[string]string{}
+	for _, card := range set.Cards {
+		byNumber[card.Number] = card.UUID
+	}
+	copies := map[string]string{}
+	for _, card := range base.Cards {
+		if uuid, found := byNumber[card.Number]; found {
+			copies[card.UUID] = uuid
+		}
+	}
+
+	set.Booster = map[string]Booster{}
+	for name, booster := range base.Booster {
+		sheets := make(map[string]Sheet, len(booster.Sheets))
+		for sheetName, sheet := range booster.Sheets {
+			cards := make(map[string]int, len(sheet.Cards))
+			for uuid, weight := range sheet.Cards {
+				if copied, found := copies[uuid]; found {
+					cards[copied] = weight
+				}
+			}
+			sheet.Cards = cards
+			sheets[sheetName] = sheet
+		}
+		booster.Sheets = sheets
+		set.Booster[name] = booster
+	}
+
+	for i := range set.SealedProduct {
+		product := &set.SealedProduct[i]
+		if len(product.Contents) > 0 {
+			continue
+		}
+		for _, other := range base.SealedProduct {
+			if other.Category != product.Category || other.Subtype != product.Subtype {
+				continue
+			}
+			for _, pack := range other.Contents["pack"] {
+				pack.Set = strings.ToLower(code)
+				product.Contents = map[string][]SealedContent{"pack": append(product.Contents["pack"], pack)}
+			}
+		}
+	}
+
+	for i := range set.Cards {
+		var sources []string
+		for _, product := range set.SealedProduct {
+			if contentsContainCard(sets, product.Contents, set.Cards[i].UUID, "nonfoil") {
+				sources = append(sources, product.UUID)
+			}
+		}
+		if len(sources) > 0 {
+			set.Cards[i].SourceProducts = map[string][]string{"nonfoil": sources}
+		}
 	}
 }
 
