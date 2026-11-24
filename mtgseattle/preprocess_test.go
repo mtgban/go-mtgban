@@ -1,6 +1,7 @@
 package mtgseattle
 
 import (
+	"errors"
 	"os"
 	"sync"
 	"testing"
@@ -144,5 +145,61 @@ func TestShelfWordingResolvesToItsPrinting(t *testing.T) {
 	}
 	if theCard.Variation != "3" {
 		t.Errorf("Abbey Matron (3): variant rewritten to %q", theCard.Variation)
+	}
+}
+
+// TestTokenPair pins a two-sided token to the pairing the datastore derives
+// for it, never to one of its faces, and refuses one no face anchors.
+func TestTokenPair(t *testing.T) {
+	b := realDatastore(t)
+
+	tests := []struct {
+		cardName string
+		edition  string
+		variant  string
+		set      string
+		number   string
+	}{
+		{"Dragon Token (005) // Goblin Token (006)", "Ravnica Allegiance Guild Kits", "", "TGK2", "5//6"},
+		{"Bird Token // Cat Token (020)", "Core Set 2021", "Foil", "TM21", "2//20"},
+		{"Champion of Wits Token // Insect Token", "Hour of Devastation", "", "THOU", "2//12"},
+	}
+	for _, test := range tests {
+		theCard, err := preprocess(b, test.cardName, test.edition, test.variant)
+		if err != nil {
+			t.Fatalf("%s: preprocess: %v", test.cardName, err)
+		}
+
+		cardID, err := b.Match(theCard)
+		if err != nil {
+			t.Fatalf("%s: Match: %v", test.cardName, err)
+		}
+		co, err := b.GetUUID(cardID)
+		if err != nil {
+			t.Fatalf("%s: GetUUID: %v", test.cardName, err)
+		}
+		foil := test.variant == "Foil"
+		if co.SetCode != test.set || co.Number != test.number || co.Foil != foil || co.Identifiers["derivedTokenPair"] != "true" {
+			t.Errorf("%s: matched %s %s foil=%t, want the %s %s pairing", test.cardName, co.SetCode, co.Number, co.Foil, test.set, test.number)
+		}
+	}
+
+	// A foil listing of a native card printed only nonfoil, and a graded
+	// sheet, are refused like any other such listing.
+	for _, test := range [][3]string{
+		{"Copy Token (001) // Horror Token (002)", "Guilds of Ravnica Guild Kit", "Foil"},
+		{"Dragon Token (005) // Goblin Token (006)", "Ravnica Allegiance Guild Kits", "BGS 9.5"},
+	} {
+		theCard, err := preprocess(b, test[0], test[1], test[2])
+		if err == nil {
+			t.Errorf("%s %s: preprocess = %v, want refused", test[0], test[2], theCard)
+		}
+	}
+
+	// The emblem's planeswalker sits in the variant, so the title names no
+	// second face to pair.
+	_, err := preprocess(b, "Monk Token // Emblem", "Double Masters 2022", "Wrenn and Six Foil")
+	if !errors.Is(err, matcher.ErrUnsupported) {
+		t.Errorf("Monk Token // Emblem: preprocess error %v, want unsupported", err)
 	}
 }
