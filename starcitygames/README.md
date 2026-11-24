@@ -345,18 +345,31 @@ This is the actual repeatable process, extracted from doing it five times
    <game>.json.xz` - republishing that is a separate, deliberate step, not
    something a PR does as a side effect.
 
-## Upstream, not scraper-side: the two things left alone on purpose
+## Two-sided Magic tokens
 
-- **Magic double-faced tokens.** mtgjson models each face of a token as its
-  own row; the catalog sells one physical product covering both. This is by
-  far the largest collision class by count: a full replay of 151,337 Magic
-  singles through `resolveProduct` found 931 uuids receiving more than one
-  product, 803 of them these token pairs. It is **deliberately not fixed
-  here**: this is a datastore matter, not a scraper one, and has been
-  treated as low priority across this whole project. No scraper-side
-  dedupe or DFC-pricing logic; it needs the datastore to carry a
-  `tokenProducts`-style mapping from a token uuid to the individual faces
-  it's sold as.
+SCG sells a two-sided token sheet as one product, named "{X Token} //
+{Y Token}" (or with an emblem or dungeon on a side), and the matcher holds
+the sheet as one card: mtgjson's own combined printing, or a pairing
+`matcher/magic/tokenpairs.go` derives from the faces' tokenProducts. A
+sheet lands on that card, never on one of its faces:
+
+1. By the scryfall id, through `magic.MatchTokenPairing`.
+2. Where the id finds no pairing - none sent, a face with several partners
+   of that name, an id naming another number - by the sku, which names the
+   faces' sets and numbers ("T03T12", "AFR_T01_GRN_T02"): a combined
+   printing at the first number (`magic.MatchNativeTokenPair`), the first
+   face by number and the partner by name
+   (`magic.MatchTokenPairingBySetNumber`), or both faces by number and name
+   (`tokenPairAnchorUUIDs`, `magic.MatchTokenPairingByUUIDs`).
+
+Of the catalog's 3,915 two-sided Magic products, 3,662 land this way
+(20 on a combined printing), 116 are refused, and 137 still land on one
+face: their sku does not anchor both faces (a misspelled face, numbers in
+the other order from the names, a Guild Kit's single number, the Star
+Trek alt-foil numbering), or no pairing joins the two faces it anchors.
+
+## Upstream, not scraper-side: left alone on purpose
+
 - **Aurora's artist field, until republished.** `fabCreditedTwin` reads
   `Card.Artist`, which `datastore-gen@698813b` now populates for FaB and
   `matcher/fleshandblood@4f21ab43` now reads - but CI's pinned datastore

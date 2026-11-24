@@ -340,3 +340,72 @@ func TestResolveDungeonPairings(t *testing.T) {
 		})
 	}
 }
+
+// TestResolveTokenPairingBehindScryfallID pins a two-sided listing whose
+// scryfall id finds no pairing - the face pairs with several tokens of the
+// partner's name, or the id names a face of another number - landing on the
+// pairing both sku numbers anchor rather than on the face the id names. An
+// emblem sheet takes the same path.
+func TestResolveTokenPairingBehindScryfallID(t *testing.T) {
+	b := withMagic(t)
+
+	for _, tt := range []struct {
+		p       CatalogProduct
+		want    string
+		wantSet string
+		wantNum string
+	}{
+		{
+			p: CatalogProduct{
+				SKU: "SGL-MTG-HOB-T03T12-ENN", ScryfallID: "0045408d-4ab9-48bf-84aa-c6d827682090",
+				Name: "{Goblin Army Token} (#003) // {Treasure Token} (#012)", Set: "The Hobbit",
+				Finish: "Non-foil", FinishGroup: "Non-foil", CollectorNumber: "T03",
+			},
+			want: "Goblin Army // Treasure", wantSet: "THOB", wantNum: "3//12",
+		},
+		{
+			p: CatalogProduct{
+				SKU: "SGL-MTG-SNC-T02T13-ENF", ScryfallID: "39bae778-0dee-47d5-a7cd-f2be11b5e79b",
+				TCGPlayerID: "269767", Name: "{Angel Token} // {Treasure Token} (#13)",
+				Set: "Streets of New Capenna", Finish: "Foil", FinishGroup: "Foil", CollectorNumber: "002",
+			},
+			want: "Angel // Treasure", wantSet: "TSNC", wantNum: "2//13",
+		},
+		{
+			p: CatalogProduct{
+				SKU: "SGL-MTG-TLA-T02_T11-ENN", ScryfallID: "2b3d7795-3fc3-4b78-bdf4-0a79981f1eee",
+				Name: "{Copy Token} (#002) // {Soldier Token}", Set: "Avatar: The Last Airbender",
+				Finish: "Non-foil", FinishGroup: "Non-foil", CollectorNumber: "T02",
+			},
+			want: "Copy // Soldier", wantSet: "TTLA", wantNum: "2//11",
+		},
+		{
+			p: CatalogProduct{
+				SKU: "SGL-MTG-FRA-T17T18-ENN", ScryfallID: "ce0ece65-ba13-4243-b343-b4da443fceff",
+				Name: "{Chandra, Chill of Compliance Emblem} // {Chandra, Torch of Defiance Emblem}",
+				Set:  "Reality Fracture", Finish: "Non-foil", FinishGroup: "Non-foil", CollectorNumber: "017",
+			},
+			want: "Chandra, Chill of Compliance Emblem // Chandra, Torch of Defiance Emblem", wantSet: "TFRA", wantNum: "17//18",
+		},
+	} {
+		p := tt.p
+		p.Game, p.Rarity, p.ProductType, p.Language = "Magic: The Gathering", "Token", ProductTypeSingles, "English"
+		id, err := resolveProduct(b, GameMagic, p)
+		if err != nil {
+			t.Errorf("resolveProduct(%s) = %v", p.SKU, err)
+			continue
+		}
+		co, err := b.GetUUID(id)
+		if err != nil {
+			t.Errorf("GetUUID(%s) = %v", id, err)
+			continue
+		}
+		if co.Card.Name != tt.want || co.SetCode != tt.wantSet || co.Card.Number != tt.wantNum {
+			t.Errorf("%s resolved to %s #%s [%s], want %s #%s [%s]", p.SKU,
+				co.Card.Name, co.Card.Number, co.SetCode, tt.want, tt.wantNum, tt.wantSet)
+		}
+		if co.Foil != catalogFoil(p) {
+			t.Errorf("%s resolved to foil=%v, want %v", p.SKU, co.Foil, catalogFoil(p))
+		}
+	}
+}
