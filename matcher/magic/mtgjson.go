@@ -888,11 +888,6 @@ func (ap *AllPrintings) newBackend() *matcher.Backend {
 		for cardIndex, card := range allCards {
 			fromTokens := cardIndex >= tokensStart
 
-			if slices.Contains(paperFoilsFiledOnline[set.Code], card.Number) {
-				card.IsOnlineOnly = false
-				card.Finishes = []string{"foil"}
-			}
-
 			// Skip anything non-paper
 			if card.IsOnlineOnly {
 				continue

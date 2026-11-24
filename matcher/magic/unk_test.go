@@ -23,7 +23,7 @@ func TestUnknownEventCards(t *testing.T) {
 		{"496930", "Joven and Chandler Playtest", "UNK"},
 		// MTGJSON files this product on UNK's Fast // Furious too
 		{"240150", "Fast // Furious", "MH2"},
-		// Paper foils MTGJSON files as Arena-only
+		// Mystery Booster Commander foils
 		{"709764", "Case of the Lost Witness", "MBC"},
 		{"709766", "Oracle of the Alpha", "MBC"},
 		{"709776", "Perforator Crocodile", "MBC"},
