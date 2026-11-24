@@ -169,7 +169,8 @@ func TestHasPrintingAnswersForTheNamedCard(t *testing.T) {
 	namesByBucket := map[string]map[string]bool{}
 	for _, uuid := range uuids {
 		co, err := b.GetUUID(uuid)
-		if err != nil {
+		// A derived pairing is searched by name, never answered for by it
+		if err != nil || co.isDerivedPair() {
 			continue
 		}
 		norm := Normalize(co.Name)
@@ -202,7 +203,7 @@ func TestHasPrintingAnswersForTheNamedCard(t *testing.T) {
 				var want bool
 				for _, uuid := range uuids {
 					co, err := b.GetUUID(uuid)
-					if err != nil || !strings.EqualFold(co.Name, name) {
+					if err != nil || co.isDerivedPair() || !strings.EqualFold(co.Name, name) {
 						continue
 					}
 					if cardHasProperty(co.Card, check.field, check.value) {

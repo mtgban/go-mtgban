@@ -269,6 +269,13 @@ func (c *Card) HasFrameEffect(fe string) bool {
 	return slices.Contains(c.FrameEffects, fe)
 }
 
+// isDerivedPair reports a card a loader built from two printings sold as one
+// product rather than read from the catalog. A search finds it by name; Match
+// and the name lookups behind it reach it by id alone.
+func (c *Card) isDerivedPair() bool {
+	return c.Identifiers["derivedTokenPair"] == "true"
+}
+
 // HasPromoType reports whether the printing carries this promo type.
 func (c *Card) HasPromoType(pt string) bool {
 	return slices.Contains(c.PromoTypes, pt)

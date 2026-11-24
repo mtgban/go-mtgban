@@ -345,7 +345,7 @@ func (ml *Manaleak) onlyPromo(cardName string, foil, etched bool) (string, error
 // nameAgrees reports whether cardID is one of the printings named cardName,
 // used to confirm an AmbiguousID guess before trusting it. The search reads
 // a double-faced card by either face; the printing's own name is asked
-// first, since a derived token pair is kept out of the search.
+// first, as the cheaper check.
 func (ml *Manaleak) nameAgrees(cardID, cardName string) bool {
 	if cardName == "" {
 		return false
