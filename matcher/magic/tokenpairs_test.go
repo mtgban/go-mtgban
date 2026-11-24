@@ -91,11 +91,11 @@ func TestDerivedTokenPairResolvesByProductID(t *testing.T) {
 		setCode string
 		number  string
 	}{
-		{"same-set pairing", "278823", "Eldrazi Scion // Boar", "T2X2", "1 // 15"},
-		{"cross-set pairing (AFC + AFR)", "244277", "Illusion // Skeleton", "TAFR", "3 // 6"},
-		{"multi-id pairing, first id", "200319", "Goat // Food", "TELD", "1 // 16"},
-		{"multi-id pairing, second id", "200320", "Goat // Food", "TELD", "1 // 16"},
-		{"sibling-set duplicate id (AFR/OAFR dungeon)", "242785", "Goblin // Dungeon of the Mad Mage", "TAFR", "12 // 20"},
+		{"same-set pairing", "278823", "Eldrazi Scion // Boar", "T2X2", "1//15"},
+		{"cross-set pairing (AFC + AFR)", "244277", "Illusion // Skeleton", "TAFR", "3//6"},
+		{"multi-id pairing, first id", "200319", "Goat // Food", "TELD", "1//16"},
+		{"multi-id pairing, second id", "200320", "Goat // Food", "TELD", "1//16"},
+		{"sibling-set duplicate id (AFR/OAFR dungeon)", "242785", "Goblin // Dungeon of the Mad Mage", "TAFR", "12//20"},
 	} {
 		uuid := testBackend.ConvertID(matcher.IDSpaceTCGplayer, probe.tcgID)
 		if uuid == "" {
