@@ -7,14 +7,22 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/google/uuid"
 	"github.com/mtgban/go-mtgban/matcher"
 )
 
-// derivedTokenPairSuffix marks a uuid minted here for a two-sided token
-// pairing TCGplayer sells as one product (mtgjson only describes those via
-// tokenProducts on each single face). Derived cards reach Match by
-// TCGplayer id only - the combined name is not unique in-set.
-const derivedTokenPairSuffix = "_tp_"
+// tokenPairUUID is the uuid of the two-sided token pairing TCGplayer sells
+// as one product, which mtgjson only describes through tokenProducts on each
+// face: the name-based (version 5) uuid of the higher face uuid in the lower
+// one's namespace, which no mtgjson printing holds. It is "" when the lower
+// one is no uuid.
+func tokenPairUUID(uuidLo, uuidHi string) string {
+	namespace, err := uuid.Parse(uuidLo)
+	if err != nil {
+		return ""
+	}
+	return uuid.NewSHA1(namespace, []byte(uuidHi)).String()
+}
 
 // pairKey identifies a physical pairing by its two uuids, always ordered
 // a < b so the same pairing hashes the same way regardless of which face's
@@ -194,6 +202,9 @@ func deriveTokenPairs(sets map[string]*Set, uuids map[string]*matcher.CardObject
 		}
 
 		card := buildDerivedCard(co1, co2, home, usableIDs)
+		if card.UUID == "" {
+			continue
+		}
 		derived = append(derived, card)
 
 		for _, n := range usableIDs {
@@ -398,7 +409,7 @@ func buildDerivedCard(co1, co2 *matcher.CardObject, home string, usableIDs []int
 	// Number may mix two sets' numbering on a cross-set pairing - cosmetic
 	// only; derived cards are excluded from every name/number index.
 	number := first.Number + " // " + second.Number
-	uuid := uuidLo + derivedTokenPairSuffix + uuidHi
+	pairUUID := tokenPairUUID(uuidLo, uuidHi)
 
 	ids := make([]string, len(usableIDs))
 	for i, n := range usableIDs {
@@ -435,7 +446,7 @@ func buildDerivedCard(co1, co2 *matcher.CardObject, home string, usableIDs []int
 		Finishes:    unionFinishes(co1.Finishes, co2.Finishes),
 		Identifiers: identifiers,
 		Images:      images,
-		UUID:        uuid,
+		UUID:        pairUUID,
 	}
 }
 
@@ -564,7 +575,7 @@ func buildTokenPairIndices(b *matcher.Backend) tokenPairIndicesData {
 			if baseHi < baseLo {
 				baseLo, baseHi = baseHi, baseLo
 			}
-			id = baseLo + derivedTokenPairSuffix + baseHi
+			id = tokenPairUUID(baseLo, baseHi)
 		}
 
 		if errA == nil && errB == nil {
@@ -788,8 +799,7 @@ func tokenPairingFinishOK(b *matcher.Backend, id string, foil bool) string {
 		return id
 	}
 	// Prefer GetUUID(id) first: id may already be the derived uuid when no
-	// TCGplayer product id exists. Numeric tcgplayer ids never collide with
-	// the "_tp_"-infixed uuid form.
+	// TCGplayer product id exists. A numeric tcgplayer id is never a uuid.
 	uuid := id
 	co, err := b.GetUUID(uuid)
 	if err != nil {
