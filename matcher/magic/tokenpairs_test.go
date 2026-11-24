@@ -346,7 +346,7 @@ func TestMatchTokenPairingAnchorsEitherHalf(t *testing.T) {
 	realDatastore(t)
 
 	const scryfallID = "29c4e4f2-0040-4490-b357-660d729ad9cc"
-	const wantUUID = "7a13db1f-523c-5b19-80e5-d4d6f0121c6b_tp_7e5dc858-2163-5de0-95cb-f0e2933a7f7f"
+	const wantUUID = "8eb8dc6d-0fe3-594e-91ad-92ffc189e4a9"
 	if testBackend.ConvertID(matcher.IDSpaceScryfall, scryfallID) == "" {
 		t.Fatal("Cat (C17) scryfallId not present in this datastore")
 	}
@@ -618,15 +618,16 @@ func TestDeriveTokenPairsCrossSetFallsBackRatherThanDrops(t *testing.T) {
 			UUID: uuid, SetCode: setCode, Name: name, Number: "1", Layout: "token",
 		}}
 	}
+	const a, b = "00000000-0000-5000-8000-00000000000a", "00000000-0000-5000-8000-00000000000b"
 	uuids := map[string]*matcher.CardObject{
-		"a": face("a", "TAAA", "Dinosaur"),
-		"b": face("b", "TBBB", "Gnome"),
+		a: face(a, "TAAA", "Dinosaur"),
+		b: face(b, "TBBB", "Gnome"),
 	}
 	sets := map[string]*Set{
 		"AAA": {Code: "AAA", TokenSetCode: "TAAA"},
-		"TAAA": {Code: "TAAA", ParentCode: "AAA", Tokens: []Card{{UUID: "a", TokenProducts: []TokenProduct{{
+		"TAAA": {Code: "TAAA", ParentCode: "AAA", Tokens: []Card{{UUID: a, TokenProducts: []TokenProduct{{
 			Identifiers: map[string]string{"tcgplayerProductId": "1"},
-			TokenParts:  []TokenPart{{UUID: "a"}, {UUID: "b"}},
+			TokenParts:  []TokenPart{{UUID: a}, {UUID: b}},
 		}}}}},
 		"BBB":  {Code: "BBB", TokenSetCode: "TBBB"},
 		"TBBB": {Code: "TBBB", ParentCode: "BBB"},

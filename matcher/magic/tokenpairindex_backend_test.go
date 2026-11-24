@@ -16,7 +16,7 @@ import (
 // not two unrelated fixtures that could never collide by construction.
 func fixtureBackendWithPairing(partnerUUID, partnerName, tcgID string) *matcher.Backend {
 	const bearUUID = "bear-uuid"
-	pairUUID := bearUUID + derivedTokenPairSuffix + partnerUUID
+	pairUUID := bearUUID + "-pair-" + partnerUUID
 	b := &matcher.Backend{
 		UUIDs: map[string]*matcher.CardObject{
 			bearUUID:    {Card: matcher.Card{Name: "Bear"}},

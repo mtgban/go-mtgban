@@ -335,7 +335,7 @@ func TestPreprocessTokenPairing(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Match(%v) = %v", theCard, err)
 	}
-	const want = "3695fffc-7192-528c-83c8-b9893e6c4aa1_tp_dfd98280-5bf8-5d7d-a4ed-a90b91be8734"
+	const want = "1729f21d-82b0-562d-b5dc-ddab2db5d772"
 	if cardID != want {
 		co, _ := b.GetUUID(cardID)
 		t.Errorf("Match(%v) = %s (%v), want the derived Angel // Cat pairing", theCard, cardID, co)
@@ -361,7 +361,7 @@ func TestPreprocessTokenPairingParenthetical(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Match(%v) = %v", theCard, err)
 	}
-	const want = "89c709c6-2fa7-5408-a5bf-5762b82d5477_tp_9d1ed5df-e69a-5bce-96fc-20dce8047d8a"
+	const want = "b3c5b550-44af-59e4-babb-5bf622a5914a"
 	if cardID != want {
 		co, _ := b.GetUUID(cardID)
 		t.Errorf("Match(%v) = %s (%v), want the derived Eldrazi // Eldrazi Spawn pairing", theCard, cardID, co)
@@ -388,7 +388,7 @@ func TestPreprocessTokenPairingSecondHalfAnchored(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Match(%v) = %v", theCard, err)
 	}
-	const want = "7a13db1f-523c-5b19-80e5-d4d6f0121c6b_tp_7e5dc858-2163-5de0-95cb-f0e2933a7f7f"
+	const want = "8eb8dc6d-0fe3-594e-91ad-92ffc189e4a9"
 	if cardID != want {
 		co, _ := b.GetUUID(cardID)
 		t.Errorf("Match(%v) = %s (%v), want the derived Cat // Cat Warrior pairing", theCard, cardID, co)
@@ -414,7 +414,7 @@ func TestPreprocessTokenPairingBySetNumber(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Match(%v) = %v", theCard, err)
 	}
-	const want = "6aabcac2-f43d-5895-99fc-68c948e41e34_tp_b39718f3-8bdc-5726-9b59-c690d962b222"
+	const want = "f22a0867-a8fe-502c-ab7d-b41fb57fc3e9"
 	if cardID != want {
 		co, _ := b.GetUUID(cardID)
 		t.Errorf("Match(%v) = %s (%v), want the derived Soldier // Kobolds of Kher Keep Token pairing", theCard, cardID, co)
