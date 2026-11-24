@@ -39,13 +39,17 @@ func newPairKey(u1, u2 string) pairKey {
 }
 
 // deriveTokenPairs mints one combined Card per unique physical pairing
-// tokenProducts describe. tcgIDs refuses ids a real printing already owns
-// and records each derived entity's own ids at its base sibling.
+// tokenProducts describe. tcgIDs refuses ids a real printing already owns,
+// unless every printing holding it is one of the pairing's own faces and
+// tokenProducts names the id as no other product: the faces then lose the
+// id to the pairing. tcgIDs records each derived entity's own ids at its base sibling.
 func deriveTokenPairs(sets map[string]*Set, uuids map[string]*matcher.CardObject, tcgIDs map[string]string) []Card {
 	// pairIDs / idPairs: an id claimed by more than one pairing is
 	// ambiguous - refuse it (same rule as crossSetProductIDs).
 	pairIDs := map[pairKey]map[string]bool{}
 	idPairs := map[string]map[pairKey]bool{}
+	// notPairIDs: ids tokenProducts also names for a product of another shape
+	notPairIDs := map[string]bool{}
 
 	// Tokens may already be merged into Cards; read both slices but
 	// skip a uuid already visited so tokenProducts is not double-counted.
@@ -60,15 +64,17 @@ func deriveTokenPairs(sets map[string]*Set, uuids map[string]*matcher.CardObject
 					seenCard[card.UUID] = true
 				}
 				for _, tp := range card.TokenProducts {
+					id := tp.Identifiers["tcgplayerProductId"]
 					if len(tp.TokenParts) != 2 {
+						notPairIDs[id] = true
 						continue
 					}
-					id := tp.Identifiers["tcgplayerProductId"]
 					u1, u2 := tp.TokenParts[0].UUID, tp.TokenParts[1].UUID
 					if id == "" || u1 == "" || u2 == "" {
 						continue
 					}
 					if u1 == u2 {
+						notPairIDs[id] = true
 						continue
 					}
 
@@ -83,6 +89,21 @@ func deriveTokenPairs(sets map[string]*Set, uuids map[string]*matcher.CardObject
 					idPairs[id][key] = true
 				}
 			}
+		}
+	}
+
+	// holders: every printing, by mtgjsonId, holding a pair's id as its own
+	holders := map[string]map[string]bool{}
+	for _, co := range uuids {
+		for _, tag := range tcgProductKeys {
+			id := co.Identifiers[tag]
+			if idPairs[id] == nil {
+				continue
+			}
+			if holders[id] == nil {
+				holders[id] = map[string]bool{}
+			}
+			holders[id][co.Identifiers["mtgjsonId"]] = true
 		}
 	}
 
@@ -182,7 +203,8 @@ func deriveTokenPairs(sets map[string]*Set, uuids map[string]*matcher.CardObject
 					continue
 				}
 			}
-			if _, claimed := tcgIDs[id]; claimed {
+			_, claimed := tcgIDs[id]
+			if claimed && (notPairIDs[id] || !allPairFaces(holders[id], key)) {
 				continue
 			}
 			n, err := strconv.Atoi(id)
@@ -207,15 +229,31 @@ func deriveTokenPairs(sets map[string]*Set, uuids map[string]*matcher.CardObject
 		}
 		derived = append(derived, card)
 
+		// A face holding the id has it from the product selling both faces,
+		// so it gives the id up, in the map its set's copies share too
 		for _, n := range usableIDs {
 			id := strconv.Itoa(n)
-			if _, claimed := tcgIDs[id]; !claimed {
-				tcgIDs[id] = card.UUID
+			tcgIDs[id] = card.UUID
+			for _, face := range [...]*matcher.CardObject{co1, co2} {
+				if face.Identifiers["tcgplayerProductId"] == id {
+					delete(face.Identifiers, "tcgplayerProductId")
+				}
 			}
 		}
 	}
 
 	return derived
+}
+
+// allPairFaces reports whether every holder is one of the two faces key
+// names, and there is one at least.
+func allPairFaces(holders map[string]bool, key pairKey) bool {
+	for holder := range holders {
+		if holder != key.a && holder != key.b {
+			return false
+		}
+	}
+	return len(holders) > 0
 }
 
 // tcgProductKeys are the identifiers that give a printing a TCGplayer product.
