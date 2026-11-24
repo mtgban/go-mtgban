@@ -673,3 +673,26 @@ func TestInventoryAndBuylistAreWhatWasLoaded(t *testing.T) {
 		t.Error("printf said nothing to a caller that was listening")
 	}
 }
+
+// The Japanese Chronicles draw the Japanese printings alone, and the Japanese
+// War of the Spark boosters the English ones.
+func TestDrawsOnly(t *testing.T) {
+	b := realDatastore(t)
+	for name, want := range map[string]bool{
+		"Chronicles Foreign Black Border Japanese Booster Pack": true,
+		"War of the Spark Japanese Booster Pack":                false,
+	} {
+		uuids, err := b.SearchSealedEquals(name)
+		if err != nil {
+			t.Fatal(name, err)
+		}
+		co, err := b.GetUUID(uuids[0])
+		if err != nil {
+			t.Fatal(err)
+		}
+		got := drawsOnly(b, co.SetCode, co.UUID, "Japanese")
+		if got != want {
+			t.Errorf("drawsOnly(%s) = %v, want %v", name, got, want)
+		}
+	}
+}

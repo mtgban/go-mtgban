@@ -635,6 +635,21 @@ func opensFromHeld(contents map[string][]matcher.SealedContent) bool {
 	return len(contents["sealed"]) > 0
 }
 
+// drawsOnly reports whether every card a product opens to is in the language.
+func drawsOnly(b *matcher.Backend, setCode, productUUID, language string) bool {
+	counts, err := sealed.ProductCounts(b, setCode, productUUID)
+	if err != nil || len(counts) == 0 {
+		return false
+	}
+	for _, count := range counts {
+		co, err := b.GetUUID(count.UUID)
+		if err != nil || co.Language != language {
+			return false
+		}
+	}
+	return true
+}
+
 // Load fetches everything this scraper offers. See mtgban.Scraper.
 func (ss *Scraper) Load(ctx context.Context) error {
 	var selected string
@@ -645,15 +660,9 @@ func (ss *Scraper) Load(ctx context.Context) error {
 	for _, code := range sets {
 		set, _ := ss.backend.GetSet(code)
 
-		switch set.Code {
-		// Skip products without Sealed or Booster information
-		case "4BB", "DRKITA", "LEGITA", "RIN", "4EDALT", "BCHR":
+		// Skip filtered editions if set
+		if ss.targetEdition != "" && !strings.EqualFold(set.Code, ss.targetEdition) && !strings.EqualFold(set.Name, ss.targetEdition) {
 			continue
-		default:
-			// Skip filtered editions if set
-			if ss.targetEdition != "" && !strings.EqualFold(set.Code, ss.targetEdition) && !strings.EqualFold(set.Name, ss.targetEdition) {
-				continue
-			}
 		}
 
 		for _, product := range set.SealedProduct {
@@ -662,8 +671,8 @@ func (ss *Scraper) Load(ctx context.Context) error {
 				continue
 			}
 
-			// Skip unsupported languages
-			if strings.Contains(product.Name, "Japanese") {
+			// Skip a Japanese product opening to cards in another language
+			if strings.Contains(product.Name, "Japanese") && !drawsOnly(ss.backend, set.Code, product.UUID, "Japanese") {
 				continue
 			}
 
