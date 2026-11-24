@@ -270,11 +270,13 @@ lands beside it.
 - [x] go-mtgban: `Slab`, the grader list, `Slab.Fold()`, `add`'s refusal,
       `ScraperInfo.GradedMode`; `SlabCondition` removed once its callers
       have moved.
-- [ ] go-mtgban: Card Kingdom, ABU, Cool Stuff Inc and Hareruya set `Slab`
-      and `GradedMode`, and publish an unread slab as NM with a loud log;
-      Card Kingdom sets `InstanceID`; CSI's slabs all move to CSIGraded.
-- [ ] go-mtgban: `cardtrader_sealed` skips graded products.
-- [ ] go-mtgban: CardTrader graded singles, once a raw record shows what the
+- [x] go-mtgban: Card Kingdom, ABU, and Hareruya set `Slab` and `GradedMode`,
+      and publish an unread slab as NM with a loud log; Card Kingdom sets
+      `InstanceID`.
+- [ ] go-mtgban: Cool Stuff Inc does the same; its slabs all move to
+      CSIGraded.
+- [x] go-mtgban: `cardtrader_sealed` skips graded products.
+- [x] go-mtgban: CardTrader graded singles, once a raw record shows what the
       feed says about the grade.
 - [ ] mtgban-website: rename `gradedStore`; graded labels in pickers and
       the redirect lookup; the Graded page; the slab beside the store name

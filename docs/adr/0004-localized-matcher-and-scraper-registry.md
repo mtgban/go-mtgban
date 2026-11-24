@@ -88,8 +88,8 @@ to rediscover that they are not the global this ADR removes.
 
 **bantool builds from the registry.** Its flag table is derived from
 `Registered(game)` for every game, with a small override table for the
-targets that publish one half (`mtgseattle`, `vegassingles` on Magic,
-`coolstuffinc_sealed` on Yu-Gi-Oh); the
+targets that publish one half (`mtgseattle` on Magic, and
+`coolstuffinc_sealed` on Yu-Gi-Oh and Lorcana); the
 per-target closures are replaced by `NewScraper` plus what stays bantool's:
 reading credentials from the environment, loading catalogs and SKU lists
 from paths, building the cardtrader bridge and deciding whether a failure to
