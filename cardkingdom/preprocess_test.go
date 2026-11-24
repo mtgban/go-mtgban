@@ -256,10 +256,8 @@ func TestPreprocessPromoPackWithoutStampedSet(t *testing.T) {
 	}
 }
 
-// TestPreprocessTokens pins two token paths: the double-faced split must not
-// double the " Token" suffix the kept face already carries, and a sku code the
-// datastore does not carry must reach the filing set once its treatment
-// wrapping is stripped.
+// TestPreprocessTokens pins that a token sku code the datastore does not
+// carry reaches the filing set once its treatment wrapping is stripped.
 func TestPreprocessTokens(t *testing.T) {
 	b := realDatastore(t)
 	for _, tt := range []struct {
@@ -268,16 +266,6 @@ func TestPreprocessTokens(t *testing.T) {
 		name    string
 		setCode string
 	}{
-		{
-			desc: "a dfc split keeps one Token suffix",
-			product: cardkingdom.Product{
-				SKU:     "TMID-0001",
-				Name:    "Human Token // Wolf Token",
-				Edition: "Innistrad: Midnight Hunt Tokens",
-			},
-			name:    "Human Token",
-			setCode: "TMID",
-		},
 		{
 			// The surge-foil wrapping is one the older per-treatment
 			// strips never knew, so only the wrapping loop reaches it.
@@ -459,31 +447,6 @@ func TestPreprocessSurgeFoilStarredDuplicate(t *testing.T) {
 	}
 }
 
-// TestPreprocessListAngelToken pins the sku fixup for the one Angel token
-// The List carries twice. Its sku names the Forgotten Realms printing and
-// its bare number reaches the Guilds of Ravnica one, which is the wrong
-// card at the right number.
-func TestPreprocessListAngelToken(t *testing.T) {
-	b := realDatastore(t)
-	theCard, err := Preprocess(b, cardkingdom.Product{
-		SKU:     "MTAFR-001",
-		Name:    "Angel Token // Spirit Token",
-		Edition: "Mystery Booster/The List",
-	})
-	if err != nil {
-		t.Fatalf("Preprocess: %v", err)
-	}
-	cardID, err := b.Match(theCard)
-	if err != nil {
-		t.Fatalf("Match(%v) = %v", theCard, err)
-	}
-	const want = "ba22fdaf-8d82-5f14-a5f0-3e5908f04d8c"
-	if cardID != want {
-		co, _ := b.GetUUID(cardID)
-		t.Errorf("Match(%v) = %s (%v), want the Forgotten Realms Angel", theCard, cardID, co)
-	}
-}
-
 // TestPreprocessTokenSheetPairs pins the two-sided sheets that reach the
 // printing carrying both faces: an emblem backed by a token, named in a
 // parenthetical or in the variation; mtgjson's own double-faced token named
@@ -551,6 +514,74 @@ func TestPreprocessTokenSheetPairs(t *testing.T) {
 			if cardID != tt.want {
 				co, _ := b.GetUUID(cardID)
 				t.Errorf("Match(%v) = %s (%v), want %s", theCard, cardID, co, tt.want)
+			}
+		})
+	}
+}
+
+// TestPreprocessTokenSheetRefused pins that a two-sided sheet the datastore
+// pairs no printing for is refused rather than priced as one of its faces.
+func TestPreprocessTokenSheetRefused(t *testing.T) {
+	b := realDatastore(t)
+	for _, tt := range []struct {
+		desc    string
+		product cardkingdom.Product
+	}{
+		{
+			desc: "a face paired with other partners only",
+			product: cardkingdom.Product{
+				SKU:        "TC15-016",
+				ScryfallID: "bf6cf1cf-3efa-409f-84ec-783621566000",
+				Name:       "Saproling Token - Snake Token",
+				Edition:    "Commander 2015",
+				Variation:  "Green/Blue",
+			},
+		},
+		{
+			desc: "a face paired with nothing",
+			product: cardkingdom.Product{
+				SKU:        "TGK2-001",
+				ScryfallID: "a813c741-d0d4-48cd-9bbf-8a04a544ce8e",
+				Name:       "Bird Token - Sphinx Token",
+				Edition:    "Ravnica Allegiance: Guild Kits",
+			},
+		},
+		{
+			desc: "a foil sheet paired only with a nonfoil face",
+			product: cardkingdom.Product{
+				SKU:        "SFT40K-015",
+				ScryfallID: "b19d2866-87e7-40ab-9684-0593caeb223e",
+				Name:       "Plaguebearer of Nurgle Token // Astartes Warrior Token",
+				Edition:    "Universes Beyond: Warhammer 40,000",
+				Variation:  "Surge Foil",
+				IsFoil:     true,
+			},
+		},
+		{
+			desc: "a foil row on a double-faced token sold nonfoil only",
+			product: cardkingdom.Product{
+				SKU:        "TGK1-001",
+				ScryfallID: "a020dc47-3747-4123-9954-f0e87a858b8c",
+				Name:       "Copy Token - Horror Token",
+				Edition:    "Guilds of Ravnica: Guild Kits",
+				IsFoil:     true,
+			},
+		},
+		{
+			desc: "a List sheet with no pairing",
+			product: cardkingdom.Product{
+				SKU:        "MTAFR-001",
+				ScryfallID: "323dd323-2ca2-4c85-9ef6-34341cd40d96",
+				Name:       "Angel Token // Spirit Token",
+				Edition:    "Mystery Booster/The List",
+				Variation:  "001 // 1341",
+			},
+		},
+	} {
+		t.Run(tt.desc, func(t *testing.T) {
+			theCard, err := Preprocess(b, tt.product)
+			if !errors.Is(err, matcher.ErrUnsupported) {
+				t.Errorf("Preprocess(%v) = %v, %v, want %v", tt.product, theCard, err, matcher.ErrUnsupported)
 			}
 		})
 	}
