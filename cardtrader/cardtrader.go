@@ -117,10 +117,33 @@ func ctCondition(s string) (mtgban.Condition, error) {
 	}
 }
 
+const (
+	slabGraderExpr = `(PSA|BGS|BEC?KETT?|CGC|TAG)`
+	slabScoreExpr  = `(10(?:[.,’]\d+)?|[1-9](?:[.,’]\d+)?)`
+
+	// A score ends short of any letter, digit or ordinal mark, past the quad and
+	// basic subgrade marks of BGS: "9.5Q+", "9quad++".
+	slabScoreEnd = `(?:QUAD|Q|B)?(?:[.,’](?:\D|$)|[^\pL\pN.,’°]|$)`
+)
+
 // reSlab reads a grader and its score off a listing's description, the only
 // place Card Trader names them: "[PSA 10.0 Gem-Mint]", "bgs 8,5", "CGC grade 9".
-var reSlab = regexp.MustCompile(`(?i)\b(PSA|BGS|BECKETT|CGC|TAG)[\s:\]-]*` +
-	`(?:(?:GEM|MINT|MT|NEAR|NM|PRISTINE|GRADED|GRADE)[\s-]+)*(\d+(?:[.,’]\d+)?)`)
+var reSlab = regexp.MustCompile(`(?i)\b` + slabGraderExpr + `[\s:\]-]*` +
+	`(?:(?:GEM|MINT|MT|NEAR|NM|EX|VG|GOOD|FAIR|FR|POOR|PR|PR[IE]STINE|BLACK|LABEL|UNIVERSAL|GRADED|GRADE|VOTO)[\s:+-]+)*` +
+	slabScoreExpr + slabScoreEnd)
+
+// reSlabScoreFirst reads a score worded ahead of its grader: "Graded 9 by
+// PSA". The number can count copies, "graded 2 PSA cards", so without the "by"
+// no word follows the grader, and without a word for the grade it is the whole
+// description, "9.5 bgs".
+var reSlabScoreFirst = regexp.MustCompile(`(?i)(?:\b(?:GRADED?|GRADAT[AO])\s+` +
+	slabScoreExpr + `\s+(?:BY\s+` + slabGraderExpr + `\b|` + slabGraderExpr + `(?:\s*[^\s\pL\pN]|\s*$))` +
+	`|^` + slabScoreExpr + `\s+(?:GEM\s+)?(?:MINT\s+)?` + slabGraderExpr + `$)`)
+
+// reSlabGrader is the first grader a description names. GRAAD and AiGrad are
+// not in the supported list, but their slabs are compared to the others':
+// "GRAAD 10, PSA 10 equivalent". TAG is a word of its own in lower case.
+var reSlabGrader = regexp.MustCompile(`(?:^|[^\pL])((?i:PSA|BGS|BEC?KETT?|CGC|GRAAD|AIGRAD)|TAG)(?:[^\pL]|$)`)
 
 // slabLabels are the labels a grader sets apart from its plain 10, the higher
 // first: a Black Label is worded as a Pristine too.
@@ -139,29 +162,20 @@ func crackedOut(product Product) bool {
 	return product.Graded && strings.HasPrefix(description, "cracked ")
 }
 
-// ctSlab reads a graded listing's slab and its condition off its description. A score between two
-// half steps, or past the 10, is the one below. A slab it cannot read is NM,
-// an UnreadSlab, with its wording returned to log; that is "" for any other.
+// ctSlab reads a graded listing's slab and its condition off its
+// description. A score between two half steps, or past the 10, is the one
+// below. A slab it cannot read is NM, an UnreadSlab, with its wording returned
+// to log; that is "" for any other.
 func ctSlab(description string) (slab *mtgban.Slab, grade mtgban.Condition, unread string) {
 	description = strings.Join(strings.Fields(description), " ")
 	slab = &mtgban.Slab{}
-	match := reSlab.FindStringSubmatch(description)
-	if match != nil {
-		slab.Grader = strings.ToUpper(match[1])
-		if slab.Grader == "BECKETT" {
-			slab.Grader = "BGS"
-		}
-		score, err := strconv.ParseFloat(strings.NewReplacer(",", ".", "’", ".").Replace(match[2]), 64)
-		if err == nil && score >= 1 && score < 11 {
-			slab.Score = min(math.Floor(score*2)/2, 10)
-		}
-		if slab.Score == 10 {
-			wording := strings.ReplaceAll(strings.ToLower(description), "-", " ")
-			for _, label := range slabLabels[slab.Grader] {
-				if strings.Contains(wording, strings.ToLower(label)) {
-					slab.Label = label
-					break
-				}
+	slab.Grader, slab.Score = slabGrade(description)
+	if slab.Score == 10 {
+		wording := strings.NewReplacer("-", " ", "prestine", "pristine").Replace(strings.ToLower(description))
+		for _, label := range slabLabels[slab.Grader] {
+			if strings.Contains(wording, strings.ToLower(label)) {
+				slab.Label = label
+				break
 			}
 		}
 	}
@@ -177,6 +191,56 @@ func ctSlab(description string) (slab *mtgban.Slab, grade mtgban.Condition, unre
 		grade = mtgban.NM
 	}
 	return slab, grade, unread
+}
+
+// slabGrade reads the grader a description names and the score it gave, zero
+// when there is none to read.
+func slabGrade(description string) (grader string, score float64) {
+	named := reSlabGrader.FindStringSubmatch(description)
+	if named != nil {
+		grader = slabGrader(named[1])
+		if grader == "" {
+			return "", 0
+		}
+	}
+
+	var value string
+	for _, match := range reSlab.FindAllStringSubmatch(description, -1) {
+		// A lower case "tag" beside another grader is the word
+		scored := slabGrader(match[1])
+		if scored == "TAG" && grader != "" && grader != "TAG" {
+			continue
+		}
+		grader, value = scored, match[2]
+		break
+	}
+	if value == "" {
+		match := reSlabScoreFirst.FindStringSubmatch(description)
+		if match == nil {
+			return grader, 0
+		}
+		value = cmp.Or(match[1], match[4])
+		grader = slabGrader(cmp.Or(match[2], match[3], match[5]))
+	}
+
+	score, err := strconv.ParseFloat(strings.NewReplacer(",", ".", "’", ".").Replace(value), 64)
+	if err != nil {
+		return grader, 0
+	}
+	return grader, min(math.Floor(score*2)/2, 10)
+}
+
+// slabGrader spells a grader as a Slab names it, "" for an unsupported one.
+func slabGrader(name string) string {
+	name = strings.ToUpper(name)
+	switch name {
+	case "PSA", "BGS", "CGC", "TAG":
+		return name
+	case "GRAAD", "AIGRAD":
+		return ""
+	default:
+		return "BGS"
+	}
 }
 
 var langMap = map[string]string{
