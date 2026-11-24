@@ -256,6 +256,23 @@ var versionPrintings = map[int]struct{ set, number string }{
 	8069:   {"MIR", "120"},  // Ebony Charm (V.1), CardTrader
 	878087: {"MIR", "120†"}, // Ebony Charm (V.2), CardTrader
 
+	// Fourth Edition: Black Bordered
+	251138: {"4BB", "378"}, // Forest (V.1), CardTrader image
+	251139: {"4BB", "377"}, // Forest (V.2), CardTrader image
+	251140: {"4BB", "376"}, // Forest (V.3), CardTrader image
+	251284: {"4BB", "369"}, // Island (V.1), CardTrader image
+	251285: {"4BB", "368"}, // Island (V.2), CardTrader image
+	251453: {"4BB", "367"}, // Island (V.3), CardTrader image
+	251318: {"4BB", "375"}, // Mountain (V.1), CardTrader image
+	251319: {"4BB", "373"}, // Mountain (V.2), CardTrader image
+	251320: {"4BB", "374"}, // Mountain (V.3), CardTrader image
+	251299: {"4BB", "366"}, // Plains (V.1), CardTrader image
+	251300: {"4BB", "364"}, // Plains (V.2), CardTrader image
+	251301: {"4BB", "365"}, // Plains (V.3), CardTrader image
+	251348: {"4BB", "372"}, // Swamp (V.1), CardTrader image
+	251349: {"4BB", "370"}, // Swamp (V.2), CardTrader image
+	251350: {"4BB", "371"}, // Swamp (V.3), CardTrader image
+
 	// Foreign Black Bordered
 	15461: {"FBB", "304"}, // Forest (V.1), CardTrader
 	15462: {"FBB", "305"}, // Forest (V.2), CardTrader

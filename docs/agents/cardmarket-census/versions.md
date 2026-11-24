@@ -28,6 +28,10 @@ show the art of the Revised printing with the same number on Scryfall. The map
 carries none of the white-bordered ones and five of the black-bordered, four of
 them (Plains and Swamp, V.1 and V.2) on the next version's printing.
 
+It also places the three versions of each Fourth Edition: Black Bordered basic
+by the pictures on CardTrader's blueprints, whose numbers contradict them for 13
+of the 15. The map carries one, Forest V.1, and it agrees with the picture.
+
 It also places the Simplified Chinese alternate-art basics of Portal and a
 few Eighth and Tenth Edition alternate arts, which the map links to no
 printing; the media inserts (PMEI, PPRO) the map links to a printing and its
@@ -92,6 +96,7 @@ The tag after each row's name says what placed it:
 | swap | the other half of a two-version swap an image settled |
 | sideboard | V.1 is the main deck and V.2 the sideboard, as in all 6 pairs both sources agree on. CardTrader follows that order in all 15 disputes, Scryfall in none |
 | CardTrader | CardTrader's collector number, which no other product's row contests |
+| CardTrader image | the picture on CardTrader's blueprint for the product was matched to the Scryfall card by eye, in an expansion whose numbers do not match its pictures |
 | left over | the one row of its group left once the other versions are placed |
 | map lists two, four | the map files the product on several printings. CardTrader and the sibling priced on the other one agree which is this product's |
 | Scryfall | the map does not carry the product, and Scryfall's own `cardmarket_id` names its printing |
