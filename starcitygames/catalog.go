@@ -953,6 +953,7 @@ func resolveMagic(b *matcher.Backend, p CatalogProduct, foil bool) (string, erro
 		}
 	}
 
+	anchoredFaces := false
 	// A two-sided token sheet prints one physical card for a pairing
 	// matcher/magic may already carry a combined entity for
 	// (tokenpairs.go) - resolve that precisely, by id, before the plain
@@ -976,6 +977,9 @@ func resolveMagic(b *matcher.Backend, p CatalogProduct, foil bool) (string, erro
 	// a marker ("{City's Blessing} // {Daretti, Scrap Savant Emblem}").
 	if strings.Contains(p.Name, " // ") &&
 		(strings.Contains(p.Name, "Token") || strings.Contains(p.Name, "Dungeon") || strings.Contains(p.Name, "Emblem")) {
+		if sameFaceSheets[skuSetCode(p.SKU)+"-"+skuNumber(p.SKU)] {
+			return "", matcher.ErrUnsupported
+		}
 		if tcgID := magic.MatchTokenPairing(b, p.ScryfallID, p.Name, foil); tcgID != "" {
 			if id, err := b.MatchID(tcgID, foil, etched); err == nil {
 				return id, nil
@@ -1030,6 +1034,7 @@ func resolveMagic(b *matcher.Backend, p CatalogProduct, foil bool) (string, erro
 					return id, nil
 				}
 			}
+			anchoredFaces = uuidA != uuidB
 		}
 	}
 
@@ -1040,6 +1045,13 @@ func resolveMagic(b *matcher.Backend, p CatalogProduct, foil bool) (string, erro
 		if len(out) == 1 {
 			return b.MatchID(out[0].UUID, foil, etched)
 		}
+	}
+
+	// A two-sided sheet whose sku anchors two faces with no pairing in this
+	// finish has no printing to land on: either face alone would price it
+	// as a single-faced token.
+	if anchoredFaces {
+		return "", matcher.ErrUnsupported
 	}
 
 	out, found := vendorPrinting(b, GameMagic, p, foil, etched)
@@ -1293,6 +1305,21 @@ var promoShelfPrintings = map[string]struct{ set, number string }{
 	"BAB_FIN_001a":  {"RFIN", "J2"},
 	"BAB_FIN_001b":  {"RFIN", "J1"},
 	"FOUR_2025_001": {"PW26", "4"},
+}
+
+// sameFaceSheets are two-sided token sheets with one token on both sides,
+// keyed by sku set and number, that the shop sells beside the single-faced
+// token of that number. The datastore holds only the single, which carries
+// the sheet's identifiers too, so the sheet has no printing of its own and
+// landing it there would price the single at the sheet's price. Commander
+// 2015's and Starter Commander Decks' sheets are left out: there the
+// single row is the only product the shop lists at that number.
+var sameFaceSheets = map[string]bool{
+	"BLB-T03T03": true,
+	"ELD-T02T02": true,
+	"IKO-T07T07": true,
+	"M20-T08T08": true,
+	"VOW-T17T17": true,
 }
 
 // matchVendorID resolves a vendor id to the printing sold in the finish the

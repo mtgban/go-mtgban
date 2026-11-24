@@ -362,11 +362,28 @@ sheet lands on that card, never on one of its faces:
    (`magic.MatchTokenPairingBySetNumber`), or both faces by number and name
    (`tokenPairAnchorUUIDs`, `magic.MatchTokenPairingByUUIDs`).
 
-Of the catalog's 3,915 two-sided Magic products, 3,662 land this way
-(20 on a combined printing), 116 are refused, and 137 still land on one
-face: their sku does not anchor both faces (a misspelled face, numbers in
-the other order from the names, a Guild Kit's single number, the Star
-Trek alt-foil numbering), or no pairing joins the two faces it anchors.
+A sheet with no card of its own is refused (`matcher.ErrUnsupported`),
+since landing it on a face would price it as a single-faced token:
+
+- both sku numbers anchor a face, but no pairing joins them in that finish
+  (a foil sheet whose face was never foil, a cross-set sheet with no
+  tokenProducts record). The check runs after `promoShelfPrintings`, which
+  places League sheets on their own printing;
+- `sameFaceSheets`, a closed table of sheets with one token on both sides
+  that SCG sells beside the single of that number. The sheet carries the
+  single's identifiers, so it would share the single's key and the dearer
+  price would win.
+
+Of the catalog's 3,915 two-sided Magic products, 3,662 land on their sheet
+(20 on a combined printing), 203 are refused, and 50 land on one face:
+
+- 11 same-face sheets from Commander 2015 and Starter Commander Decks,
+  which SCG lists without a single beside them; Commander 2015's single
+  carries TCGplayer's "Double-Sided Token" product;
+- 39 whose sku anchors one face or neither: a misspelled face ("Solder",
+  "Thoper"), numbers in the other order from the names, a Guild Kit's
+  single number, the Star Trek alt-foil numbering, or no face row at that
+  number. Some of these are right (Guild Kit's own Soldier // Soldier).
 
 ## Upstream, not scraper-side: left alone on purpose
 
