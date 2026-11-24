@@ -1304,7 +1304,7 @@ func (ap *AllPrintings) newBackend() *matcher.Backend {
 	}
 	// After the language sets are made, so that none inherits these sources
 	for _, packed := range packedLike {
-		packLike(ap.Data, packed.code, packed.like)
+		packLike(ap.Data, packed.code, packed.like, packed.language)
 	}
 
 	if ap.Data["SLD"] != nil {
@@ -1887,9 +1887,10 @@ func duplicate(sets map[string]*Set, name, base, code, tag, date string) {
 }
 
 // packLike gives a set the boosters of the one it is packed like, drawn from
-// its own cards, and has its products that hold none yet open them. A product
-// opens what the other set's of its kind does.
-func packLike(sets map[string]*Set, code, like string) {
+// its own cards, and has its products open them. A product that holds nothing
+// opens what the other set's of its kind does, and one of the other set's that
+// names the language is this set's.
+func packLike(sets map[string]*Set, code, like, language string) {
 	set, base := sets[code], sets[like]
 	if set == nil || base == nil || set.Booster != nil {
 		return
@@ -1939,15 +1940,36 @@ func packLike(sets map[string]*Set, code, like string) {
 		}
 	}
 
+	products := slices.Clone(set.SealedProduct)
+	for _, product := range base.SealedProduct {
+		if language == "" || !strings.Contains(product.Name, language) {
+			continue
+		}
+		for i := range product.Contents["pack"] {
+			product.Contents["pack"][i].Set = strings.ToLower(code)
+		}
+		products = append(products, product)
+	}
+
 	for i := range set.Cards {
 		var sources []string
-		for _, product := range set.SealedProduct {
+		for _, product := range products {
 			if contentsContainCard(sets, product.Contents, set.Cards[i].UUID, "nonfoil") {
 				sources = append(sources, product.UUID)
 			}
 		}
 		if len(sources) > 0 {
 			set.Cards[i].SourceProducts = map[string][]string{"nonfoil": sources}
+		}
+	}
+	// The other set's cards no longer come from the products taken
+	for _, card := range base.Cards {
+		for finish, sources := range card.SourceProducts {
+			card.SourceProducts[finish] = slices.DeleteFunc(sources, func(source string) bool {
+				return slices.ContainsFunc(products, func(product SealedProduct) bool {
+					return product.UUID == source
+				})
+			})
 		}
 	}
 }

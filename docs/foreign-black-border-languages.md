@@ -55,8 +55,17 @@ sold language would send those listings to the copy instead. Every reader of
 
 ## Sealed products
 
-mtgjson lists FBB's and FWB's boosters, boxes and starter decks without
-saying what the pack and the starter deck hold. Both open like Revised's
-(`packedLike` in `matcher/magic/table.go`), from the Italian set alone, and
-only that set's cards name them in `SourceProducts`: the French and German
-sets name no product.
+mtgjson derives a reprint set's boosters from its parent's, as it does for
+BCHR, but not where a number is printed in several languages (FBB, 4BB), and
+it has no cards for FWB or for the sets made here. `packedLike` in
+`matcher/magic/table.go` names the set each of these is packed like, and the
+loader draws that set's boosters from its own cards. A set mtgjson gives
+boosters to keeps them.
+
+- FBB, FWB and 4BB have products of their own, opened from the set in the
+  language it stands for. Their other languages' sets name no product.
+- Legends Italian, The Dark Italian and the German Renaissance have theirs
+  filed under the original set, told by the language in the product's name.
+- Alternate Fourth Edition has no product.
+
+A card names in `SourceProducts` only the products that draw it.

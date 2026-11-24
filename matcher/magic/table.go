@@ -57,11 +57,16 @@ var languageSets = []struct{ base, code, tag, name string }{
 	{"FWB", "FWBDE", "DE", "Foreign White Border (German)"},
 }
 
-// packedLike are the sets sold in another set's packs, card for card, whose
-// products mtgjson lists without saying what they hold.
-var packedLike = []struct{ code, like string }{
-	{"FBB", "3ED"},
-	{"FWB", "3ED"},
+// packedLike are the sets sold in another set's packs, card for card, to which
+// mtgjson gives no boosters: those printed in several languages, and those made
+// here. The language tells the products of the latter from the other set's.
+var packedLike = []struct{ code, like, language string }{
+	{"FBB", "3ED", ""},
+	{"FWB", "3ED", ""},
+	{"4BB", "4ED", ""},
+	{"LEGITA", "LEG", "Italian"},
+	{"DRKITA", "DRK", "Italian"},
+	{"RENDE", "REN", "German"},
 }
 
 // List of numbers in SLD that need to be decoupled, each with its starred
