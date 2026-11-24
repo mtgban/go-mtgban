@@ -175,7 +175,7 @@ func TestSlabCondition(t *testing.T) {
 		slabbed bool
 	}{
 		{"1 PSA 10 \u00a0PSA 10\u00a0$299.99Add to Cart", mtgban.NM, true},
-		{"1 BGS 8.5 \u00a0BGS 8.5\u00a0$149.99Add to Cart", mtgban.SP, true},
+		{"1 BGS 8.5 \u00a0BGS 8.5\u00a0$149.99Add to Cart", mtgban.NM, true},
 		{"1 BGS 9.5 \u00a0BGS 9.5\u00a0Was $349.99 Sale $314.99Add to Cart", mtgban.NM, true},
 		{"1 CGC 8.5 \u00a0CGC 8.5\u00a0$24.99Add to Cart", mtgban.NM, true},
 		{"1 PSA 9 Pokemon Center \u00a0PSA 9 Pokemon Center\u00a0$299.99Add to Cart", mtgban.NM, true},

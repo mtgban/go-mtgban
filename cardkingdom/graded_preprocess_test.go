@@ -252,11 +252,11 @@ func TestParseGradedSlab(t *testing.T) {
 		},
 		{
 			title: "Mox Diamond (Stronghold BGS 8.5) #3854",
-			slab:  mtgban.Slab{Grader: "BGS", Score: 8.5}, grade: mtgban.SP,
+			slab:  mtgban.Slab{Grader: "BGS", Score: 8.5}, grade: mtgban.NM,
 		},
 		{
 			title: "Land Tax (4th Edition Alternate PSA 7) #3676",
-			slab:  mtgban.Slab{Grader: "PSA", Score: 7}, grade: mtgban.NM,
+			slab:  mtgban.Slab{Grader: "PSA", Score: 7}, grade: mtgban.SP,
 		},
 		{
 			title: "Lion's Eye Diamond (Mirage BGS 9.5 Quad ++) #6775",

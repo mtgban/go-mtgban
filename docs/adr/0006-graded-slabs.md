@@ -16,7 +16,7 @@ CGC Pristine 10) and we publish them today:
 | Hareruya | sub-seller of `hareruya`, "Hareruya Graded" (`HAGraded`) | PSA, BGS, CGC |
 
 Every one of them folds the slab into a condition through
-`mtgban.SlabCondition` (PSA 9 is NM, BGS 8 is SP) and keeps nothing else.
+`mtgban.SlabCondition` (PSA 9 is NM) and keeps nothing else.
 The grader, the score, a half point (BGS 9.5 reads as 9) and the premium
 labels (CGC Pristine 10, BGS Black Label 10) are gone by the time the entry
 is added. `InventoryEntry` has no place to hold them, and no scraper writes
@@ -89,8 +89,8 @@ autographed slabs are dropped before grading; each can be added later as an
 ### 2. The singles view of a slab is a fold, and the scraper does it
 
 `SlabCondition(grader, score)` becomes `Slab.Fold() (Condition, bool)`, over
-the same per-grader table keyed by the whole score (half points round down,
-as they do now). A label that means a top score sets the score too (CGC
+one table of whole scores for every grader (half points round down, as they
+do now). A label that means a top score sets the score too (CGC
 "Pristine" is 10). A slab with no score folds only by a label the table
 names (CGC "Authentic Altered" is PO, as today); any other does not fold.
 The scraper calls it and sets `Conditions`, as all four do today.

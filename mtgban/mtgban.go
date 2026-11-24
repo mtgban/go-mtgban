@@ -253,50 +253,46 @@ func ParseCondition(s string) (Condition, error) {
 // as NM; a half point reads as the whole point below it.
 func SlabCondition(grader, score string) (Condition, bool) {
 	score, _, _ = strings.Cut(score, ".")
-	grade, found := slabGrades[grader][score]
-	return grade, found
+	return slabGrade(grader, score)
 }
 
-var slabGrades = map[string]map[string]Condition{
-	"PSA": {
-		"10": NM,
-		"9":  NM,
-		"8":  NM,
-		"7":  NM,
-		"6":  SP,
-		"5":  SP,
-		"4":  MP,
-		"3":  MP,
-		"2":  HP,
-		"1":  HP,
-	},
-	"BGS": {
-		"10": NM,
-		"9":  NM,
-		"8":  SP,
-		"7":  SP,
-		"6":  MP,
-		"5":  MP,
-		"4":  MP,
-		"3":  HP,
-		"2":  HP,
-		"1":  PO,
-	},
+// slabScores is the grade of each whole score, the same whoever graded it.
+var slabScores = map[string]Condition{
+	"10": NM,
+	"9":  NM,
+	"8":  NM,
+	"7":  SP,
+	"6":  SP,
+	"5":  MP,
+	"4":  MP,
+	"3":  HP,
+	"2":  HP,
+	"1":  PO,
+}
+
+// slabLabels holds every grader that folds, with the labels that grade a slab
+// on their own.
+var slabLabels = map[string]map[string]Condition{
+	"PSA": nil,
+	"BGS": nil,
 	"CGC": {
 		"Pristine":          NM,
 		"Pristine 10":       NM,
-		"10":                NM,
-		"9":                 NM,
-		"8":                 NM,
-		"7":                 SP,
-		"6":                 SP,
-		"5":                 MP,
-		"4":                 MP,
-		"3":                 HP,
-		"2":                 HP,
-		"1":                 PO,
 		"Authentic Altered": PO,
 	},
+}
+
+// slabGrade is the grade of a grader's whole score, or of one of its labels.
+func slabGrade(grader, key string) (Condition, bool) {
+	labels, found := slabLabels[grader]
+	if !found {
+		return "", false
+	}
+	grade, found := labels[key]
+	if !found {
+		grade, found = slabScores[key]
+	}
+	return grade, found
 }
 
 // Scraper is the interface both Sellers and Vendors need to implement

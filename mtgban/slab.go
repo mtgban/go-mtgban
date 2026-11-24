@@ -42,15 +42,14 @@ func UnreadSlab(grader, wording string) *Slab {
 
 // Fold reads a slab as a condition, for the singles view of it: PSA 9 is NM.
 // A half point reads as the whole point below it; a slab with no score
-// folds only by a label the grader's table names. It reports false for
+// folds only by a label slabLabels names for the grader. It reports false for
 // anything else, which the scraper publishes as an UnreadSlab.
 func (s Slab) Fold() (Condition, bool) {
 	key := s.Label
 	if s.Score > 0 {
 		key = strconv.Itoa(int(s.Score))
 	}
-	grade, found := slabGrades[s.Grader][key]
-	return grade, found
+	return slabGrade(s.Grader, key)
 }
 
 // sameSlab reports whether two entries carry the same slab, or are both raw.

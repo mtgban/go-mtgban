@@ -7,21 +7,26 @@ import (
 	"testing"
 )
 
-// Every label the grade table holds folds through Slab.Fold to the grade
-// SlabCondition gives it, read the way a scraper fills a Slab: a number
-// as the score, a word as the label.
-func TestFoldAgreesWithSlabCondition(t *testing.T) {
-	for grader, scores := range slabGrades {
-		for key := range scores {
-			want, _ := SlabCondition(grader, key)
-			slab := Slab{Grader: grader, Label: key}
-			score, err := strconv.ParseFloat(key, 64)
-			if err == nil {
-				slab = Slab{Grader: grader, Score: score}
+// Every grader that folds reads a score as the same grade, through Slab.Fold
+// and SlabCondition alike.
+func TestFoldByScore(t *testing.T) {
+	want := map[float64]Condition{
+		10: NM, 9.5: NM, 9: NM, 8.5: NM, 8: NM,
+		7.5: SP, 7: SP, 6.5: SP, 6: SP,
+		5.5: MP, 5: MP, 4.5: MP, 4: MP,
+		3.5: HP, 3: HP, 2.5: HP, 2: HP,
+		1.5: PO, 1: PO,
+	}
+	for _, grader := range []string{"PSA", "BGS", "CGC"} {
+		for score, grade := range want {
+			got, found := Slab{Grader: grader, Score: score}.Fold()
+			if !found || got != grade {
+				t.Errorf("%s %v: Fold gave %q, %v; want %q", grader, score, got, found, grade)
 			}
-			got, found := slab.Fold()
-			if !found || got != want {
-				t.Errorf("%s %s: Fold gave %q, %v; SlabCondition gives %q", grader, key, got, found, want)
+			text := strconv.FormatFloat(score, 'f', -1, 64)
+			got, found = SlabCondition(grader, text)
+			if !found || got != grade {
+				t.Errorf("%s %s: SlabCondition gave %q, %v; want %q", grader, text, got, found, grade)
 			}
 		}
 	}
@@ -33,11 +38,11 @@ func TestFold(t *testing.T) {
 		want  Condition
 		found bool
 	}{
-		{Slab{Grader: "BGS", Score: 9.5}, NM, true},
-		{Slab{Grader: "BGS", Score: 8.5}, SP, true},
 		{Slab{Grader: "CGC", Score: 10, Label: "Pristine"}, NM, true},
 		{Slab{Grader: "CGC", Label: "Authentic Altered"}, PO, true},
 		{Slab{Grader: "PSA", Label: "Authentic"}, "", false},
+		{Slab{Grader: "BGS", Label: "Pristine"}, "", false},
+		{Slab{Grader: "TAG", Score: 10}, "", false},
 		{Slab{Grader: "SGC", Score: 10}, "", false},
 		{Slab{}, "", false},
 	} {
