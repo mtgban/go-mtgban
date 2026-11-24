@@ -3,10 +3,13 @@
 package cardtrader
 
 import (
+	"cmp"
 	"context"
 	"errors"
 	"fmt"
+	"math"
 	"net/url"
+	"regexp"
 	"slices"
 	"strconv"
 	"strings"
@@ -22,7 +25,8 @@ const (
 )
 
 // Market prices singles from Card Trader, splitting the result into
-// the storefronts they sell under: the marketplace itself, Zero, and 1DR.
+// the storefronts they sell under: the marketplace itself, Zero, and 1DR, with
+// the graded slabs of each in a seller of their own.
 type Market struct {
 	logCallback    mtgban.LogCallbackFunc
 	inventoryDate  time.Time
@@ -56,6 +60,16 @@ var name2shorthand = map[string]string{
 	"Card Trader":      "CT",
 	"Card Trader Zero": "CT0",
 	"Card Trader 1DR":  "CT1DR",
+
+	"Card Trader Graded":      "CTGraded",
+	"Card Trader Zero Graded": "CT0Graded",
+	"Card Trader 1DR Graded":  "CT1DRGraded",
+}
+
+// gradedMarketNames are the sellers of the slabs sold beside each of
+// availableMarketNames, in the same order.
+var gradedMarketNames = []string{
+	"Card Trader Graded", "Card Trader Zero Graded", "Card Trader 1DR Graded",
 }
 
 // NewScraperMarket returns a market scraper for the datastore's game,
@@ -101,6 +115,68 @@ func ctCondition(s string) (mtgban.Condition, error) {
 	default:
 		return mtgban.ParseCondition(s)
 	}
+}
+
+// reSlab reads a grader and its score off a listing's description, the only
+// place Card Trader names them: "[PSA 10.0 Gem-Mint]", "bgs 8,5", "CGC grade 9".
+var reSlab = regexp.MustCompile(`(?i)\b(PSA|BGS|BECKETT|CGC|TAG)[\s:\]-]*` +
+	`(?:(?:GEM|MINT|MT|NEAR|NM|PRISTINE|GRADED|GRADE)[\s-]+)*(\d+(?:[.,’]\d+)?)`)
+
+// slabLabels are the labels a grader sets apart from its plain 10, the higher
+// first: a Black Label is worded as a Pristine too.
+var slabLabels = map[string][]string{
+	"BGS": {"Black Label", "Pristine"},
+	"CGC": {"Pristine"},
+}
+
+// reSlabTag is the bracketed opening of a description, "[GRAAD 9.5]".
+var reSlabTag = regexp.MustCompile(`^\[([^\]]+)\]`)
+
+// crackedOut says a graded listing is of a copy taken out of its slab,
+// "Cracked PSA 8 with label", which is not the slab with a "cracked case".
+func crackedOut(product Product) bool {
+	description := strings.ToLower(strings.TrimSpace(product.Description))
+	return product.Graded && strings.HasPrefix(description, "cracked ")
+}
+
+// ctSlab reads a graded listing's slab and its condition off its description. A score between two
+// half steps, or past the 10, is the one below. A slab it cannot read is NM,
+// an UnreadSlab, with its wording returned to log; that is "" for any other.
+func ctSlab(description string) (slab *mtgban.Slab, grade mtgban.Condition, unread string) {
+	description = strings.Join(strings.Fields(description), " ")
+	slab = &mtgban.Slab{}
+	match := reSlab.FindStringSubmatch(description)
+	if match != nil {
+		slab.Grader = strings.ToUpper(match[1])
+		if slab.Grader == "BECKETT" {
+			slab.Grader = "BGS"
+		}
+		score, err := strconv.ParseFloat(strings.NewReplacer(",", ".", "’", ".").Replace(match[2]), 64)
+		if err == nil && score >= 1 && score < 11 {
+			slab.Score = min(math.Floor(score*2)/2, 10)
+		}
+		if slab.Score == 10 {
+			wording := strings.ReplaceAll(strings.ToLower(description), "-", " ")
+			for _, label := range slabLabels[slab.Grader] {
+				if strings.Contains(wording, strings.ToLower(label)) {
+					slab.Label = label
+					break
+				}
+			}
+		}
+	}
+
+	grade, found := slab.Fold()
+	if !found {
+		unread = cmp.Or(description, "Graded")
+		tag := reSlabTag.FindStringSubmatch(description)
+		if tag != nil {
+			unread = tag[1]
+		}
+		slab = mtgban.UnreadSlab(slab.Grader, unread)
+		grade = mtgban.NM
+	}
+	return slab, grade, unread
 }
 
 var langMap = map[string]string{
@@ -458,7 +534,7 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 		case product.Quantity < 1,
 			product.OnVacation,
 			product.Properties.Altered,
-			product.Graded:
+			crackedOut(product):
 			continue
 		case notTheListedCopy(product.Description):
 			continue
@@ -473,6 +549,12 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 		if err != nil {
 			ct.printf("unsupported %s condition", cond)
 			continue
+		}
+
+		var slab *mtgban.Slab
+		var unread string
+		if product.Graded {
+			slab, conditions, unread = ctSlab(product.Description)
 		}
 
 		// Build the per-game input card; the match and error handling below are
@@ -675,11 +757,15 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 		}
 
 		// Assign a seller name as required by Market
-		sellerName := availableMarketNames[0]
+		sellers := availableMarketNames
+		if slab != nil {
+			sellers = gradedMarketNames
+		}
+		sellerName := sellers[0]
 		if product.User.SinglesZero {
-			sellerName = availableMarketNames[1]
+			sellerName = sellers[1]
 			if strings.Contains(strings.ToLower(product.User.Name), "day ready") {
-				sellerName = availableMarketNames[2]
+				sellerName = sellers[2]
 			}
 		} else {
 			// Skip non-professional users with excessive shipping options due to geo
@@ -689,6 +775,10 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 					continue
 				}
 			}
+		}
+
+		if unread != "" {
+			ct.printf(mtgban.UnreadSlabFormat+" on %d", unread, product.ID)
 		}
 
 		channel <- resultChan{
@@ -703,6 +793,7 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 				OriginalID:   fmt.Sprint(product.BlueprintID),
 				InstanceID:   fmt.Sprint(product.ID),
 				CustomFields: listingFields(ct.gameID, product),
+				Slab:         slab,
 			},
 		}
 	}
@@ -834,12 +925,16 @@ func (ct *Market) Load(ctx context.Context) error {
 // addCheapestOffer keeps the cheapest offer per condition and storefront,
 // holding every offer's copies as its Available. Several blueprints can land
 // on one card and arrive in any order, so an equal price goes to the
-// blueprint id that sorts first. Singles and sealed both fold through it.
+// blueprint id that sorts first. Singles and sealed both fold through it, but
+// a slab is one particular copy, and each is kept.
 func addCheapestOffer(inventory mtgban.InventoryRecord, result resultChan, printf func(string, ...any)) {
 	offer := result.invEntry
 	offer.Available = offer.Quantity
 
 	entries := inventory[result.cardID]
+	if offer.Slab != nil {
+		entries = nil
+	}
 	for i := range entries {
 		kept := entries[i]
 		if kept.Conditions != offer.Conditions || kept.SellerName != offer.SellerName {
@@ -870,7 +965,7 @@ func (ct *Market) Inventory() mtgban.InventoryRecord {
 // MarketNames names the sub-sellers this market splits into. See
 // mtgban.Market.
 func (ct *Market) MarketNames() []string {
-	return availableMarketNames
+	return slices.Concat(availableMarketNames, gradedMarketNames)
 }
 
 // InfoForScraper describes one of the sub-scrapers named above.
@@ -878,6 +973,7 @@ func (ct *Market) InfoForScraper(name string) mtgban.ScraperInfo {
 	info := ct.Info()
 	info.Name = name
 	info.Shorthand = name2shorthand[name]
+	info.GradedMode = slices.Contains(gradedMarketNames, name)
 	return info
 }
 
