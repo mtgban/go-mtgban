@@ -1531,6 +1531,54 @@ func isTokenPairName(name string) bool {
 	return strings.Contains(name, "(Token)") && strings.Contains(name, " // ")
 }
 
+// preprocessTokenPair resolves a two-sided token sale listing, which states
+// no set code or number, to its pair. The whole name, read as an ordinary
+// listing, lands a native combined printing; a derived pair is anchored on
+// a face its name alone places on the shelf.
+func preprocessTokenPair(b *matcher.Backend, cardName, edition, notes, imgURL string, foil bool) (*matcher.InputCard, error) {
+	co := listingPrinting(b, cardName, edition, notes, imgURL)
+	if co != nil {
+		uuid := magic.MatchNativeTokenPair(b, co.SetCode, co.Number, cardName)
+		id, err := b.MatchID(uuid, foil)
+		if uuid != "" && err == nil {
+			return &matcher.InputCard{ID: id}, nil
+		}
+	}
+
+	// The notes are left out: a word in them can pick one of two same-named
+	// faces ("6/6 Dragon; #007" reads as Dragon 6), and each pairs apart.
+	first, second := magic.SplitTokenPairName(cardName)
+	for _, faces := range [][2]string{{first, second}, {second, first}} {
+		face := listingPrinting(b, faces[0], edition, "", "")
+		if face == nil {
+			continue
+		}
+		pair, err := tokenPairCard(b, faces[0]+" // "+faces[1], edition, face.SetCode, []string{face.Number}, foil)
+		if err == nil {
+			return pair, nil
+		}
+	}
+	return tokenPairCard(b, cardName, edition, "", nil, foil)
+}
+
+// listingPrinting answers the printing a sale listing's wording lands on,
+// or nil when it lands on none.
+func listingPrinting(b *matcher.Backend, cardName, edition, notes, imgURL string) *matcher.CardObject {
+	input, err := preprocess(b, cardName, edition, notes, imgURL, false)
+	if err != nil {
+		return nil
+	}
+	id, err := b.Match(input)
+	if err != nil {
+		return nil
+	}
+	co, err := b.GetUUID(id)
+	if err != nil {
+		return nil
+	}
+	return co
+}
+
 // csiTokenPairNumbers returns the collector numbers worth anchoring a two-
 // sided token's first face against, in the order CSI's own Number field
 // gives them: a compound "020/021" one per face, trusting which half names
@@ -1634,7 +1682,13 @@ var promoPackSymbol = regexp.MustCompile(`^(.+) Silver Planeswalker Symbol$`)
 // retailMagic reads an offer's wording, and keeps it only where the printing
 // was sold in the finish the offer names.
 func retailMagic(csi *Coolstuffinc, l sellListing) (*matcher.InputCard, string, error) {
-	theCard, err := preprocess(csi.backend, l.name, l.edition, l.notes, l.image, l.foil)
+	var theCard *matcher.InputCard
+	var err error
+	if isTokenPairName(l.name) {
+		theCard, err = preprocessTokenPair(csi.backend, l.name, l.edition, l.notes, l.image, l.foil)
+	} else {
+		theCard, err = preprocess(csi.backend, l.name, l.edition, l.notes, l.image, l.foil)
+	}
 	if err != nil {
 		return nil, "", matcher.ErrUnsupported
 	}
