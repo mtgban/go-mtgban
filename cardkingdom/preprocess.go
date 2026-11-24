@@ -245,6 +245,30 @@ func resolveEmblem(b *matcher.Backend, edition, cardName, cardVariation string) 
 	return name, number
 }
 
+// matchNativeTokenByID answers the printing a two-sided listing's scryfall
+// id names, when that printing is mtgjson's own double-faced token carrying
+// both of the listing's faces and is sold in the finish asked for.
+func matchNativeTokenByID(b *matcher.Backend, scryfallID, listingName string, foil bool) string {
+	co, err := b.GetUUID(b.ConvertID(matcher.IDSpaceScryfall, scryfallID))
+	if err != nil {
+		return ""
+	}
+	uuid := magic.MatchNativeTokenPair(b, co.SetCode, co.Number, listingName)
+	if uuid == "" {
+		return ""
+	}
+	// MatchID falls back to the nonfoil printing for a foil request
+	native, err := b.GetUUID(uuid)
+	if err != nil || (foil && !native.Card.HasFinish("foil") && !native.Card.HasFinish("etched")) {
+		return ""
+	}
+	id, err := b.MatchID(uuid, foil)
+	if err != nil {
+		return ""
+	}
+	return id
+}
+
 // Preprocess turns a feed entry into the card description the matcher takes,
 // reporting an error for the entries that are not cards.
 func Preprocess(b *matcher.Backend, card cardkingdom.Product) (*matcher.InputCard, error) {
@@ -278,6 +302,7 @@ func Preprocess(b *matcher.Backend, card cardkingdom.Product) (*matcher.InputCar
 	if found {
 		sku = fixup
 	}
+	skuFixed := found
 
 	fixedName, found := nameFixupTable[sku]
 	if found {
@@ -411,7 +436,13 @@ func Preprocess(b *matcher.Backend, card cardkingdom.Product) (*matcher.InputCar
 	// parenthesized in the name or left in the variation, while the
 	// datastore spells the whole planeswalker name into the token name
 	if name, number := resolveEmblem(b, edition, card.Name, card.Variation); name != "" {
+		// An emblem printed on a token's back keeps that face, so the
+		// sheet is looked up as the pair it is
+		_, partner := magic.SplitTokenPairName(card.Name)
 		card.Name = name
+		if partner != "" {
+			card.Name = name + " // " + partner
+		}
 		variation = number
 	}
 
@@ -446,6 +477,29 @@ func Preprocess(b *matcher.Backend, card cardkingdom.Product) (*matcher.InputCar
 			return &matcher.InputCard{ID: id, Foil: isFoil}, nil
 		}
 
+		// The id may name mtgjson's own double-faced token, which carries
+		// both faces under one number and needs no derived pairing
+		nativeID := matchNativeTokenByID(b, card.ScryfallID, card.Name, isFoil)
+		if nativeID != "" {
+			return &matcher.InputCard{ID: nativeID, Foil: isFoil}, nil
+		}
+
+		// A sku the fixup table rewrote names a printing its scryfall id
+		// does not, so the sheet is anchored at the sku's own number
+		if skuFixed {
+			for _, prefix := range tokenSetPrefixes {
+				trimmed := strings.TrimPrefix(setCode, prefix)
+				if trimmed == setCode || !setCodeExists(b, trimmed) {
+					continue
+				}
+				fixedID := magic.MatchTokenPairingBySetNumber(b, trimmed, number, card.Name, isFoil)
+				if fixedID != "" {
+					return &matcher.InputCard{ID: fixedID, Foil: isFoil}, nil
+				}
+				break
+			}
+		}
+
 		// CK never publishes a scryfallId for a "Mystery Booster/The
 		// List" listing that bundles two independently-numbered
 		// token-sheet entries into one retail sku (no vendor ever
@@ -460,6 +514,12 @@ func Preprocess(b *matcher.Backend, card cardkingdom.Product) (*matcher.InputCar
 			strings.HasPrefix(setCode, "MT") && setCodeExists(b, setCode[1:]) {
 			if id := magic.MatchTokenPairingBySetNumber(b, setCode[1:], number, card.Name, isFoil); id != "" {
 				return &matcher.InputCard{ID: id, Foil: isFoil}, nil
+			}
+			// The List pairs its own copy of the face, which PLST numbers
+			// as the variation the edition's case above built
+			listID := magic.MatchTokenPairingBySetNumber(b, "PLST", variation, card.Name, isFoil)
+			if listID != "" {
+				return &matcher.InputCard{ID: listID, Foil: isFoil}, nil
 			}
 		}
 	}
