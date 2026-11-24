@@ -972,16 +972,19 @@ func resolveMagic(b *matcher.Backend, p CatalogProduct, foil bool) (string, erro
 	// its own type name (AFR's "{Dungeon of the Mad Mage Dungeon} //
 	// {Lost Mine of the Phandelver Dungeon}"), and neither face of a
 	// dungeon // dungeon pairing ever contains the literal word "Token".
+	// "Emblem" likewise: an emblem shares its sheet with another emblem or
+	// a marker ("{City's Blessing} // {Daretti, Scrap Savant Emblem}").
 	if strings.Contains(p.Name, " // ") &&
-		(strings.Contains(p.Name, "Token") || strings.Contains(p.Name, "Dungeon")) {
+		(strings.Contains(p.Name, "Token") || strings.Contains(p.Name, "Dungeon") || strings.Contains(p.Name, "Emblem")) {
 		if tcgID := magic.MatchTokenPairing(b, p.ScryfallID, p.Name, foil); tcgID != "" {
 			if id, err := b.MatchID(tcgID, foil, etched); err == nil {
 				return id, nil
 			}
 		}
 
-		// A two-sided token listing SCG never publishes a scryfallId for
-		// at all, but whose own sku already names the filing set directly
+		// A two-sided token listing whose scryfall id finds no pairing -
+		// none sent, a face with several partners of that name, or an id
+		// naming another number - but whose own sku names the filing set
 		// (as opposed to the Mystery Booster/List shape further below,
 		// which bundles two unrelated sets' own tokens into one sku and
 		// has no single filing set to anchor from) - try the set that sku
@@ -992,41 +995,39 @@ func resolveMagic(b *matcher.Backend, p CatalogProduct, foil bool) (string, erro
 		// tokenProducts-derived pairing anchored by the first face alone
 		// (magic.MatchTokenPairingBySetNumber, the same mechanism as
 		// cardkingdom's own sku-anchored fallback).
-		if p.ScryfallID == "" {
-			tokenSet := "T" + skuSetCode(p.SKU)
-			if _, err := b.GetSet(tokenSet); err != nil {
-				tokenSet = skuSetCode(p.SKU)
-			}
-			if _, err := b.GetSet(tokenSet); err == nil {
-				number := leadingTokenNumber(skuNumber(p.SKU))
-				if uuid := magic.MatchNativeTokenPair(b, tokenSet, number, p.Name); uuid != "" {
-					if id, err := b.MatchID(uuid, foil, etched); err == nil {
-						return id, nil
-					}
-				}
-				if tcgID := magic.MatchTokenPairingBySetNumber(b, tokenSet, number, p.Name, foil); tcgID != "" {
-					if id, err := b.MatchID(tcgID, foil, etched); err == nil {
-						return id, nil
-					}
+		tokenSet := "T" + skuSetCode(p.SKU)
+		if _, err := b.GetSet(tokenSet); err != nil {
+			tokenSet = skuSetCode(p.SKU)
+		}
+		if _, err := b.GetSet(tokenSet); err == nil {
+			number := leadingTokenNumber(skuNumber(p.SKU))
+			if uuid := magic.MatchNativeTokenPair(b, tokenSet, number, p.Name); uuid != "" {
+				if id, err := b.MatchID(uuid, foil, etched); err == nil {
+					return id, nil
 				}
 			}
+			if tcgID := magic.MatchTokenPairingBySetNumber(b, tokenSet, number, p.Name, foil); tcgID != "" {
+				if id, err := b.MatchID(tcgID, foil, etched); err == nil {
+					return id, nil
+				}
+			}
+		}
 
-			// The sku's own number segment sometimes names BOTH faces'
-			// own filing set and number directly, composited together
-			// rather than bundled under one shared set the way the
-			// single-anchor attempt above expects ("AFR_T01_GRN_T02",
-			// "T03T15" fused under one shared code, ...). Anchoring both
-			// faces independently by identity, rather than the first
-			// face by number and the second by name, sidesteps
-			// Backend.TokenPairIndex's own name-collision-blanking
-			// entirely - two already-known uuids can't collide with each
-			// other the way two vendor-spelled names can - via the
-			// uuid-pair-keyed magic.MatchTokenPairingByUUIDs.
-			if uuidA, uuidB, ok := tokenPairAnchorUUIDs(b, p); ok {
-				if tcgID := magic.MatchTokenPairingByUUIDs(b, uuidA, uuidB, foil); tcgID != "" {
-					if id, err := b.MatchID(tcgID, foil, etched); err == nil {
-						return id, nil
-					}
+		// The sku's own number segment sometimes names BOTH faces'
+		// own filing set and number directly, composited together
+		// rather than bundled under one shared set the way the
+		// single-anchor attempt above expects ("AFR_T01_GRN_T02",
+		// "T03T15" fused under one shared code, ...). Anchoring both
+		// faces independently by identity, rather than the first
+		// face by number and the second by name, sidesteps
+		// Backend.TokenPairIndex's own name-collision-blanking
+		// entirely - two already-known uuids can't collide with each
+		// other the way two vendor-spelled names can - via the
+		// uuid-pair-keyed magic.MatchTokenPairingByUUIDs.
+		if uuidA, uuidB, ok := tokenPairAnchorUUIDs(b, p); ok {
+			if tcgID := magic.MatchTokenPairingByUUIDs(b, uuidA, uuidB, foil); tcgID != "" {
+				if id, err := b.MatchID(tcgID, foil, etched); err == nil {
+					return id, nil
 				}
 			}
 		}
