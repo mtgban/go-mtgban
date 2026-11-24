@@ -109,10 +109,13 @@ func TestNotTheListedCopy(t *testing.T) {
 		want        bool
 	}{
 		{"New Professional Store in Italy", false},
+		{"Visita nuestra tienda física en Madrid", false},
+		{"with epg it arrives in 2-3 working days", false},
 		{"Dienstags und Freitags", false},
 		{"more foil from IXALAN", false},
 		{"Warning: Mixed Languages", true},
 		{"TSP ITA", true},
+		{"buste italiane", true},
 		{"MIX3", true},
 		{"bymix", false},
 		{"", false},
