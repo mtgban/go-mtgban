@@ -57,6 +57,13 @@ var languageSets = []struct{ base, code, tag, name string }{
 	{"FWB", "FWBDE", "DE", "Foreign White Border (German)"},
 }
 
+// packedLike are the sets sold in another set's packs, card for card, whose
+// products mtgjson lists without saying what they hold.
+var packedLike = []struct{ code, like string }{
+	{"FBB", "3ED"},
+	{"FWB", "3ED"},
+}
+
 // List of numbers in SLD that need to be decoupled, each with its starred
 // sibling where it has one
 var sldJPNLangDupes = []string{

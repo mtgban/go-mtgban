@@ -52,3 +52,11 @@ sold language would send those listings to the copy instead. Every reader of
   uuid is resolved through, and tells a copy from its original by it.
 - The site's price API returns it in its `mtgjson` id mode, where a consumer
   would look it up in AllPrintings' card list, which holds no foreign uuids.
+
+## Sealed products
+
+mtgjson lists FBB's and FWB's boosters, boxes and starter decks without
+saying what the pack and the starter deck hold. Both open like Revised's
+(`packedLike` in `matcher/magic/table.go`), from the Italian set alone, and
+only that set's cards name them in `SourceProducts`: the French and German
+sets name no product.
