@@ -13,15 +13,16 @@ import (
 )
 
 // loadFixture is rows of Card Kingdom's pricelist of 2026-10-02 as
-// published, but for the last two: Air Elemental is given no NM price, and
-// Blood Lust no price at all.
+// published, but for the last three: Air Elemental is given no NM price, Blood
+// Lust no retail price, and Armageddon is a row of 2026-11-23 given none.
 const loadFixture = `{"meta": {"created_at": "2026-10-02 05:05:11", "base_url": "https://www.cardkingdom.com/"}, "data": [
 {"id": 65155, "sku": "PTK-014", "scryfall_id": "f484d47a-fb1d-4746-8f1d-dd9d24e67c1a", "url": "mtg/portal-3k/pang-tong-young-phoenix", "name": "Pang Tong, \"Young Phoenix\"", "variation": "", "edition": "Portal 3K", "is_foil": "false", "price_retail": "69.99", "qty_retail": 4, "price_buy": "32.00", "qty_buying": 2, "condition_values": {"nm_price": "69.99", "nm_qty": 0, "ex_price": "59.49", "ex_qty": 1, "vg_price": "52.49", "vg_qty": 3, "g_price": "45.49", "g_qty": 0}},
 {"id": 13048, "sku": "2ED-055", "scryfall_id": "7c666b4b-c4ff-40ca-9d16-c76aafebaa83", "url": "mtg/unlimited/counterspell", "name": "Counterspell", "variation": "", "edition": "Unlimited", "is_foil": "false", "price_retail": "84.99", "qty_retail": 0, "price_buy": "42.50", "qty_buying": 6, "condition_values": {"nm_price": "84.99", "nm_qty": 0, "ex_price": "67.99", "ex_qty": 0, "vg_price": "50.99", "vg_qty": 0, "g_price": "34.00", "g_qty": 0}},
 {"id": 21218, "sku": "LEG-292", "scryfall_id": "c062cbae-ce5e-43be-9932-c81a0a3622e8", "url": "mtg/legends/relic-barrier", "name": "Relic Barrier", "variation": "", "edition": "Legends", "is_foil": "false", "price_retail": "12.99", "qty_retail": 20, "price_buy": "5.25", "qty_buying": 0, "condition_values": {"nm_price": "12.99", "nm_qty": 12, "ex_price": "10.39", "ex_qty": 2, "vg_price": "9.09", "vg_qty": 6, "g_price": "6.50", "g_qty": 0}},
 {"id": 39000, "sku": "FNEM-001", "scryfall_id": "871ad2f3-1dd2-45ea-881d-529aad3b76ec", "url": "mtg/nemesis/angelic-favor-foil", "name": "Angelic Favor", "variation": "", "edition": "Nemesis", "is_foil": "true", "price_retail": "1.49", "qty_retail": 4, "price_buy": "0.45", "qty_buying": 10, "condition_values": {"nm_price": "1.49", "nm_qty": 0, "ex_price": "1.19", "ex_qty": 4, "vg_price": "0.89", "vg_qty": 0, "g_price": "0.60", "g_qty": 0}},
 {"id": 10001, "sku": "4ED-059", "scryfall_id": "e5cfaefb-764c-4c56-bdb3-5f0375168597", "url": "mtg/4th-edition/air-elemental", "name": "Air Elemental", "variation": "", "edition": "4th Edition", "is_foil": "false", "price_retail": "0.35", "qty_retail": 23, "price_buy": "0.02", "qty_buying": 14, "condition_values": {"nm_price": "0.00", "nm_qty": 2, "ex_price": "0.28", "ex_qty": 3, "vg_price": "0.25", "vg_qty": 13, "g_price": "0.18", "g_qty": 5}},
-{"id": 10033, "sku": "4ED-178", "scryfall_id": "426e477f-2873-4115-9527-a50a97769dd1", "url": "mtg/4th-edition/blood-lust", "name": "Blood Lust", "variation": "", "edition": "4th Edition", "is_foil": "false", "price_retail": "0.00", "qty_retail": 35, "price_buy": "0.01", "qty_buying": 10, "condition_values": {"nm_price": "0.00", "nm_qty": 3, "ex_price": "0.28", "ex_qty": 20, "vg_price": "0.25", "vg_qty": 11, "g_price": "0.18", "g_qty": 1}}
+{"id": 10033, "sku": "4ED-178", "scryfall_id": "426e477f-2873-4115-9527-a50a97769dd1", "url": "mtg/4th-edition/blood-lust", "name": "Blood Lust", "variation": "", "edition": "4th Edition", "is_foil": "false", "price_retail": "0.00", "qty_retail": 35, "price_buy": "0.01", "qty_buying": 10, "condition_values": {"nm_price": "0.00", "nm_qty": 3, "ex_price": "0.28", "ex_qty": 20, "vg_price": "0.25", "vg_qty": 11, "g_price": "0.18", "g_qty": 1}},
+{"id": 10014, "sku": "4ED-005", "scryfall_id": "0794bc35-a8e1-4268-87b2-af5483ca6e5e", "url": "mtg/4th-edition/armageddon", "name": "Armageddon", "variation": "", "edition": "4th Edition", "is_foil": "false", "price_retail": "0.00", "qty_retail": 19, "price_buy": "4.00", "qty_buying": 0, "condition_values": {"nm_price": "0.00", "nm_qty": 3, "ex_price": "9.59", "ex_qty": 8, "vg_price": "8.39", "vg_qty": 8, "g_price": "6.00", "g_qty": 0}}
 ]}`
 
 // TestLoadPricesEachGrade pins what a pricelist row becomes: a retail entry
@@ -89,6 +90,16 @@ func TestLoadPricesEachGrade(t *testing.T) {
 			"sells NM 0.35 x2", "sells SP 0.28 x3", "sells MP 0.25 x13", "sells HP 0.18 x5",
 			"Card Kingdom buys NM 0.02", "Card Kingdom buys SP 0.02",
 			"Card Kingdom buys MP 0.01", "Card Kingdom buys HP 0.01",
+		},
+		// No retail price: bought, not sold
+		"Blood Lust 4ED": {
+			"Card Kingdom buys NM 0.01", "Card Kingdom buys SP 0.01",
+			"Card Kingdom buys MP 0.01", "Card Kingdom buys HP 0.01",
+		},
+		// No retail price and not buying: the last price known stands
+		"Armageddon 4ED": {
+			"Card Kingdom (last known) buys NM 4.00", "Card Kingdom (last known) buys SP 3.20",
+			"Card Kingdom (last known) buys MP 2.80", "Card Kingdom (last known) buys HP 2.00",
 		},
 	}
 	for key, lines := range want {

@@ -134,14 +134,10 @@ func (ck *Cardkingdom) Load(ctx context.Context) error {
 		retailPrices := []float64{
 			card.ConditionValues.NMPrice, card.ConditionValues.EXPrice, card.ConditionValues.VGPrice, card.ConditionValues.GPrice,
 		}
-		// For newly added cards the nmPrice may not be initialized, so we the
-		// root price value that is known to be valid (and skip card if data is
-		// missing).
+		// A newly added card may have no NM price yet, so fall back to the
+		// card's own retail price.
 		if retailPrices[0] == 0 {
 			retailPrices[0] = card.PriceRetail
-		}
-		if retailPrices[0] == 0 {
-			continue
 		}
 
 		if card.QtyRetail > 0 && card.PriceRetail > 0 {
@@ -169,7 +165,7 @@ func (ck *Cardkingdom) Load(ctx context.Context) error {
 				}
 				err = ck.inventory.AddUnique(cardID, out)
 			}
-		} else if ck.preserveOOS {
+		} else if ck.preserveOOS && retailPrices[0] > 0 {
 			// Only save URL information
 			out := &mtgban.InventoryEntry{
 				URL: link,
