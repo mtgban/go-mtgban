@@ -213,8 +213,9 @@ func (csi *Sealed) scrape(ctx context.Context) error {
 		pageNums[i] = i + 1
 	}
 
-	var walk walkCount
-	mtgban.WorkerPool(ctx, csi.maxConcurrency, pageNums,
+	walkCtx, walk := newWalk(ctx)
+	defer walk.stop()
+	mtgban.WorkerPool(walkCtx, csi.maxConcurrency, pageNums,
 		func(ctx context.Context, page int, results chan<- responseChan) error {
 			err := csi.processSealedPage(ctx, results, page)
 			if err != nil {
@@ -381,8 +382,9 @@ func (csi *Sealed) scrapeBysets(ctx context.Context) error {
 	// the first sighting of a product wins
 	seen := map[string]bool{}
 	var rows atomic.Int64
-	var walk walkCount
-	mtgban.WorkerPool(ctx, csi.maxConcurrency, queries,
+	walkCtx, walk := newWalk(ctx)
+	defer walk.stop()
+	mtgban.WorkerPool(walkCtx, csi.maxConcurrency, queries,
 		func(ctx context.Context, query string, channel chan<- responseChan) error {
 			found, err := csi.processSealedSearch(ctx, channel, query)
 			rows.Add(int64(found))

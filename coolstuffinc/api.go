@@ -88,40 +88,49 @@ func checkStatus(resp *http.Response) error {
 	return nil
 }
 
-// walkCount counts the parts of a walk that finished, and keeps the first
-// error of those that did not.
+// walkCount counts the parts of a walk that finished, keeps the first error
+// of those that did not, and stops the walk on it.
 type walkCount struct {
 	walked atomic.Int64
 	first  atomic.Pointer[error]
+	stop   context.CancelFunc
+}
+
+// newWalk returns the count of one walk and the context its parts run
+// under. The caller stops the walk once it is over.
+func newWalk(ctx context.Context) (context.Context, *walkCount) {
+	ctx, stop := context.WithCancel(ctx)
+	return ctx, &walkCount{stop: stop}
 }
 
 // add records how one part of the walk ended, and hands its error back.
 func (w *walkCount) add(err error) error {
 	if err != nil {
 		w.first.CompareAndSwap(nil, &err)
+		w.stop()
 		return err
 	}
 	w.walked.Add(1)
 	return nil
 }
 
-// lostError reports the part of a walk that was lost, so that a short
-// inventory does not replace a full one. A cancelled walk also loses what
-// it never asked for.
+// lostError reports a walk that did not finish, so that a short inventory
+// does not replace a full one. It takes the caller's context, not the one
+// the walk stops, to tell a cancelled run from a lost part.
 func (w *walkCount) lostError(ctx context.Context, total int, what string) error {
-	lost := total - int(w.walked.Load())
-	if lost == 0 {
+	walked := int(w.walked.Load())
+	if walked == total {
 		return nil
 	}
 	err := ctx.Err()
 	if err != nil {
-		return fmt.Errorf("%d of %d %s lost: %w", lost, total, what, err)
+		return fmt.Errorf("walked %d of %d %s: %w", walked, total, what, err)
 	}
 	first := w.first.Load()
 	if first == nil {
-		return fmt.Errorf("%d of %d %s lost", lost, total, what)
+		return fmt.Errorf("walked %d of %d %s", walked, total, what)
 	}
-	return fmt.Errorf("%d of %d %s lost, first: %w", lost, total, what, *first)
+	return fmt.Errorf("walked %d of %d %s: %w", walked, total, what, *first)
 }
 
 // CSIPriceEntry is one card in the buylist feed.
