@@ -95,6 +95,67 @@ func TestMatchAmbiguousID(t *testing.T) {
 	}
 }
 
+// TestMatchSheetByOneFace pins that a two-sided token sheet whose image names
+// one face alone is priced on the pairing the name spells out, while a sheet
+// printing one token on both sides stays on that token.
+func TestMatchSheetByOneFace(t *testing.T) {
+	b := realDatastore(t)
+	ml := NewScraper(b)
+
+	tests := []struct {
+		name    string
+		product MLProduct
+		set     string
+		number  string
+	}{
+		{
+			name:    "pairing under one face's image",
+			product: MLProduct{Name: "Pest // Spirit Token", SetName: "Strixhaven: School of Mages", TCGProductID: "236521"},
+			set:     "TSTX", number: "5//6",
+		},
+		{
+			name:    "pairing under one face's image, foil",
+			product: MLProduct{Name: "Pest // Elemental Token - Foil", SetName: "Strixhaven: School of Mages", TCGProductID: "236521"},
+			set:     "TSTX", number: "2//5",
+		},
+		{
+			name:    "one token on both sides",
+			product: MLProduct{Name: "Beast // Beast Double-sided Token", SetName: "Starter Commander Decks", TCGProductID: "450779"},
+			set:     "TSCD", number: "19",
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			id, err := ml.match(tc.product)
+			if err != nil {
+				t.Fatal(err)
+			}
+			co, err := b.GetUUID(id)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if co.SetCode != tc.set || co.Number != tc.number {
+				t.Errorf("landed on %s %s %s, want %s %s", co.Name, co.SetCode, co.Number, tc.set, tc.number)
+			}
+		})
+	}
+}
+
+// TestMatchRefusesSheetInAnotherFinish pins that a foil sheet whose pairing
+// was never sold foil is left unpriced rather than put on the foil face its
+// image names: Treasure // Thopter pairs nonfoil only with TAFR 15 Treasure.
+func TestMatchRefusesSheetInAnotherFinish(t *testing.T) {
+	b := realDatastore(t)
+	ml := NewScraper(b)
+
+	product := MLProduct{Name: "Treasure // Thopter Token - Foil", SetName: "Adventures in the Forgotten Realms", TCGProductID: "244139"}
+	id, err := ml.match(product)
+	if !errors.Is(err, matcher.ErrUnsupported) {
+		co, _ := b.GetUUID(id)
+		t.Fatalf("got %v on %+v, want the row refused", err, co)
+	}
+}
+
 // TestMatchProductPage pins rows whose listing image names no card, read off
 // their product page: an id behind a set code, a bare id in either id space,
 // the Promos shelf, where only a collector number picks the printing, and a
