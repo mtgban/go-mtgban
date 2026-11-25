@@ -946,8 +946,11 @@ func MatchTokenPairingByNamesAndEdition(b *matcher.Backend, listingName, listing
 	if wantSet == "" {
 		return ""
 	}
-	uuid := b.ConvertID(matcher.IDSpaceTCGplayer, id)
-	co, err := b.GetUUID(uuid)
+	// A pair with no TCGplayer product is indexed under its own uuid.
+	co, err := b.GetUUID(id)
+	if err != nil {
+		co, err = b.GetUUID(b.ConvertID(matcher.IDSpaceTCGplayer, id))
+	}
 	if err != nil || !strings.EqualFold(co.SetCode, wantSet) {
 		return ""
 	}

@@ -619,6 +619,44 @@ func TestMatchTokenPairingByNamesAndEdition(t *testing.T) {
 	}
 }
 
+// TestMatchTokenPairingByNamesWithoutProduct pins that a pair with no
+// TCGplayer product, indexed under its own uuid, is found by its names and
+// edition, and still refused under another set's.
+func TestMatchTokenPairingByNamesWithoutProduct(t *testing.T) {
+	realDatastore(t)
+
+	checked := 0
+	for names, id := range testBackend.TokenPairIDByBothNames {
+		co, err := testBackend.GetUUID(id)
+		if err != nil {
+			continue
+		}
+		edition := testBackend.Sets[co.SetCode].Name
+		if EditionTokenSetCode(testBackend, edition) != co.SetCode {
+			continue
+		}
+		checked++
+
+		listing := names[0] + " // " + names[1]
+		got := MatchTokenPairingByNamesAndEdition(testBackend, listing, edition, false)
+		if got != id {
+			t.Errorf("MatchTokenPairingByNamesAndEdition(%s, %s) = %q, want %q", listing, edition, got, id)
+		}
+
+		other := "Commander 2018"
+		if co.SetCode == "TC18" {
+			other = "Commander 2016"
+		}
+		got = MatchTokenPairingByNamesAndEdition(testBackend, listing, other, false)
+		if got != "" {
+			t.Errorf("MatchTokenPairingByNamesAndEdition(%s, %s) = %q, want \"\"", listing, other, got)
+		}
+	}
+	if checked == 0 {
+		t.Skip("No token pair without a TCGplayer product is reachable by names")
+	}
+}
+
 // TestTokenPairIDByBothNamesCollision pins the same collision-blanking
 // discipline byFace already has, one level down: "Knight" and "Zombie"
 // pair with each other on more than one set's own token sheet, so the
