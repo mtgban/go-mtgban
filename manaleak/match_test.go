@@ -161,6 +161,23 @@ func TestMatchRefusesSheetInAnotherFinish(t *testing.T) {
 	}
 }
 
+func TestNamesTwoFaces(t *testing.T) {
+	for name, want := range map[string]bool{
+		"Pest":                                   false,
+		"Pest // Zombie Token":                   true,
+		"Treasure Token // Clue Token":           true,
+		"Beast Token // Beast Token":             false,
+		"Beast // Beast Double-sided Token":      false,
+		"Beast // Beast Double-Faced Token":      false,
+		"Beast // Beast Double-Sided Token Foil": false,
+		"Punch Card (001a // 001b)":              false,
+	} {
+		if namesTwoFaces(name) != want {
+			t.Errorf("%s: got %v, want %v", name, !want, want)
+		}
+	}
+}
+
 // TestMatchRefusesSheetWithoutPairing pins that a sheet of two different
 // tokens the datastore pairs nowhere is left unpriced rather than put on the
 // one face its image or its wording names.

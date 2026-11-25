@@ -259,9 +259,9 @@ func (ml *Manaleak) sheetOfFace(cardID, cardName string, foil, etched bool) (str
 	return cardID, nil
 }
 
-// sheetSuffix reads the product type the storefront ends a sheet's name on,
+// sheetSuffix reads the product type the storefront ends a face's name on,
 // and whatever follows it.
-var sheetSuffix = regexp.MustCompile(`(?i) (double[- ]sided|token)\b.*$`)
+var sheetSuffix = regexp.MustCompile(`(?i) (double[- ](sided|faced)|token)\b.*$`)
 
 // namesTwoFaces reports whether a sheet's listing names two different faces,
 // which only a pairing prices. A separator inside a parenthetical, as in
@@ -270,12 +270,12 @@ func namesTwoFaces(cardName string) bool {
 	if !strings.Contains(cardName, " // ") {
 		return false
 	}
-	first, second := magic.SplitTokenPairName(sheetSuffix.ReplaceAllString(cardName, ""))
+	first, second := magic.SplitTokenPairName(cardName)
 	if strings.Count(first, "(") > strings.Count(first, ")") {
 		return false
 	}
-	front := magic.NormalizeTokenFace(first)
-	back := magic.NormalizeTokenFace(second)
+	front := magic.NormalizeTokenFace(sheetSuffix.ReplaceAllString(first, ""))
+	back := magic.NormalizeTokenFace(sheetSuffix.ReplaceAllString(second, ""))
 	return back != "" && front != back
 }
 
