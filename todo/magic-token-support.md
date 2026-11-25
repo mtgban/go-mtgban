@@ -1,7 +1,8 @@
 # Magic token support: what is still open
 
 Magic token support shipped in #186 through #625; each PR's commit messages
-carry its measurements. Four things remain.
+carry its measurements, and the two-sided sheets were routed store by
+store in #1544 through #1556. Four things remain.
 
 - **TELD Goat // Food, an upstream MTGJSON error to report.** Among `ELD`'s
   tokens, TCGplayer product `200320` pairs Goat
@@ -10,15 +11,16 @@ carry its measurements. Four things remain.
   The Food on that sheet is #17 (`5f8204d1-ab7a-5182-b905-725704116a7b`).
   Still wrong in the 2026-09-30 AllPrintings. Vittorio submits these
   reports himself.
-- **Two design decisions, not built** (#621):
-  - a pairing entity for the 89 Star City Games composite-sku listings
-    (as of 2026-09-15) that have no upstream `tokenProducts` id to price
-    from;
-  - relaxing `Backend.TokenPairIndex`'s one id per entity, to recover the
-    remaining "losing sibling" ids.
-- **CardTrader's Token blueprints**: about 62% (as of 2026-09-15) carry no
-  id and no collector number, so nothing can resolve them. Revisit only if
-  CardTrader starts publishing one.
+- **Listings named after one token that was only printed on two-sided
+  sheets.** Nothing in the name says which sheet, so they stay on that
+  face: 151 at Card Trader, about 130 at Hareruya and 82 at Mint Card as
+  of 2026-11-24.
+- **Cardmarket still refuses about 1,500 two-sided products** (as of
+  2026-11-24): about 600 have no pairing in the datastore, 364 a pairing
+  outside the edition's token set, 182 sit on a shelf with no token set,
+  and 359 disagree with the pairing on numbers or names.
+- **Sheets the loader does not mint**, for want of a `tokenProducts`
+  record: the Secret Lair Cat 27 // 28 and the Walker pairs.
 
 ## Method notes
 

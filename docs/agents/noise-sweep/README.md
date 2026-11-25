@@ -68,12 +68,14 @@ line: `{"tag","kind","head","ctx":[...]}`).
 **Discount two classes before you read the ranking**, or they will send you at
 the wrong targets - neither is where the value is:
 
-- **Magic tokens.** They dominated the count before the token work (tcg_market
-  ~12.9k lines on 2026-09-10, 382 on 2026-09-24) and they are all one upstream
-  shape: mtgjson files each face of a double-faced token as its own row, so
-  many sellable products collapse onto one uuid. That is datastore work, not
-  scraper work - do not write scraper-side token dedupe or DFC pricing.
-  Subtract them and re-rank.
+- **Magic tokens.** mtgjson files each face of a two-sided token sheet as
+  its own row, and the loader mints one pairing per sheet
+  (`matcher/magic/tokenpairs.go`), which every scraper selling sheets
+  already routes to or refuses. A sheet still refused usually has no
+  pairing to land on, which is datastore work: subtract those and re-rank.
+  A sheet priced on one face is a scraper bug, fixed through the
+  `magic.MatchTokenPairing*` helpers - never with a scraper's own token
+  dedupe.
 - **Sealed, in every game.** Coverage tops out around 84-91% by construction and
   the remaining misses are mostly products no catalog carries. Leave sealed
   targets parked unless asked for them specifically.
@@ -236,9 +238,9 @@ the `project-datastore-gaps` memory so datastore-gen work can be batched.
 - Never `git stash` in these repos (the stack is hundreds deep), never `git add -A`.
 - Never push `master`; never open a PR based on another PR's branch.
 - Magic's `allprintings5.json` is golden: a Magic mismatch is go-mtgban's bug,
-  not a gap. Magic tokens are the one exception and they are **low priority** -
-  they need datastore work first, so do not spend a sweep on them and do not
-  write scraper-side token dedupe or DFC pricing.
+  not a gap. A two-sided token sheet with no pairing in the datastore is
+  the one exception: refuse it, never price it on one face, and never
+  write a scraper's own token dedupe.
 - Sealed is **low priority** in every game: the ceiling is ~84-91%, so a sealed
   target that is not at zero is usually finished, not broken.
 - The Magic loader does not carry every mtgjson row: `art_series` and
