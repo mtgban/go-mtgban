@@ -663,6 +663,77 @@ func TestPreprocessTokenSheetWithoutTokenWord(t *testing.T) {
 	}
 }
 
+// TestPreprocessSplitCardKeepsItsSet checks that a split card of a T-coded
+// set lands in the set its sku names when its scryfall id names another's.
+func TestPreprocessSplitCardKeepsItsSet(t *testing.T) {
+	b := realDatastore(t)
+	theCard, err := Preprocess(b, cardkingdom.Product{
+		SKU:        "TSR-161",
+		ScryfallID: "96fd8d8e-8f2a-4240-bcb7-18f73fd47bd5", // PLC 113
+		Name:       "Dead // Gone",
+		Edition:    "Time Spiral Remastered",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	cardID, err := b.Match(theCard)
+	if err != nil {
+		t.Fatalf("Match(%v) = %v", theCard, err)
+	}
+	co, err := b.GetUUID(cardID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if co.SetCode != "TSR" || co.Number != "161" {
+		t.Errorf("Match(%v) = %v, want TSR 161", theCard, co)
+	}
+}
+
+// TestPreprocessTokenCrossesSets checks that a double-faced token is taken
+// from the set its scryfall id names when its sku spells another.
+func TestPreprocessTokenCrossesSets(t *testing.T) {
+	b := realDatastore(t)
+	for _, tt := range []struct {
+		product cardkingdom.Product
+		set     string
+		number  string
+	}{
+		{cardkingdom.Product{
+			SKU:        "TGRN-004",
+			ScryfallID: "64f4dc68-060b-4c63-8f43-00f53c52a251",
+			Name:       "Goblin Token - Soldier Token",
+			Edition:    "Guilds of Ravnica: Guild Kits",
+			Variation:  "RW",
+		}, "TGK1", "4"},
+		{cardkingdom.Product{
+			SKU:        "PXLN-011",
+			ScryfallID: "21f5880d-6272-4ba8-bdf8-f9a7e54a3336",
+			Name:       "Dinosaur Token - Treasure Token",
+			Edition:    "Promotional",
+			Variation:  "FNM Foil",
+			IsFoil:     true,
+		}, "F17", "11"},
+	} {
+		t.Run(tt.product.SKU, func(t *testing.T) {
+			theCard, err := Preprocess(b, tt.product)
+			if err != nil {
+				t.Fatal(err)
+			}
+			cardID, err := b.Match(theCard)
+			if err != nil {
+				t.Fatalf("Match(%v) = %v", theCard, err)
+			}
+			co, err := b.GetUUID(cardID)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if co.SetCode != tt.set || co.Number != tt.number {
+				t.Errorf("Match(%v) = %v, want %s %s", theCard, co, tt.set, tt.number)
+			}
+		})
+	}
+}
+
 // TestPreprocessEmblems pins the three shapes CK spells an emblem in, each
 // against the uuid the datastore files at the address the sku names: the
 // planeswalker left in the variation, the planeswalker abbreviated into a

@@ -247,8 +247,9 @@ func resolveEmblem(b *matcher.Backend, edition, cardName, cardVariation string) 
 
 // matchNativeTokenByID answers the printing a two-sided listing's scryfall
 // id names, when that printing is mtgjson's own double-faced token carrying
-// both of the listing's faces and is sold in the finish asked for.
-func matchNativeTokenByID(b *matcher.Backend, scryfallID, listingName string, foil bool) string {
+// both of the listing's faces and is sold in the finish asked for. A split
+// card of a T-coded set is answered only from the set its sku names.
+func matchNativeTokenByID(b *matcher.Backend, setCode, scryfallID, listingName string, foil bool) string {
 	co, err := b.GetUUID(b.ConvertID(matcher.IDSpaceScryfall, scryfallID))
 	if err != nil {
 		return ""
@@ -257,9 +258,16 @@ func matchNativeTokenByID(b *matcher.Backend, scryfallID, listingName string, fo
 	if uuid == "" {
 		return ""
 	}
-	// MatchID falls back to the nonfoil printing for a foil request
 	native, err := b.GetUUID(uuid)
-	if err != nil || (foil && !native.Card.HasFinish("foil") && !native.Card.HasFinish("etched")) {
+	if err != nil {
+		return ""
+	}
+	// A token may sit in a sheet or promo set the sku does not spell
+	if native.SetCode != setCode && native.Layout != "token" {
+		return ""
+	}
+	// MatchID falls back to the nonfoil printing for a foil request
+	if foil && !native.Card.HasFinish("foil") && !native.Card.HasFinish("etched") {
 		return ""
 	}
 	id, err := b.MatchID(uuid, foil)
@@ -484,7 +492,7 @@ func Preprocess(b *matcher.Backend, card cardkingdom.Product) (*matcher.InputCar
 
 		// The id may name mtgjson's own double-faced token, which carries
 		// both faces under one number and needs no derived pairing
-		nativeID := matchNativeTokenByID(b, card.ScryfallID, card.Name, isFoil)
+		nativeID := matchNativeTokenByID(b, setCode, card.ScryfallID, card.Name, isFoil)
 		if nativeID != "" {
 			return &matcher.InputCard{ID: nativeID, Foil: isFoil}, nil
 		}
