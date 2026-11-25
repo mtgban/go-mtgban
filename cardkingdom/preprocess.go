@@ -464,8 +464,13 @@ func Preprocess(b *matcher.Backend, card cardkingdom.Product) (*matcher.InputCar
 		}
 	}
 
-	isTwoSidedToken := (strings.Contains(card.Name, " // ") || strings.Contains(card.Name, " - ")) &&
-		(strings.Contains(card.Name, "Token") || strings.HasPrefix(tokenSetCode, "T") || strings.HasPrefix(tokenSetCode, "FT"))
+	// A name saying neither word is a sheet when both faces are tokens; one
+	// face alone is not enough, as Flesh // Blood is a split card
+	first, second := magic.SplitTokenPairName(card.Name)
+	isTwoSidedToken := second != "" &&
+		(strings.Contains(card.Name, "Token") || strings.Contains(card.Name, "Emblem") ||
+			strings.HasPrefix(tokenSetCode, "T") || strings.HasPrefix(tokenSetCode, "FT") ||
+			(b.NameIsToken(magic.CleanFaceName(first)) && b.NameIsToken(magic.CleanFaceName(second))))
 
 	// A two-sided token sheet prints one physical card for a pairing
 	// matcher/magic may already carry a combined entity for - resolve

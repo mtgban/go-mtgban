@@ -587,6 +587,82 @@ func TestPreprocessTokenSheetRefused(t *testing.T) {
 	}
 }
 
+// TestPreprocessTokenSheetWithoutTokenWord pins the sheets whose name never
+// says Token and whose set code carries a treatment ahead of the T: each
+// reaches its pairing, or is refused, and is never priced as one face.
+func TestPreprocessTokenSheetWithoutTokenWord(t *testing.T) {
+	b := realDatastore(t)
+	for _, tt := range []struct {
+		desc    string
+		product cardkingdom.Product
+		want    string
+	}{
+		{
+			desc: "an emblem backed by an emblem",
+			product: cardkingdom.Product{
+				SKU:        "SFTFRA-0017",
+				ScryfallID: "ce0ece65-ba13-4243-b343-b4da443fceff",
+				Name:       "Chandra, Chill of Compliance Emblem // Chandra, Torch of Defiance Emblem",
+				Edition:    "Reality Fracture",
+				IsFoil:     true,
+			},
+			want: "3b7fe803-ba5a-580a-b282-d327457332c1_f",
+		},
+		{
+			desc: "a dungeon backed by a dungeon",
+			product: cardkingdom.Product{
+				SKU:        "MTAFR-020",
+				ScryfallID: "6f509dbe-6ec7-4438-ab36-e20be46c9922",
+				Name:       "Dungeon of the Mad Mage // Tomb of Annihilation",
+				Edition:    "Mystery Booster/The List",
+			},
+			want: "a3776053-a614-5c21-81f0-b6ed2d719c5c",
+		},
+		{
+			desc: "faces whose names say neither word",
+			product: cardkingdom.Product{
+				SKU:        "SFTAFR-022",
+				ScryfallID: "70b284bd-7a8f-4b60-8238-f746bdc5b236",
+				Name:       "Tomb of Annihilation // The Atropal",
+				Edition:    "Adventures in the Forgotten Realms",
+				IsFoil:     true,
+			},
+			want: "117e7d0f-7e06-58e0-a168-ef8b8f9c0b7b_f",
+		},
+		{
+			desc: "an emblem and a dungeon paired nowhere",
+			product: cardkingdom.Product{
+				SKU:        "SFTAFR-020",
+				ScryfallID: "6f509dbe-6ec7-4438-ab36-e20be46c9922",
+				Name:       "Dungeon of the Mad Mage // Mordenkainen Emblem",
+				Edition:    "Adventures in the Forgotten Realms",
+				IsFoil:     true,
+			},
+		},
+	} {
+		t.Run(tt.desc, func(t *testing.T) {
+			theCard, err := Preprocess(b, tt.product)
+			if tt.want == "" {
+				if !errors.Is(err, matcher.ErrUnsupported) {
+					t.Fatalf("Preprocess(%v) = %v, %v, want ErrUnsupported", tt.product, theCard, err)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("Preprocess(%v) = %v", tt.product, err)
+			}
+			cardID, err := b.Match(theCard)
+			if err != nil {
+				t.Fatalf("Match(%v) = %v", theCard, err)
+			}
+			if cardID != tt.want {
+				co, _ := b.GetUUID(cardID)
+				t.Errorf("Match(%v) = %s (%v), want %s", theCard, cardID, co, tt.want)
+			}
+		})
+	}
+}
+
 // TestPreprocessEmblems pins the three shapes CK spells an emblem in, each
 // against the uuid the datastore files at the address the sku names: the
 // planeswalker left in the variation, the planeswalker abbreviated into a
