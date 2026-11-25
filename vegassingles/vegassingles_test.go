@@ -1,9 +1,11 @@
 package vegassingles
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -141,6 +143,36 @@ func TestCancelledCrawlFailsLoad(t *testing.T) {
 	}
 	if len(vs.Buylist()) != 0 || !vs.buylistDate.IsZero() {
 		t.Errorf("filed %d cards dated %v from a cancelled crawl", len(vs.Buylist()), vs.buylistDate)
+	}
+}
+
+type roundTripFunc func(*http.Request) (*http.Response, error)
+
+func (f roundTripFunc) RoundTrip(r *http.Request) (*http.Response, error) { return f(r) }
+
+// TestCancelAfterLastPageLoads keeps a crawl cancelled once every page was
+// served.
+func TestCancelAfterLastPageLoads(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	vs := newPagedScraper(t, func(string) int { return http.StatusOK })
+	next := vs.client.client.Transport
+	vs.client.client.Transport = roundTripFunc(func(r *http.Request) (*http.Response, error) {
+		resp, err := next.RoundTrip(r)
+		if err != nil || r.URL.Query().Get("offset") != "3" {
+			return resp, err
+		}
+		// Read whole before the cancel, which would cut the body short
+		defer resp.Body.Close()
+		data, err := io.ReadAll(resp.Body)
+		resp.Body = io.NopCloser(bytes.NewReader(data))
+		cancel()
+		return resp, err
+	})
+
+	err := vs.Load(ctx)
+	if err != nil || ctx.Err() == nil || vs.buylistDate.IsZero() {
+		t.Errorf("Load answered %v, dated %v, want a complete crawl kept", err, vs.buylistDate)
 	}
 }
 

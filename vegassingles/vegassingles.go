@@ -200,11 +200,11 @@ func (vs *Vegassingles) scrape(ctx context.Context) error {
 
 	// A cancelled crawl also loses the pages it never asked for
 	lost := len(offsets) - loaded
-	err = ctx.Err()
-	if err != nil {
-		return fmt.Errorf("%d of %d later pages lost: %w", lost, len(offsets), err)
-	}
 	if lost > 0 {
+		err = ctx.Err()
+		if err != nil {
+			return fmt.Errorf("%d of %d later pages lost: %w", lost, len(offsets), err)
+		}
 		return fmt.Errorf("%d of %d later pages lost", lost, len(offsets))
 	}
 
