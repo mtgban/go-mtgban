@@ -42,9 +42,8 @@ Outside tests it is read 58 times across about twenty files: arbit's "Keep categ
 the v1 and v2 API sections, BASE_ACCESS eligibility, uploads, alerts,
 settings grouping, Sleepers. A graded store has `SealedMode == false`, so it
 is a singles store everywhere. Search lists a PSA 10 under "Condition: NM"
-beside raw copies, which is what we want to keep. But Global and Reverse
-also compare a $400 slab against a $4 raw NM, `/data/prices` can pick a slab
-as a card's best NM, and an NM price alert can fire on one.
+beside raw copies, which is what we want to keep. But nothing on the row says
+it is a slab, and Sleepers scores its price as a raw card's.
 
 We want a Graded section on the site that searches only slabs and shows the
 grader and score instead of NM/SP, while the singles view keeps showing
@@ -198,24 +197,27 @@ them out (decision 5); a graded endpoint is not part of this decision, since
 the API's per-condition shape (NM to PO) has no place for a grader and
 score.
 
-### 5. Slabs leave the price comparisons
+### 5. Slabs leave Sleepers and the API's singles
 
-This lands in its own PRs, after 1-4. A slab and a raw copy of one card are
-not the same goods, so a spread between them is never real. The callers leave
-graded sellers out; `Arbit` and `Mismatch` compare the sellers they are given
-and do not look at `Slab`. No published seller mixes the two (decision 3), so
-a caller reads `GradedMode` on each seller, with marketplace parents unfolded,
-and never `Slab` on each entry. On the site one predicate,
+This lands in its own PRs, after 1-4. Comparing a slab with a raw copy, or
+with a raw buylist, is worth doing, so the arbitrage pages keep graded
+sellers; `Arbit` and `Mismatch` compare the sellers they are given and do not
+look at `Slab`. Sleepers leaves them out, since it scores a card by how often
+stores disagree on it and a slab's price is not the raw card's. So do the
+API's singles endpoints, whose grades have no place for a slab. No published
+seller mixes the two (decision 3), so a caller reads `GradedMode` on each
+seller, with marketplace parents unfolded, and never `Slab` on each entry. On
+the site one predicate,
 `rawSingles(info) = !info.SealedMode && !info.GradedMode`, picks the stores
-for:
+where graded ones are skipped:
 
 | Consumer | Graded stores |
 |---|---|
 | Singles search, `/search` | kept, folded condition, slab named beside the store |
 | Graded page | only these |
-| Arbit, Global, Reverse | skipped |
-| `/data/prices` best NM | skipped |
-| Price alerts | skipped |
+| Arbit, Global, Reverse | kept |
+| `/data/prices` best NM | kept |
+| Price alerts | kept |
 | Sleepers | skipped |
 | API v1/v2 singles endpoints and store lists, BASE_ACCESS | skipped |
 | Upload, settings pickers | kept, labelled as graded |
