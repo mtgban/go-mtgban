@@ -69,7 +69,7 @@ func preprocess(b *matcher.Backend, cardName, number, finish, langauge, edition,
 	// of emblems below must not reach
 	if namesTokenSheet(cardName) {
 		out, err := preprocessTokenPair(b, cardName, finish, setCode)
-		if err == nil || strings.Count(cardName, "Token") > 1 {
+		if err == nil || strings.Count(cardName, "Token") > 1 || namesTwoFaces(cardName) {
 			return out, err
 		}
 	}
@@ -225,6 +225,15 @@ func preprocess(b *matcher.Backend, cardName, number, finish, langauge, edition,
 func namesTokenSheet(cardName string) bool {
 	return strings.Contains(cardName, " // ") &&
 		(strings.Contains(cardName, "Token") || strings.Contains(cardName, "Emblem"))
+}
+
+// namesTwoFaces reports whether a sheet's listing names two different
+// faces, which only a pairing prices: a token backed by itself, or by a
+// greeting, is that token.
+func namesTwoFaces(cardName string) bool {
+	first, second := magic.SplitTokenPairName(sheetName(cardName))
+	a, b := magic.NormalizeTokenFace(first), magic.NormalizeTokenFace(second)
+	return a != "" && b != "" && !strings.HasPrefix(b, "(") && a != b
 }
 
 // emblemLast spells an emblem face the way the datastore names it, the

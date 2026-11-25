@@ -195,3 +195,33 @@ func TestProcessEntryMovesSkuFaceToSheet(t *testing.T) {
 		}
 	}
 }
+
+// TestTwoFacedSheetWithNoPairingIsRefused pins that a sheet naming two
+// different faces the datastore pairs nowhere goes unpriced rather than
+// priced on one face, whether its sku names that face or not, while a
+// token backed by a greeting is still that token.
+func TestTwoFacedSheetWithNoPairingIsRefused(t *testing.T) {
+	b := realDatastore(t)
+
+	for _, tt := range []struct {
+		card             Card
+		finish           string
+		face             string
+		edition, setCode string
+		want             int
+	}{
+		{Card{ID: "510745", Name: "Horror Token (3/5) // Zombie Token (20/25)", Quantity: 1, Price: "0.49", TCGplayerID: 3410572}, "Regular", "4e2f8a4e-3cee-52fc-a283-322c715a93de", "Archenemy: Nicol Bolas", "E01", 0},
+		{Card{ID: "720985", Name: "Dog Illusion Token (3/19) // Emblem Lolth, Spider Queen (17/19)", Quantity: 1, Price: "0.49"}, "Foil", "", "Adventures in the Forgotten Realms", "AFR", 0},
+		{Card{ID: "680646", Name: "Treasure Token (Lunar New Year 2018 Promo) // (Happy Lunar New Year!)", Quantity: 1, Price: "0.49", TCGplayerID: 3642264}, "Foil", "237a0941-3118-512d-a40d-a42c0c518c5a", "Promo: Unique and Miscellaneous", "PMSC", 1},
+	} {
+		mint := NewScraper(b)
+		sku2uuid := map[int]string{}
+		if tt.face != "" {
+			sku2uuid[tt.card.TCGplayerID] = tt.face
+		}
+		mint.processEntry(sku2uuid, tt.card, "Mint", tt.finish, "English", tt.edition, tt.setCode, "")
+		if len(mint.inventory) != tt.want {
+			t.Errorf("%q priced on %d cards, want %d", tt.card.Name, len(mint.inventory), tt.want)
+		}
+	}
+}
