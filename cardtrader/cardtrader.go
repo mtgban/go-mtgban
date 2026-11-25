@@ -755,6 +755,11 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 				continue
 			}
 		}
+		// A sheet of two different tokens whose pairing was not found is
+		// neither face alone.
+		if ct.gameID == GameMagic && tokenSheetOnFace(ct.backend, blueprint, cardID) {
+			continue
+		}
 		// On a promotional shelf an answer with no promotional label is the
 		// number speaking alone; a Yu-Gi-Oh misprint is asked after an id
 		// too, since its id can name the genuine card.
