@@ -422,6 +422,9 @@ func TestPreprocessSurgeFoilStarredDuplicate(t *testing.T) {
 		name       string
 		want       string
 	}{
+		// The Astartes Warrior on its back, T40K 12, is filed nonfoil
+		// only, so no pairing of the two is sold in foil
+		{"SFT40K-015", "b19d2866-87e7-40ab-9684-0593caeb223e", "Plaguebearer of Nurgle Token // Astartes Warrior Token", ""},
 		{"SFT40K-016", "bc938f2e-2d6e-4afd-9a88-34eeaf0b51e3", "Spawn Token // Plaguebearer of Nurgle Token", "57472526-d8d2-554f-8e42-c7c7b36d7de1"},
 	} {
 		t.Run(tt.sku, func(t *testing.T) {
@@ -432,6 +435,12 @@ func TestPreprocessSurgeFoilStarredDuplicate(t *testing.T) {
 				Edition:    "Warhammer 40,000",
 				IsFoil:     true,
 			})
+			if tt.want == "" {
+				if !errors.Is(err, matcher.ErrUnsupported) {
+					t.Fatalf("Preprocess = %v, %v, want ErrUnsupported", theCard, err)
+				}
+				return
+			}
 			if err != nil {
 				t.Fatalf("Preprocess: %v", err)
 			}
