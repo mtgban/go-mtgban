@@ -39,6 +39,10 @@ type Product struct {
 	// and reports a null that decodes to zero for a finish it does not sell.
 	PriceMarket     int `json:"price_market"`
 	PriceMarketFoil int `json:"price_market_foil"`
+
+	// ScryfallIDs names every face: a two-sided token sheet has a scryfall
+	// id for each and none of its own, so it leaves ScryfallID null.
+	ScryfallIDs []string `json:"scryfall_ids"`
 }
 
 const (

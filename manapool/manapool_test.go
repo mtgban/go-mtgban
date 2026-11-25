@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"slices"
 	"strings"
 	"sync"
 	"testing"
@@ -108,6 +109,110 @@ func TestPriceResolvesTokenPairing(t *testing.T) {
 	}
 	if !found {
 		t.Fatal("listing produced no inventory entry, want the combined pairing to resolve")
+	}
+}
+
+// zombieKnight is a two-sided token sheet as the lists carry one: a scryfall
+// id for each face and none of the sheet's own.
+var zombieKnight = Product{
+	URL:       "https://manapool.com/card/t2x2/5-12/zombie-knight",
+	ProductID: "4d452ab1-a477-4f98-b4ff-54b7a694a21c", SetCode: "T2X2", Number: "5-12",
+	Name: "Zombie // Knight", TcgplayerProductID: 278900,
+	ScryfallIDs: []string{"31603503-fd3a-4c57-90ad-4175bb2c8150", "b73ee667-09a1-40b9-85e8-902d9c06adcf"},
+	LanguageID:  "EN", ConditionID: "NM", FinishID: "NF", LowPrice: 15, AvailableQuantity: 246,
+	PriceMarket: 20, PriceMarketFoil: 31,
+}
+
+// sheetFinishes answers the finishes inventory prices on the pairing of the
+// two faces zombieKnight names, failing on any other printing.
+func sheetFinishes(t *testing.T, b *matcher.Backend, inventory mtgban.InventoryRecord) map[bool]float64 {
+	t.Helper()
+	got := map[bool]float64{}
+	for id, entries := range inventory {
+		co, err := b.GetUUID(id)
+		if err != nil {
+			t.Fatalf("GetUUID(%s) = %v", id, err)
+		}
+		var faces []string
+		for _, part := range []string{"tokenPairPartA", "tokenPairPartB"} {
+			face, err := b.GetUUID(co.Identifiers[part])
+			if err == nil {
+				faces = append(faces, face.Identifiers["scryfallId"])
+			}
+		}
+		slices.Sort(faces)
+		if co.Identifiers["derivedTokenPair"] != "true" || !slices.Equal(faces, zombieKnight.ScryfallIDs) {
+			t.Fatalf("landed on %s %s %s, want the pairing of both faces", co.Name, co.SetCode, co.Number)
+		}
+		got[co.Foil] = entries[0].Price
+	}
+	return got
+}
+
+// TestPriceResolvesSheetByBothFaces pins that a sheet is priced on the
+// pairing of the two faces it names, in each finish it is listed in.
+func TestPriceResolvesSheetByBothFaces(t *testing.T) {
+	b := withMagic(t)
+
+	foil := zombieKnight
+	foil.FinishID = "FO"
+	foil.LowPrice = 30
+	mp := NewScraper(b)
+	mp.price([]Product{zombieKnight, foil})
+
+	got := sheetFinishes(t, b, mp.Inventory())
+	if len(got) != 2 {
+		t.Errorf("priced finishes %v, want nonfoil and foil", got)
+	}
+}
+
+// TestIndexResolvesSheetByBothFaces pins the same for the market valuation.
+func TestIndexResolvesSheetByBothFaces(t *testing.T) {
+	b := withMagic(t)
+
+	mp := NewScraperIndex(b)
+	mp.price([]Product{zombieKnight})
+
+	got := sheetFinishes(t, b, mp.Inventory())
+	if got[false] != 0.20 || got[true] != 0.31 {
+		t.Errorf("priced %v, want 0.20 nonfoil and 0.31 foil", got)
+	}
+}
+
+// TestPriceRefusesSheetWithNoPairing pins that a sheet goes unpriced, rather
+// than onto one face, when its pairing was never sold in the row's finish or
+// the datastore pairs its faces in no product. Thopter // Treasure pairs a
+// nonfoil-only Commander token (TAFC 12) with TAFR 15, so it prices nonfoil
+// alone; the Secret Lair Cat sheet pairs in no product.
+func TestPriceRefusesSheetWithNoPairing(t *testing.T) {
+	b := withMagic(t)
+
+	thopterTreasure := Product{URL: "https://manapool.com/card/tafc/12-tafr-15/thopter-treasure",
+		ProductID: "a571bcd3-1cf1-4b74-8354-4931fb9c6f8a", SetCode: "TAFC", Number: "12-TAFR-15",
+		Name: "Thopter // Treasure", TcgplayerProductID: 244291,
+		ScryfallIDs: []string{"0b7388df-6f76-4e96-9a28-62c8c0e6c9d4", "a3a684b7-27e0-4d9e-a064-9e03c6e50c89"},
+		LanguageID:  "EN", ConditionID: "NM", FinishID: "NF", LowPrice: 24, AvailableQuantity: 36}
+	foil := thopterTreasure
+	foil.FinishID = "FO"
+	cat := Product{URL: "https://manapool.com/card/sld/27-28/cat",
+		ProductID: "ad3d8f46-d5c9-4fbc-be01-34c2caf9ac87", SetCode: "SLD", Number: "27-28",
+		Name: "Cat", TcgplayerProductID: 205262,
+		ScryfallIDs: []string{"255dcc91-7b3d-4b58-85f3-b21be805966e", "340fb06f-4bb0-4d23-b08c-8b1da4a8c2ad"},
+		LanguageID:  "EN", ConditionID: "NM", FinishID: "NF", LowPrice: 584, AvailableQuantity: 5}
+
+	for _, tc := range []struct {
+		row  Product
+		want int
+	}{
+		{thopterTreasure, 1},
+		{foil, 0},
+		{cat, 0},
+	} {
+		mp := NewScraper(b)
+		mp.price([]Product{tc.row})
+		if len(mp.Inventory()) != tc.want {
+			t.Errorf("%s %s %s priced %d printings, want %d", tc.row.Name, tc.row.SetCode, tc.row.FinishID, len(mp.Inventory()), tc.want)
+		}
 	}
 }
 
