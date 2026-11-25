@@ -248,6 +248,10 @@ func (ml *Manaleak) sheetOfFace(cardID, cardName string, foil, etched bool) (str
 	id := magic.MatchTokenPairing(ml.backend, scryfallID, cardName, foil)
 	pairID, err := ml.backend.MatchID(id, foil, etched)
 	if err == nil {
+		// The image may name a token that is neither face of the sheet
+		if !magic.TokenPairAgrees(ml.backend, pairID, cardName) {
+			return "", matcher.ErrUnsupported
+		}
 		return pairID, nil
 	}
 	if magic.MatchTokenPairing(ml.backend, scryfallID, cardName, false) != "" {

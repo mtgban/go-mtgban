@@ -161,6 +161,21 @@ func TestMatchRefusesSheetInAnotherFinish(t *testing.T) {
 	}
 }
 
+// TestMatchRefusesSheetOfAnotherFace pins that a sheet whose image names a
+// token on neither of its sides is left unpriced: 236521 is Pest, which
+// pairs with the Spirit this listing names behind another token.
+func TestMatchRefusesSheetOfAnotherFace(t *testing.T) {
+	b := realDatastore(t)
+	ml := NewScraper(b)
+
+	product := MLProduct{Name: "Inkling // Spirit Token", SetName: "Strixhaven: School of Mages", TCGProductID: "236521"}
+	id, err := ml.match(product)
+	if !errors.Is(err, matcher.ErrUnsupported) {
+		co, _ := b.GetUUID(id)
+		t.Fatalf("got %v on %+v, want the row refused", err, co)
+	}
+}
+
 func TestNamesTwoFaces(t *testing.T) {
 	for name, want := range map[string]bool{
 		"Pest":                                   false,
