@@ -444,8 +444,9 @@ func buildDerivedCard(co1, co2 *matcher.CardObject, home string, usableIDs []int
 	}
 
 	name := first.Name + " // " + second.Name
-	// Number may mix two sets' numbering on a cross-set pairing - cosmetic
-	// only; Match never reads a derived card's number.
+	// Number is both faces' own numbers, each in its own set's numbering on
+	// a cross-set pairing. Match never reads it; scrapers cut it on "//" to
+	// compare a listing's face numbers.
 	number := first.Number + "//" + second.Number
 	pairUUID := tokenPairUUID(uuidLo, uuidHi)
 
@@ -707,9 +708,9 @@ func SplitTokenPairName(name string) (first, second string) {
 
 // MatchTokenPairing resolves a two-sided listing from one face's external
 // id (Scryfall) plus the listing name: id alone can pair with several
-// partners; name alone is not set-unique. Returns "" for a foil request
-// when the pairing was never sold foil - derived uuids have no separate
-// foil identity, so callers must fall back themselves.
+// partners; name alone is not set-unique. The id it returns names the
+// pairing in no finish, which MatchID resolves; a foil request is refused
+// as tokenPairingFinishOK says.
 func MatchTokenPairing(b *matcher.Backend, externalID, listingName string, foil bool) string {
 	if externalID == "" {
 		return ""
@@ -830,8 +831,9 @@ func matchNumberedFace(b *matcher.Backend, cardName, setCode, number string) []m
 	return out
 }
 
-// tokenPairingFinishOK returns id, or "" when foil was requested but the
-// pairing was never sold foil (derived uuids have no separate foil id).
+// tokenPairingFinishOK returns id, or "" when foil was requested and either
+// face has no foil. The id is the same in either finish: MatchID reaches
+// the pair's "_f" sibling from it.
 func tokenPairingFinishOK(b *matcher.Backend, id string, foil bool) string {
 	if id == "" || !foil {
 		return id

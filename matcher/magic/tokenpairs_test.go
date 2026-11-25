@@ -704,8 +704,7 @@ func TestDeriveTokenPairsMintsWithNoUsableID(t *testing.T) {
 // no home set is kept too: homeSet requires the two faces' sets to share an
 // mtgjson parent-set ancestor, which no real pairing lacks today, so the
 // two sets here are made up. When homeSet returns "", the row falls back to
-// the first face's token set (cosmetic only, see buildDerivedCard's own
-// comment on the field) rather than being dropped.
+// the first face's token set rather than being dropped.
 func TestDeriveTokenPairsCrossSetFallsBackRatherThanDrops(t *testing.T) {
 	face := func(uuid, setCode, name string) *matcher.CardObject {
 		return &matcher.CardObject{Card: matcher.Card{
