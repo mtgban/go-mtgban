@@ -352,37 +352,60 @@ func TestPreprocessAnchorsTheSecondFaceNumber(t *testing.T) {
 }
 
 // TestProcessProductsRefusesTokenSheetOnAFace pins a sheet of two different
-// tokens whose pairing the datastore does not mint: its ids name the Horror
-// face alone, and the listing is refused rather than priced as that face.
+// tokens whose pairing the datastore does not mint: its ids name one face
+// alone, and the listing is refused rather than priced as that face. Two
+// tokens of one name are told apart by their numbers, and a sheet the
+// datastore files whole under the one name is kept.
 func TestProcessProductsRefusesTokenSheetOnAFace(t *testing.T) {
 	b := realDatastore(t)
 
-	bp := tokenBlueprint(3609, "Horror // Zombie", "Archenemy: Nicol Bolas", "3/20", "8cfb1a9c-3f34-4362-bc2d-4cd584488820")
-	bp.GameID = GameMagic
-	bp.TCGplayerID = 134946
+	for _, tt := range []struct {
+		id       int
+		name     string
+		edition  string
+		number   string
+		scryfall string
+		tcg      int
+		foil     bool
+		want     string
+	}{
+		{3609, "Horror // Zombie", "Archenemy: Nicol Bolas", "3/20", "8cfb1a9c-3f34-4362-bc2d-4cd584488820", 134946, false, ""},
+		{207099, "Walker // Walker", "Secret Lair Drop Series", "148/149", "", 224148, true, ""},
+		{207102, "Walker // Walker", "Secret Lair Drop Series", "151/152", "", 224342, true, ""},
+		// TGK1 Soldier #2 is mtgjson's own "Soldier // Soldier"
+		{49709, "Soldier // Soldier", "GRN Guild Kit", "T 06/02", "", 0, false, "224a0989-8681-5f95-9eb7-a25f876f239a"},
+		// The same number twice is one token
+		{232511, "Treasure // Treasure", "Starter Commander Decks", "T 25/25", "", 450776, false, "2f915341-9443-5456-9d12-675221e92e1e"},
+	} {
+		bp := tokenBlueprint(tt.id, tt.name, tt.edition, tt.number, tt.scryfall)
+		bp.GameID = GameMagic
+		bp.TCGplayerID = tt.tcg
 
-	ct := &Market{
-		backend:     b,
-		gameID:      GameMagic,
-		blueprints:  map[int]*Blueprint{bp.ID: &bp},
-		logCallback: func(string, ...any) {},
-	}
-	var p Product
-	p.ID = 1
-	p.BlueprintID = bp.ID
-	p.Quantity = 1
-	p.Price.Cents = 100
-	p.Price.Currency = "USD"
-	p.Properties.Condition = "Near Mint"
-	p.Properties.MTGLanguage = "en"
+		ct := &Market{
+			backend:     b,
+			gameID:      GameMagic,
+			blueprints:  map[int]*Blueprint{bp.ID: &bp},
+			logCallback: func(string, ...any) {},
+		}
+		var p Product
+		p.ID = 1
+		p.BlueprintID = bp.ID
+		p.Quantity = 1
+		p.Price.Cents = 100
+		p.Price.Currency = "USD"
+		p.Properties.Condition = "Near Mint"
+		p.Properties.MTGLanguage = "en"
+		p.Properties.MTGFoil = tt.foil
 
-	ch := make(chan resultChan, 1)
-	ct.processProducts(ch, bp.ID, []Product{p})
-	close(ch)
-	for result := range ch {
-		co, err := b.GetUUID(result.cardID)
-		if err == nil {
-			t.Errorf("blueprint %d landed on %s %q #%s, want a refusal", bp.ID, co.SetCode, co.Name, co.Number)
+		ch := make(chan resultChan, 1)
+		ct.processProducts(ch, bp.ID, []Product{p})
+		close(ch)
+		got := ""
+		for result := range ch {
+			got = result.cardID
+		}
+		if got != tt.want {
+			t.Errorf("blueprint %d landed on %q, want %q", bp.ID, got, tt.want)
 		}
 	}
 }

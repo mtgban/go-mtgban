@@ -208,12 +208,18 @@ func tokenSheetOnFace(b *matcher.Backend, bp *Blueprint, cardID string) bool {
 	if !isTwoSidedTokenBlueprint(bp, bp.Name) {
 		return false
 	}
-	first, second := magic.SplitTokenPairName(ctPairName(bp.Name))
-	if magic.NormalizeTokenFace(first) == magic.NormalizeTokenFace(second) {
+	co, err := b.GetUUID(cardID)
+	if err != nil || strings.Contains(co.Name, " // ") {
 		return false
 	}
-	co, err := b.GetUUID(cardID)
-	return err == nil && !strings.Contains(co.Name, " // ")
+	first, second := magic.SplitTokenPairName(ctPairName(bp.Name))
+	if magic.NormalizeTokenFace(first) != magic.NormalizeTokenFace(second) {
+		return true
+	}
+	// One name at two numbers is two tokens, unless the datastore files the
+	// whole sheet under that name (TGK1 Soldier #2)
+	n1, n2, ok := tokenPairNumbers(bp.Properties.Number)
+	return ok && n1 != n2 && co.Identifiers["isDFCSameName"] != "true"
 }
 
 // ctPairSeparatorRe matches the "//" between a two-sided pairing's faces,
