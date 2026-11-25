@@ -56,6 +56,24 @@ func isTokenSheet(b *matcher.Backend, co *matcher.CardObject) bool {
 	return err == nil && set.Type == "token"
 }
 
+// matchSheet resolves a two-sided token sheet by both faces' scryfall ids to
+// the pairing they were printed in, or "" when the datastore pairs them in no
+// product or not in this finish.
+func matchSheet(b *matcher.Backend, card Product, foil bool) string {
+	if len(card.ScryfallIDs) != 2 {
+		return ""
+	}
+	uuidA := b.ConvertID(matcher.IDSpaceScryfall, card.ScryfallIDs[0])
+	uuidB := b.ConvertID(matcher.IDSpaceScryfall, card.ScryfallIDs[1])
+	return magic.MatchTokenPairingByUUIDs(b, uuidA, uuidB, foil)
+}
+
+// cardKey names the scryfall ids a row is matched by, for the log: a sheet's
+// faces where it has none of its own.
+func cardKey(card Product) string {
+	return cmp.Or(card.ScryfallID, strings.Join(card.ScryfallIDs, "+"))
+}
+
 // Load fetches everything this scraper offers. See mtgban.Scraper.
 func (mp *Manapool) Load(ctx context.Context) error {
 	pricelist, err := GetPriceList(ctx)
@@ -75,10 +93,11 @@ func (mp *Manapool) price(pricelist []Product) {
 		foil := card.FinishID == "FO"
 		etched := card.FinishID == "EF"
 
-		cardID, err := mp.backend.MatchID(card.ScryfallID, foil, etched)
+		inputID := cmp.Or(card.ScryfallID, matchSheet(mp.backend, card, foil))
+		cardID, err := mp.backend.MatchID(inputID, foil, etched)
 		if err != nil {
 			if !isUnindexed(mp.backend, card) {
-				mp.printf("%v %s for %s [%s]", err, card.ScryfallID, card.Name, card.SetCode)
+				mp.printf("%v %s for %s [%s]", err, cardKey(card), card.Name, card.SetCode)
 			}
 			continue
 		}

@@ -1,6 +1,7 @@
 package manapool
 
 import (
+	"cmp"
 	"context"
 	"net/url"
 	"strings"
@@ -67,7 +68,8 @@ func (mp *Index) price(singles []Product) {
 				continue
 			}
 
-			uuid := mp.backend.ConvertID(matcher.IDSpaceScryfall, card.ScryfallID)
+			uuid := cmp.Or(mp.backend.ConvertID(matcher.IDSpaceScryfall, card.ScryfallID),
+				matchSheet(mp.backend, card, finish.foil))
 			// A printing sold etched only quotes its market in the foil
 			// field, and its foil flag would route to the other number.
 			etchedOnly := false
@@ -78,7 +80,7 @@ func (mp *Index) price(singles []Product) {
 			cardID, err := mp.backend.MatchID(uuid, finish.foil, etchedOnly)
 			if err != nil {
 				if !isUnindexed(mp.backend, card) {
-					mp.printf("%v %s for %s [%s]", err, card.ScryfallID, card.Name, card.SetCode)
+					mp.printf("%v %s for %s [%s]", err, cardKey(card), card.Name, card.SetCode)
 				}
 				continue
 			}
