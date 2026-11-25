@@ -2,6 +2,7 @@ package magic
 
 import (
 	"fmt"
+	"regexp"
 	"slices"
 	"sort"
 	"strconv"
@@ -737,6 +738,60 @@ func MatchTokenPairing(b *matcher.Backend, externalID, listingName string, foil 
 	}
 	id := b.TokenPairIndex[uuid][NormalizeTokenFace(partner)]
 	return tokenPairingFinishOK(b, id, foil)
+}
+
+// listedFaceNumber reads the collector number a listing states beside a
+// face: bare and zero-padded, "(006)", or over its sheet's token count,
+// "(2/21)".
+var listedFaceNumber = regexp.MustCompile(`\((\d+)(?:/\d+)?\)`)
+
+// ListedFaceNumbers returns the collector numbers a listing states, in
+// order and past their leading zeros.
+func ListedFaceNumbers(name string) []string {
+	var numbers []string
+	for _, m := range listedFaceNumber.FindAllStringSubmatch(name, -1) {
+		number := strings.TrimLeft(m[1], "0")
+		if number != "" {
+			numbers = append(numbers, number)
+		}
+	}
+	return numbers
+}
+
+// faceDigits reads the digits ending a face's collector number, past a set
+// code ("TC17-1") and before a suffix ("16★").
+var faceDigits = regexp.MustCompile(`(\d+)\D*$`)
+
+// TokenPairAgrees reports whether the pairing uuid is the sheet a listing
+// names: its two faces are the two halves and, where both halves state a
+// number, each face holds its half's number.
+func TokenPairAgrees(b *matcher.Backend, uuid, listingName string) bool {
+	pair, err := b.GetUUID(uuid)
+	if err != nil {
+		return false
+	}
+	coA, errA := b.GetUUID(pair.Identifiers["tokenPairPartA"])
+	coB, errB := b.GetUUID(pair.Identifiers["tokenPairPartB"])
+	if errA != nil || errB != nil {
+		return false
+	}
+
+	first, second := SplitTokenPairName(listingName)
+	firstNumbers := ListedFaceNumbers(first)
+	secondNumbers := ListedFaceNumbers(second)
+	numbered := len(firstNumbers) > 0 && len(secondNumbers) > 0
+	agrees := func(co *matcher.CardObject, half string, numbers []string) bool {
+		if NormalizeTokenFace(co.Card.Name) != NormalizeTokenFace(half) {
+			return false
+		}
+		if !numbered {
+			return true
+		}
+		digits := faceDigits.FindStringSubmatch(co.Card.Number)
+		return digits != nil && strings.TrimLeft(digits[1], "0") == numbers[0]
+	}
+	return agrees(coA, first, firstNumbers) && agrees(coB, second, secondNumbers) ||
+		agrees(coA, second, secondNumbers) && agrees(coB, first, firstNumbers)
 }
 
 // MatchTokenPairingBySetNumber anchors the first face by set+number

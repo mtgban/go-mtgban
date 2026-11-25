@@ -897,3 +897,37 @@ func TestAdoptOwnTokenProducts(t *testing.T) {
 		}
 	}
 }
+
+// TestTokenPairAgrees pins the faces and numbers a listing is held to, in
+// either order, past a set code and a star in the datastore's own number.
+func TestTokenPairAgrees(t *testing.T) {
+	realDatastore(t)
+
+	pairUUID := func(a, z string) string {
+		key := newPairKey(a, z)
+		return tokenPairUUID(key.a, key.b)
+	}
+	list := pairUUID("d0f1bef6-bb56-5f70-b3a9-3987d529b675", "f8ca07e3-9212-555d-984f-2551a9c6bb34")
+	surge := pairUUID("014c729a-bbdc-5569-afe8-7155ec517de7", "12701ec9-8bdf-585d-9209-edbca76e2122")
+	for _, tt := range []struct {
+		uuid, name string
+		want       bool
+	}{
+		{list, "Cat Token (001/011) // Citizen Token (12/17)", true},
+		{list, "Citizen (12) // Cat (1)", true},
+		{list, "Cat // Citizen Token", true},
+		{list, "Cat Token (001/011) // Citizen Token", true},
+		{list, "Cat Token (001/011) // Citizen Token (17/17)", false},
+		{list, "Cat Token (12) // Citizen Token (1)", false},
+		{list, "Rat // Citizen", false},
+		{list, "Citizen // Citizen", false},
+		{list, "Cat", false},
+		{surge, "Spawn Token (16/23) (Surge Foil) // Blue Horror Token (20/23)", true},
+		{"d0f1bef6-bb56-5f70-b3a9-3987d529b675", "Cat // Citizen", false},
+	} {
+		got := TokenPairAgrees(testBackend, tt.uuid, tt.name)
+		if got != tt.want {
+			t.Errorf("TokenPairAgrees(%s, %q) = %v, want %v", tt.uuid, tt.name, got, tt.want)
+		}
+	}
+}
