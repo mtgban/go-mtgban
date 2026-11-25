@@ -1039,9 +1039,9 @@ SCG grades none, and at PL where SCG makes no PL bid, serialized detection, seal
 plus Lorcana, Riftbound and Flesh and Blood, which its `scgGames` table maps
 onto SCG's numeric game ids), `coolstuffinc` (seven of the eight non-Magic
 games - every one but Flesh and Blood - `CreditMultiplier 1.25`, the
-slabs it can grade as `CSIGraded`, other slabs and one-off copies as
-`CSIUnique`), `hareruya` (JPY, **bespoke 403 → 5-min backoff**, slabs as
-`HAGraded`), `cardgamecorner` (EUR, Italian, retail alone, in seven games),
+slabs as `CSIGraded`, one-off copies as `CSIUnique`), `hareruya`
+(JPY, **bespoke 403 → 5-min backoff**, slabs as `HAGraded`), `cardgamecorner`
+(EUR, Italian, retail alone, in seven games),
 `abugames` (Solr, MINT-aware grading, each buylist grade a floor, so every
 grade is filed at the best offer at it or below, the one PLD skips included,
 `InfoForScraper`, graded slabs as `ABUGraded`), `mtgseattle`

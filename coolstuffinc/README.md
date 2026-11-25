@@ -130,23 +130,28 @@ price) as two entries.
   ("1st Edition Holofoil" - `conditionRun`/`matchRun`, which refuses
   rather than silently pricing the run as the ordinary printing when the
   match doesn't actually carry that finish), sometimes a **printing of its
-  own** ("PRE-ERRATA" - `conditionPrinting`), sometimes a **grading
-  marker** ("BGS", "PSA", "Unique", "Shadowless", "No Set Symbol" -
-  `isGraded`, which reroutes the row to the `Cool Stuff Inc (unique)`
-  sub-seller via `MarketNames`/`availableMarketNames` rather than pricing
-  it as a normal NM copy), and sometimes a **skip signal** ("Asian" -
+  own** ("PRE-ERRATA" - `conditionPrinting`), sometimes a **slab**
+  ("PSA 10", "CGC 10 Pristine", "PRE-ERRATA BGS 10" - `slabCondition`, which
+  reads the `Slab` and reroutes the row to the `Cool Stuff Inc Graded`
+  sub-seller), sometimes a **one-off** ("Unique", "Non-Foil", "Shadowless",
+  "No Set Symbol" - `isUnique`, which reroutes it to
+  `Cool Stuff Inc (unique)` rather than pricing it as a normal NM copy),
+  and sometimes a **skip signal** ("Asian" -
   `isSkippedCondition`, since the one Evolving Wilds sold that way carries
-  no language, set or number to resolve against). A grading service or print
-  run this table doesn't know about is refused with a logged "unsupported
-  <text> condition", not silently dropped as if it matched NM.
-- **Graded/unique copies are a second seller, not a second condition.**
-  `gradedMarkers`, `isGraded`, `AddRelaxed` (so a genuine finish collision -
-  a Foil-etched card's Near Mint and Near Mint Foil rows - doesn't refuse
-  itself out) and `availableMarketNames`/`name2shorthand` (`Cool Stuff Inc`
-  / `Cool Stuff Inc (unique)`, shorthands `CSI`/`CSIUnique`) all serve one
-  fact: a single graded/unique copy sold on a printing's page is not that
-  printing's market price, and pricing it as one prints a $500 slab as a
-  card's going rate.
+  no language, set or number to resolve against). A slab `slabCondition`
+  cannot read is published as NM with its wording kept and logged (ADR-0006).
+  A grading service or print run these tables don't know about is refused
+  with a logged "unsupported <text> condition", not silently dropped as if it
+  matched NM.
+- **Graded and unique copies are sellers of their own, not conditions.**
+  `slabCondition`, `uniqueMarkers`, `isUnique`, `AddRelaxed` (so a genuine
+  finish collision - a Foil-etched card's Near Mint and Near Mint Foil rows -
+  doesn't refuse itself out) and `availableMarketNames`/`name2shorthand`
+  (`Cool Stuff Inc` / `Cool Stuff Inc (unique)` / `Cool Stuff Inc Graded`,
+  shorthands `CSI`/`CSIUnique`/`CSIGraded`, the last in `GradedMode`) all
+  serve one fact: a single graded/unique copy sold on a printing's page is
+  not that printing's market price, and pricing it as one prints a $500 slab
+  as a card's going rate.
 - **Each entry keeps the store's own row id.** A sale offer's
   `InstanceID` is the row id its Add to Cart button names
   (`atc[<product>][<row>]`, `offerRowID`), one per condition and finish of
