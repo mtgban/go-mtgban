@@ -698,6 +698,53 @@ func TestPreprocessSplitCardKeepsItsSet(t *testing.T) {
 	}
 }
 
+// TestPreprocessSplitCardNamingAToken checks that a split card with one half
+// named like a token is not read as a token sheet.
+func TestPreprocessSplitCardNamingAToken(t *testing.T) {
+	b := realDatastore(t)
+	for _, tt := range []struct {
+		product cardkingdom.Product
+		number  string
+	}{
+		{cardkingdom.Product{
+			SKU:        "MDGM-128",
+			ScryfallID: "e23faf50-64e5-4989-96ba-1048c7e5ef23",
+			Name:       "Flesh // Blood",
+			Edition:    "Mystery Booster/The List",
+		}, "DGM-128"},
+		{cardkingdom.Product{
+			SKU:        "MAPC-131",
+			ScryfallID: "0b642120-9d56-448d-b969-588ebb735ea2",
+			Name:       "Night // Day",
+			Edition:    "Mystery Booster/The List",
+		}, "APC-131"},
+		{cardkingdom.Product{
+			SKU:        "MAPC-129",
+			ScryfallID: "d1280bdf-c718-4fd2-8504-5dac3a7b5f9f",
+			Name:       "Illusion // Reality",
+			Edition:    "Mystery Booster/The List",
+		}, "APC-129"},
+	} {
+		t.Run(tt.product.SKU, func(t *testing.T) {
+			theCard, err := Preprocess(b, tt.product)
+			if err != nil {
+				t.Fatal(err)
+			}
+			cardID, err := b.Match(theCard)
+			if err != nil {
+				t.Fatalf("Match(%v) = %v", theCard, err)
+			}
+			co, err := b.GetUUID(cardID)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if co.SetCode != "PLST" || co.Number != tt.number {
+				t.Errorf("Match(%v) = %v, want PLST %s", theCard, co, tt.number)
+			}
+		})
+	}
+}
+
 // TestPreprocessTokenCrossesSets checks that a double-faced token is taken
 // from the set its scryfall id names when its sku spells another.
 func TestPreprocessTokenCrossesSets(t *testing.T) {
