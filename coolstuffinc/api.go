@@ -52,28 +52,28 @@ func (t userAgentTransport) RoundTrip(req *http.Request) (*http.Response, error)
 	return t.base.RoundTrip(req)
 }
 
-// newCSIHTTPClient builds the client a scraper makes all its requests
-// through, and retries. Every request stands for a whole run of rows rather
-// than a page of them - an edition's singles, a sealed query, the buylist,
-// the edition map - so a connection dropped once discards all of it
-// silently. A scraper keeps one, since a client built per call cannot pool
-// anything, and each request would pay for a fresh handshake against a
-// storefront being asked for hundreds of editions at a time.
-func newCSIHTTPClient() *http.Client {
-	return mtgban.NewHTTPClient(
+// newCSIHTTPClient builds the one pooled client a scraper makes all its
+// requests through. It retries, since a lost request fails the whole walk,
+// and answers the last response when retries run out, for checkStatus.
+func newCSIHTTPClient(opts ...mtgban.HTTPOption) *http.Client {
+	return mtgban.NewHTTPClient(append([]mtgban.HTTPOption{
 		mtgban.WithHTTPCheckRetry(retryForbidden),
+		mtgban.WithHTTPErrorHandler(retryablehttp.PassthroughErrorHandler),
 		mtgban.WithHTTPTransport(func(rt http.RoundTripper) http.RoundTripper {
 			return userAgentTransport{base: rt}
 		}),
-	)
+	}, opts...)...)
 }
 
-// retryForbidden adds a GET answered 403 to what the default policy retries.
-// The storefront answers one page of a shelf 403 now and then and the next
-// request through, so giving up there drops the rest of the shelf.
+// retryForbidden adds a GET or POST answered 403 to what the default policy
+// retries: the storefront refuses one request now and then and answers the
+// next. The only POST is the search, a read that is safe to send again.
 func retryForbidden(ctx context.Context, resp *http.Response, err error) (bool, error) {
-	if err == nil && resp != nil && resp.StatusCode == http.StatusForbidden && resp.Request != nil && resp.Request.Method == http.MethodGet {
-		return true, nil
+	if err == nil && resp != nil && resp.StatusCode == http.StatusForbidden && resp.Request != nil {
+		switch resp.Request.Method {
+		case http.MethodGet, http.MethodPost:
+			return true, nil
+		}
 	}
 	return retryablehttp.DefaultRetryPolicy(ctx, resp, err)
 }

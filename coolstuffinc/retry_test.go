@@ -3,8 +3,11 @@ package coolstuffinc
 import (
 	"context"
 	"errors"
+	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"strings"
 	"testing"
 	"time"
@@ -93,43 +96,85 @@ func TestSearchPageSurvivesForbidden(t *testing.T) {
 	}
 }
 
-// TestSearchDoesNotResendForbidden pins that only a GET answered 403 is
-// retried: the first-page search is a POST, sent once and failed on.
-func TestSearchDoesNotResendForbidden(t *testing.T) {
-	var attempts int
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		attempts++
-		w.WriteHeader(http.StatusForbidden)
-	}))
-	defer srv.Close()
-
-	saved := csiSearchURL
-	csiSearchURL = srv.URL
-	defer func() { csiSearchURL = saved }()
+// TestSearchResendsForbidden pins that a search answered 403 is sent again
+// with its whole form, and fails with the status once attempts run out.
+func TestSearchResendsForbidden(t *testing.T) {
+	const page = `<html><span id="nextLink"><a href="/sq/12345&page=2"></a></span></html>`
+	client := newCSIHTTPClient(mtgban.WithHTTPRetryWait(time.Millisecond, time.Millisecond))
 
 	for _, tt := range []struct {
 		desc   string
-		search func() error
+		field  string
+		value  string
+		search func() (*SearchResult, error)
 	}{
-		{"singles", func() error {
-			_, err := Search(context.Background(), newCSIHTTPClient(), GameMagic, "Coldsnap", false, nil)
-			return err
+		{"singles", "f[ItemSet][]", "Coldsnap", func() (*SearchResult, error) {
+			return Search(context.Background(), client, GameMagic, "Coldsnap", false, nil)
 		}},
-		{"sealed", func() error {
-			_, err := searchSealed(context.Background(), newCSIHTTPClient(), GameLorcana, "booster")
-			return err
+		{"sealed", "name", "booster", func() (*SearchResult, error) {
+			return searchSealed(context.Background(), client, GameLorcana, "booster")
 		}},
 	} {
-		t.Run(tt.desc, func(t *testing.T) {
-			attempts = 0
-			err := tt.search()
-			if err == nil || !strings.Contains(err.Error(), "403") {
-				t.Errorf("search answered %v, want the status in an error", err)
-			}
-			if attempts != 1 {
-				t.Errorf("served %d attempts, want 1", attempts)
-			}
-		})
+		for _, always := range []bool{false, true} {
+			t.Run(fmt.Sprintf("%s, refused every time: %t", tt.desc, always), func(t *testing.T) {
+				var bodies []string
+				srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					body, _ := io.ReadAll(r.Body)
+					bodies = append(bodies, r.Method+" "+string(body))
+					if always || len(bodies) < 2 {
+						w.WriteHeader(http.StatusForbidden)
+						return
+					}
+					_, _ = w.Write([]byte(page))
+				}))
+				defer srv.Close()
+
+				saved := csiSearchURL
+				csiSearchURL = srv.URL
+				defer func() { csiSearchURL = saved }()
+
+				result, err := tt.search()
+				want := 2
+				if always {
+					want = 5
+					if err == nil || !strings.Contains(err.Error(), "unexpected 403 status code") {
+						t.Errorf("search answered %v, want the status in an error", err)
+					}
+				} else if err != nil {
+					t.Errorf("search answered %v", err)
+				} else if result.NextLink != "/sq/12345&page=2" {
+					t.Errorf("NextLink = %q, want /sq/12345&page=2", result.NextLink)
+				}
+
+				if len(bodies) != want {
+					t.Fatalf("served %d attempts, want %d", len(bodies), want)
+				}
+				form, err := url.ParseQuery(strings.TrimPrefix(bodies[0], "POST "))
+				if err != nil || form.Get(tt.field) != tt.value {
+					t.Errorf("first attempt carried %q, %v", bodies[0], err)
+				}
+				for i, body := range bodies {
+					if body != bodies[0] {
+						t.Errorf("attempt %d carried %q, want %q", i+1, body, bodies[0])
+					}
+				}
+			})
+		}
+	}
+}
+
+// TestForbiddenRetriesOnlyReads pins that no method but GET and POST is
+// retried on a 403.
+func TestForbiddenRetriesOnlyReads(t *testing.T) {
+	for _, method := range []string{
+		http.MethodGet, http.MethodPost, http.MethodHead, http.MethodPut, http.MethodPatch, http.MethodDelete,
+	} {
+		resp := &http.Response{StatusCode: http.StatusForbidden, Request: &http.Request{Method: method}}
+		retry, err := retryForbidden(context.Background(), resp, nil)
+		want := method == http.MethodGet || method == http.MethodPost
+		if retry != want || err != nil {
+			t.Errorf("%s: retry %t, %v, want %t", method, retry, err, want)
+		}
 	}
 }
 
