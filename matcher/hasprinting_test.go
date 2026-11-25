@@ -226,6 +226,18 @@ func TestHasPrintingAnswersForTheNamedCard(t *testing.T) {
 	t.Logf("%d colliding buckets, %d combinations compared", collisions, compared)
 }
 
+// GK1's Copy // Horror is nonfoil only, while token pairs of the same name
+// come in foil.
+func TestHasPrintingSkipsDerivedPairs(t *testing.T) {
+	b := realDatastore(t)
+	if !b.HasNonfoilPrinting("Copy // Horror") {
+		t.Error("Copy // Horror has no nonfoil printing")
+	}
+	if b.HasFoilPrinting("Copy // Horror") {
+		t.Error("Copy // Horror answered foil from a token pair")
+	}
+}
+
 // cardHasProperty answers a hasPrinting check for one card, without the
 // name resolution the test is there to exercise.
 func cardHasProperty(card Card, field, value string) bool {

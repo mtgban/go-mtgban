@@ -387,7 +387,7 @@ func (b *Backend) HasPrinting(name, field, value string, editions ...string) boo
 	// the name is still checked against the real card name.
 	for _, uuid := range uuids {
 		co, found := b.UUIDs[uuid]
-		if !found {
+		if !found || co.isDerivedPair() {
 			continue
 		}
 		if pinnedCode != "" && co.SetCode != pinnedCode {
