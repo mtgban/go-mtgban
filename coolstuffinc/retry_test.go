@@ -219,22 +219,22 @@ func TestLostRequestFailsLoad(t *testing.T) {
 		}, "unexpected 404 status code"},
 		{"one edition", false, matcher.GameMagic, context.Background(), func(req *http.Request) bool {
 			return req.FormValue("f[ItemSet][]") == "Ice Age"
-		}, "1 of 2 editions lost, first: Ice Age: unexpected 404 status code"},
+		}, "walked 1 of 2 editions: Ice Age: unexpected 404 status code"},
 		{"cancelled on the first edition", false, matcher.GameMagic, ctx, func(req *http.Request) bool {
 			if req.Method == http.MethodPost {
 				cancel()
 			}
 			return req.Method == http.MethodPost
-		}, "2 of 2 editions lost: context canceled"},
+		}, "walked 0 of 2 editions: context canceled"},
 		{"one sealed query", true, matcher.GameLorcana, context.Background(), func(req *http.Request) bool {
 			return req.FormValue("name") == "deck"
-		}, "1 of 10 searches lost, first: deck: unexpected 404 status code"},
+		}, "walked 1 of 10 searches: deck: unexpected 404 status code"},
 		{"sealed page count", true, matcher.GameMagic, context.Background(), func(req *http.Request) bool {
 			return true
 		}, "unexpected 404 status code"},
 		{"one sealed page", true, matcher.GameMagic, context.Background(), func(req *http.Request) bool {
 			return req.URL.Query().Get("page") == "2"
-		}, "1 of 3 pages lost, first: page 2: unexpected 404 status code"},
+		}, "walked 1 of 3 pages: page 2: unexpected 404 status code"},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
 			client := &http.Client{Transport: storeTransport(func(req *http.Request) (int, string) {
@@ -261,6 +261,56 @@ func TestLostRequestFailsLoad(t *testing.T) {
 			}
 			if !date.IsZero() {
 				t.Errorf("dated a short walk %v", date)
+			}
+		})
+	}
+}
+
+// TestLostRequestStopsWalk pins that a walk asks for nothing more once one
+// of its requests is lost.
+func TestLostRequestStopsWalk(t *testing.T) {
+	const page = `<html><fieldset><h2 class="mb10"><b>Item Set</b></h2><div class="toggleTable"><ul>` +
+		`<li><input type="checkbox" value="Alliances"></li><li><input type="checkbox" value="Coldsnap"></li>` +
+		`<li><input type="checkbox" value="Ice Age"></li></ul></div></fieldset>` +
+		`<div class="search-result-links">1 - 25 of 60 Results</div></html>`
+
+	for _, tt := range []struct {
+		desc   string
+		sealed bool
+		game   matcher.Game
+		want   string
+	}{
+		{"editions", false, matcher.GameMagic, "walked 0 of 3 editions: Alliances: unexpected 404"},
+		{"sealed searches", true, matcher.GameLorcana, "walked 0 of 10 searches: booster: unexpected 404"},
+		{"sealed pages", true, matcher.GameMagic, "walked 0 of 3 pages: page 1: unexpected 404"},
+	} {
+		t.Run(tt.desc, func(t *testing.T) {
+			var first string
+			var refused int
+			client := &http.Client{Transport: storeTransport(func(req *http.Request) (int, string) {
+				// The singles form and the sealed page count come first
+				if req.Method == http.MethodGet && first == "" {
+					first = req.URL.String()
+					return http.StatusOK, page
+				}
+				refused++
+				return http.StatusNotFound, "<html></html>"
+			})}
+			b := &matcher.Backend{Game: tt.game}
+
+			var err error
+			if tt.sealed {
+				csi := Sealed{client: client, shelf: csiGames[tt.game], backend: b, maxConcurrency: 1, disableBuylist: true}
+				err = csi.Load(context.Background())
+			} else {
+				csi := Coolstuffinc{client: client, shelf: csiGames[tt.game], backend: b, maxConcurrency: 1, disableBuylist: true}
+				err = csi.Load(context.Background())
+			}
+			if err == nil || !strings.Contains(err.Error(), tt.want) {
+				t.Errorf("Load answered %v, want %q", err, tt.want)
+			}
+			if refused != 1 {
+				t.Errorf("sent %d requests past the first lost one, want none", refused-1)
 			}
 		})
 	}

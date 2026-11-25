@@ -805,8 +805,9 @@ func (csi *Coolstuffinc) scrape(ctx context.Context) error {
 	// first again, not a second seller, and adding it would only be
 	// refused as the duplicate it is.
 	seen := map[string]bool{}
-	var walk walkCount
-	mtgban.WorkerPool(ctx, csi.maxConcurrency, itemNames,
+	walkCtx, walk := newWalk(ctx)
+	defer walk.stop()
+	mtgban.WorkerPool(walkCtx, csi.maxConcurrency, itemNames,
 		func(ctx context.Context, itemName string, results chan<- responseChan) error {
 			csi.printf("Processing %s", itemName)
 			err := csi.processSearch(ctx, results, itemName, rarities)
