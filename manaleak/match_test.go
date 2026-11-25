@@ -123,6 +123,11 @@ func TestMatchSheetByOneFace(t *testing.T) {
 			product: MLProduct{Name: "Beast // Beast Double-sided Token", SetName: "Starter Commander Decks", TCGProductID: "450779"},
 			set:     "TSCD", number: "19",
 		},
+		{
+			name:    "separator inside a parenthetical",
+			product: MLProduct{Name: "Punch Card (001a // 001b)", SetName: "Edge of Eternities", TCGProductID: "642820"},
+			set:     "TEOE", number: "12",
+		},
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
@@ -153,6 +158,28 @@ func TestMatchRefusesSheetInAnotherFinish(t *testing.T) {
 	if !errors.Is(err, matcher.ErrUnsupported) {
 		co, _ := b.GetUUID(id)
 		t.Fatalf("got %v on %+v, want the row refused", err, co)
+	}
+}
+
+// TestMatchRefusesSheetWithoutPairing pins that a sheet of two different
+// tokens the datastore pairs nowhere is left unpriced rather than put on the
+// one face its image or its wording names.
+func TestMatchRefusesSheetWithoutPairing(t *testing.T) {
+	b := realDatastore(t)
+	ml := NewScraper(b)
+
+	for _, product := range []MLProduct{
+		{Name: "Pest // Zombie Token", SetName: "Strixhaven: School of Mages", TCGProductID: "236521"},
+		{Name: "Construct (22) // Treasure Double-sided Token", SetName: "Commander 2021", TCGProductID: "237026"},
+		{Name: "Treasure (0026) (Non-Foil) // Officer (0032) (Surge Foil) Double-Sided Token -", SetName: "Star Trek", TCGProductID: "730112"},
+		{Name: "Treasure (0039) (Surge Foil) // Officer (0009) (Non-Foil) Double-Sided Token -", SetName: "Star Trek", TCGProductID: "730115"},
+		{Name: "Angel (SLD) // Soldier (CMR) Double-sided Token", SetName: "Secret Lair", TCGProductID: "514981", AmbiguousID: true},
+	} {
+		id, err := ml.match(product)
+		if !errors.Is(err, matcher.ErrUnsupported) {
+			co, _ := b.GetUUID(id)
+			t.Errorf("%s: got %v on %+v, want the row refused", product.Name, err, co)
+		}
 	}
 }
 

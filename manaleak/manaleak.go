@@ -217,13 +217,24 @@ func (ml *Manaleak) match(product MLProduct) (string, error) {
 		}
 		return ml.inSibling(in, etched)
 	}
-	return ml.backend.Match(&in)
+
+	cardID, err := ml.backend.Match(&in)
+	if err != nil {
+		return "", err
+	}
+	// Wording may land on either face of a sheet, whatever number it names
+	co, err := ml.backend.GetUUID(cardID)
+	if err == nil && !strings.Contains(co.Name, " // ") && namesTwoFaces(cardName) {
+		return "", matcher.ErrUnsupported
+	}
+	return cardID, nil
 }
 
 // sheetOfFace answers the pairing a two-sided token sheet was printed as when
 // its image names one face alone, as some of the storefront's sheets reuse a
 // single token's picture; any other card is answered as it is. A pairing on
-// file in another finish only refuses the row, since the face is not the sheet.
+// file in another finish only refuses the row, since the face is not the sheet,
+// and so do two different faces the datastore pairs nowhere.
 func (ml *Manaleak) sheetOfFace(cardID, cardName string, foil, etched bool) (string, error) {
 	co, err := ml.backend.GetUUID(cardID)
 	if err != nil || !strings.Contains(cardName, " // ") || strings.Contains(co.Name, " // ") {
@@ -242,7 +253,30 @@ func (ml *Manaleak) sheetOfFace(cardID, cardName string, foil, etched bool) (str
 	if magic.MatchTokenPairing(ml.backend, scryfallID, cardName, false) != "" {
 		return "", matcher.ErrUnsupported
 	}
+	if namesTwoFaces(cardName) {
+		return "", matcher.ErrUnsupported
+	}
 	return cardID, nil
+}
+
+// sheetSuffix reads the product type the storefront ends a sheet's name on,
+// and whatever follows it.
+var sheetSuffix = regexp.MustCompile(`(?i) (double[- ]sided|token)\b.*$`)
+
+// namesTwoFaces reports whether a sheet's listing names two different faces,
+// which only a pairing prices. A separator inside a parenthetical, as in
+// "Punch Card (001a // 001b)", tells two sides of one card apart.
+func namesTwoFaces(cardName string) bool {
+	if !strings.Contains(cardName, " // ") {
+		return false
+	}
+	first, second := magic.SplitTokenPairName(sheetSuffix.ReplaceAllString(cardName, ""))
+	if strings.Count(first, "(") > strings.Count(first, ")") {
+		return false
+	}
+	front := magic.NormalizeTokenFace(first)
+	back := magic.NormalizeTokenFace(second)
+	return back != "" && front != back
 }
 
 // inSibling settles a wording match for a row on one of a set's own promo
