@@ -464,8 +464,9 @@ func (mkm *Index) emitPrices(channel chan<- responseChan, product *cm.Product, c
 	// its Low sells foils only, and that Low is the foil's, unless the
 	// printing has no foil of its own for that Low to belong to.
 	if mkm.gameID == cm.GameMagic && cardIDFoil != "" && cardIDFoil != cardID &&
-		guide.TrendPrice == 0 && guide.AvgSellPrice == 0 && guide.AvgDay30 == 0 && guide.LowPrice == foilLow {
-		prices[0] = 0
+		(foilOnlyProducts[product.IDProduct] ||
+			guide.TrendPrice == 0 && guide.AvgSellPrice == 0 && guide.AvgDay30 == 0 && guide.LowPrice == foilLow) {
+		prices[0], prices[1] = 0, 0
 	}
 	second := co.Finish != matcher.FinishNonfoil
 	if mkm.gameID == cm.GamePokemon {
