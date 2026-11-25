@@ -115,8 +115,8 @@ func (mint *MTGMintCard) lumpedArts(card Card, theCard *matcher.InputCard, err e
 // sheetOf returns the two-sided sheet a listing names when its sku names
 // only one face of it, which the catalog does for older sheets whose
 // product id the datastore files on a face. The face anchors the pair, and
-// the numbers in the name do where it cannot. A sheet of two faces with no
-// pairing returns "", any other listing cardID.
+// the numbers in the name do where it cannot. A sheet of two faces whose
+// pairing is missing or of other faces returns "", any other listing cardID.
 func (mint *MTGMintCard) sheetOf(cardID, cardName, finish, setCode string) string {
 	co, err := mint.backend.GetUUID(cardID)
 	if err != nil || co.Identifiers["derivedTokenPair"] == "true" || strings.Contains(co.Name, " // ") {
@@ -127,6 +127,9 @@ func (mint *MTGMintCard) sheetOf(cardID, cardName, finish, setCode string) strin
 	pairID := magic.MatchTokenPairing(mint.backend, co.Identifiers["scryfallId"], sheetName(cardName), foil)
 	if pairID != "" {
 		theCard.ID, err = mint.backend.MatchID(pairID, foil)
+		if err == nil && !magic.TokenPairAgrees(mint.backend, theCard.ID, sheetName(cardName)) {
+			err = matcher.ErrUnsupported
+		}
 	} else {
 		theCard, err = preprocessTokenPair(mint.backend, cardName, finish, setCode)
 	}
