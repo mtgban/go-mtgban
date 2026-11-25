@@ -747,6 +747,11 @@ func (csi *Coolstuffinc) scrape(ctx context.Context) error {
 	}
 	defer resp.Body.Close()
 
+	err = checkStatus(resp)
+	if err != nil {
+		return err
+	}
+
 	doc, err := goquery.NewDocumentFromReader(resp.Body)
 	if err != nil {
 		return err
@@ -800,10 +805,15 @@ func (csi *Coolstuffinc) scrape(ctx context.Context) error {
 	// first again, not a second seller, and adding it would only be
 	// refused as the duplicate it is.
 	seen := map[string]bool{}
+	var walk walkCount
 	mtgban.WorkerPool(ctx, csi.maxConcurrency, itemNames,
 		func(ctx context.Context, itemName string, results chan<- responseChan) error {
 			csi.printf("Processing %s", itemName)
-			return csi.processSearch(ctx, results, itemName, rarities)
+			err := csi.processSearch(ctx, results, itemName, rarities)
+			if err != nil {
+				err = fmt.Errorf("%s: %w", itemName, err)
+			}
+			return walk.add(err)
 		},
 		func(record responseChan) {
 			if offerSeen(seen, record) {
@@ -825,6 +835,11 @@ func (csi *Coolstuffinc) scrape(ctx context.Context) error {
 	)
 
 	csi.printf("This operation took %v", time.Since(start))
+
+	err = walk.lostError(ctx, len(itemNames), "editions")
+	if err != nil {
+		return err
+	}
 
 	// A refused search answers its form again under a 200, with no rows.
 	if csi.targetEdition == "" && len(csi.inventory) == 0 {

@@ -5,7 +5,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -93,6 +92,11 @@ func (csi *Sealed) numOfPages(ctx context.Context) (int, error) {
 	}
 	defer resp.Body.Close()
 
+	err = checkStatus(resp)
+	if err != nil {
+		return 0, err
+	}
+
 	doc, err := goquery.NewDocumentFromReader(resp.Body)
 	if err != nil {
 		return 0, err
@@ -141,6 +145,11 @@ func (csi *Sealed) processSealedPage(ctx context.Context, channel chan<- respons
 		return err
 	}
 	defer resp.Body.Close()
+
+	err = checkStatus(resp)
+	if err != nil {
+		return err
+	}
 
 	doc, err := goquery.NewDocumentFromReader(resp.Body)
 	if err != nil {
@@ -204,9 +213,14 @@ func (csi *Sealed) scrape(ctx context.Context) error {
 		pageNums[i] = i + 1
 	}
 
+	var walk walkCount
 	mtgban.WorkerPool(ctx, csi.maxConcurrency, pageNums,
 		func(ctx context.Context, page int, results chan<- responseChan) error {
-			return csi.processSealedPage(ctx, results, page)
+			err := csi.processSealedPage(ctx, results, page)
+			if err != nil {
+				err = fmt.Errorf("page %d: %w", page, err)
+			}
+			return walk.add(err)
 		},
 		func(record responseChan) {
 			err := csi.inventory.Add(record.cardID, record.invEntry)
@@ -216,6 +230,11 @@ func (csi *Sealed) scrape(ctx context.Context) error {
 		},
 		csi.printf,
 	)
+
+	err = walk.lostError(ctx, len(pageNums), "pages")
+	if err != nil {
+		return err
+	}
 
 	csi.inventoryDate = time.Now()
 
@@ -362,16 +381,15 @@ func (csi *Sealed) scrapeBysets(ctx context.Context) error {
 	// the first sighting of a product wins
 	seen := map[string]bool{}
 	var rows atomic.Int64
-	var firstErr atomic.Pointer[error]
+	var walk walkCount
 	mtgban.WorkerPool(ctx, csi.maxConcurrency, queries,
 		func(ctx context.Context, query string, channel chan<- responseChan) error {
 			found, err := csi.processSealedSearch(ctx, channel, query)
 			rows.Add(int64(found))
 			if err != nil {
-				firstErr.CompareAndSwap(nil, &err)
-				csi.printf("%s: %s", query, err.Error())
+				err = fmt.Errorf("%s: %w", query, err)
 			}
-			return nil
+			return walk.add(err)
 		},
 		func(record responseChan) {
 			key := record.cardID + "|" + record.invEntry.OriginalID
@@ -387,13 +405,14 @@ func (csi *Sealed) scrapeBysets(ctx context.Context) error {
 		csi.printf,
 	)
 
+	err := walk.lostError(ctx, len(queries), "searches")
+	if err != nil {
+		return err
+	}
+
 	// Rows, not results: a game can have nothing in stock that resolves,
 	// but a refused search answers its form again with no rows at all.
 	if rows.Load() == 0 {
-		failed := firstErr.Load()
-		if failed != nil {
-			return fmt.Errorf("no products found in any search: %w", *failed)
-		}
 		return errors.New("no products found in any search")
 	}
 
@@ -436,31 +455,7 @@ func searchSealed(ctx context.Context, client *http.Client, shelf, query string)
 	v.Set("resultsPerPage", "25")
 	v.Set("submit", "Search")
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, csiSearchURL, strings.NewReader(v.Encode()))
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	doc, err := goquery.NewDocumentFromReader(bytes.NewReader(data))
-	if err != nil {
-		return nil, err
-	}
-
-	return &SearchResult{
-		NextLink: searchNextLink(doc),
-		Data:     data,
-	}, nil
+	return postSearch(ctx, client, v)
 }
 
 // processSealedSearch pages through one query's results, pricing every

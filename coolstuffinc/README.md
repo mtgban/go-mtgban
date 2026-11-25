@@ -63,6 +63,12 @@ Three feeds, all live.
   out. Lorcana's sealed carries no `ItemSet` facet at all, which is why the
   sealed search goes by name rather than by shelf.
 
+Every request the package makes (the search POSTs and pages, the edition
+lists, the Magic sealed pages and the buylist download) treats a non-2xx
+answer as an error (`checkStatus`). A retail walk that loses any edition,
+sealed query or page fails (`walkCount.lostError`), so a short inventory
+never replaces a full one.
+
 Retail (`preprocess()`, used by `retailMagic`) reads the shelf names
 `Ikoria: Lair of Behemoths: Variants`, `Portal 3 Kingdoms`, `Double Masters:
 Variants`, and `Dominaria United: Variants` through its generic wording,
