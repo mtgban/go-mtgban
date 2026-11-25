@@ -187,6 +187,21 @@ func tokenPairNumbers(number string) (n1, n2 string, ok bool) {
 	return "", "", false
 }
 
+// pairNumbered reports whether a token pairing's two faces carry the two
+// collector numbers, in either order.
+func pairNumbered(b *matcher.Backend, id, n1, n2 string) bool {
+	co, err := b.GetUUID(id)
+	if err != nil {
+		return false
+	}
+	partA, errA := b.GetUUID(co.Identifiers["tokenPairPartA"])
+	partB, errB := b.GetUUID(co.Identifiers["tokenPairPartB"])
+	if errA != nil || errB != nil {
+		return false
+	}
+	return (partA.Number == n1 && partB.Number == n2) || (partA.Number == n2 && partB.Number == n1)
+}
+
 // ctPairSeparatorRe matches the "//" between a two-sided pairing's faces,
 // tolerating Card Trader's own inconsistent spacing around it ("Hero //
 // Hero", but also "Thopter //Dog" on blueprint 276925).
@@ -196,6 +211,17 @@ var ctPairSeparatorRe = regexp.MustCompile(`\S\s*//\s*\S`)
 // Magic token pairing the way Card Trader's own Tokens category does.
 func isTwoSidedTokenBlueprint(bp *Blueprint, cardName string) bool {
 	return bp.CategoryID == CategoryMagicTokens && ctPairSeparatorRe.MatchString(cardName)
+}
+
+// ctPairName respells a pair name's separator, however Card Trader spaces
+// it, as the " // " magic.SplitTokenPairName cuts on.
+func ctPairName(name string) string {
+	loc := ctPairSeparatorRe.FindStringIndex(name)
+	if loc == nil {
+		return name
+	}
+	sep := loc[0] + strings.Index(name[loc[0]:loc[1]], "//")
+	return strings.TrimSpace(name[:sep]) + " // " + strings.TrimSpace(name[sep+2:])
 }
 
 // Preprocess turns a blueprint into the card description the matcher takes,
@@ -271,6 +297,8 @@ func Preprocess(b *matcher.Backend, bp *Blueprint) (*matcher.InputCard, error) {
 		// the first number names is not fixed across the shapes measured.
 		if n1, n2, ok := tokenPairNumbers(bp.Properties.Number); ok {
 			if tokenSet := magic.EditionTokenSetCode(b, edition); tokenSet != "" {
+				first, second := magic.SplitTokenPairName(ctPairName(cardName))
+				swapped := second + " // " + first
 				for _, number := range []string{n1, n2} {
 					if uuid := magic.MatchNativeTokenPair(b, tokenSet, number, cardName); uuid != "" {
 						if id, err := b.MatchID(uuid, false); err == nil {
@@ -285,6 +313,16 @@ func Preprocess(b *matcher.Backend, bp *Blueprint) (*matcher.InputCard, error) {
 								ID: id, Name: cardName, Edition: edition, Variation: bp.Version,
 							}, nil
 						}
+					}
+					// The number may be the second face's, which only that
+					// face can anchor; its partner is found by name, so the
+					// pairing must carry the other number too.
+					tcgID := magic.MatchTokenPairingBySetNumber(b, tokenSet, number, swapped, false)
+					id, err := b.MatchID(tcgID, false)
+					if tcgID != "" && err == nil && pairNumbered(b, id, n1, n2) {
+						return &matcher.InputCard{
+							ID: id, Name: cardName, Edition: edition, Variation: bp.Version,
+						}, nil
 					}
 				}
 			}

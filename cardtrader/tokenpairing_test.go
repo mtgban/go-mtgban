@@ -280,3 +280,73 @@ func TestProcessProductsSilencesForeignTokenPairing(t *testing.T) {
 		t.Errorf("logged %v for the Spanish listing, want silence: a foreign listing of a real derived pairing has no supported printing to land on, the same as the pairing's own English refusal case", logged)
 	}
 }
+
+// tokenBlueprint is a Magic token blueprint as FormatBlueprints leaves it.
+func tokenBlueprint(id int, name, edition, number, scryfallID string) Blueprint {
+	bp := Blueprint{ID: id, Name: name, CategoryID: CategoryMagicTokens, ScryfallID: scryfallID}
+	bp.Expansion.Name = edition
+	bp.Properties.Number = number
+	return bp
+}
+
+// TestPreprocessAnchorsTheSecondFaceNumber pins a two-sided token blueprint
+// whose collector number anchors only its second face: the pairing is the
+// one carrying both numbers, and a pairing that matches one number and the
+// partner's name alone is not it.
+func TestPreprocessAnchorsTheSecondFaceNumber(t *testing.T) {
+	b := realDatastore(t)
+
+	for _, tt := range []struct {
+		bp       Blueprint
+		wantName string
+		wantSet  string
+	}{
+		{
+			// Vanguard Suppressor #10 pairs with two Soldiers, so only
+			// Soldier #4 names one pairing.
+			bp:       tokenBlueprint(218243, "Vanguard Suppressor // Soldier", "Universes Beyond: Warhammer 40,000", "T10/4", "e5d319cb-4982-4fb9-93d4-1cc846b03c30"),
+			wantName: "Soldier // Vanguard Suppressor Token",
+			wantSet:  "T40K",
+		},
+		{
+			// The scryfall id names the Spirit, a face of neither.
+			bp:       tokenBlueprint(3610, "Soldier // Beast", "Archenemy: Nicol Bolas", "1/5", "5b2c2f3d-9489-4e7b-85e3-db1f2ee0f601"),
+			wantName: "Soldier // Beast",
+			wantSet:  "TE01",
+		},
+		{
+			bp:       tokenBlueprint(60562, "Goat // Food", "Throne of Eldraine Promos", "T01/15", ""),
+			wantName: "Goat // Food",
+			wantSet:  "TELD",
+		},
+		{
+			// Card Trader spaces this separator its own way.
+			bp:       tokenBlueprint(169067, "Icy Manalith //Dwarf Berserker", "Kaldheim Promos", "T 17/12", ""),
+			wantName: "Dwarf Berserker // Icy Manalith",
+			wantSet:  "TKHM",
+		},
+	} {
+		card, err := Preprocess(b, &tt.bp)
+		if err != nil {
+			t.Fatalf("Preprocess(%d) = %v", tt.bp.ID, err)
+		}
+		co, err := b.GetUUID(card.ID)
+		if err != nil {
+			t.Fatalf("blueprint %d: GetUUID(%q) = %v", tt.bp.ID, card.ID, err)
+		}
+		if co.Name != tt.wantName || co.SetCode != tt.wantSet || co.Identifiers["derivedTokenPair"] != "true" {
+			t.Errorf("blueprint %d resolved to %s %q, want the %s pairing %q", tt.bp.ID, co.SetCode, co.Name, tt.wantSet, tt.wantName)
+		}
+	}
+
+	// Cat #5 pairs with Elemental #24, not with the Elemental #25 quoted.
+	bp := tokenBlueprint(256138, "Elemental // Cat", "Commander Masters", "T 25/5", "")
+	bp.TCGplayerID = 510097
+	card, err := Preprocess(b, &bp)
+	if err == nil && card.ID != "" {
+		co, err := b.GetUUID(card.ID)
+		if err == nil && co.Identifiers["derivedTokenPair"] == "true" {
+			t.Errorf("blueprint %d resolved to %s %q #%s, want no pairing", bp.ID, co.SetCode, co.Name, co.Number)
+		}
+	}
+}
