@@ -1271,7 +1271,10 @@ func (ap *AllPrintings) newBackend() *matcher.Backend {
 
 		// Retrieve the best describing word for a commander set and save it for later reuse
 		if strings.HasSuffix(set.Name, "Commander") && !strings.Contains(set.Name, "Display") {
-			keyword := longestWordInEditionName(strings.TrimSuffix(set.Name, "Commander"))
+			keyword, found := commanderKeywords[set.Code]
+			if !found {
+				keyword = longestWordInEditionName(strings.TrimSuffix(set.Name, "Commander"))
+			}
 			commanderKeywordMap[keyword] = set.Name
 		}
 

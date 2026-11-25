@@ -70,3 +70,52 @@ func TestAliasEditionProjectsAdjustEdition(t *testing.T) {
 	}
 	t.Logf("projected %d editions", len(corpus))
 }
+
+// TestCommanderEditionLongestKeyword pins the set an edition holding several
+// commander keywords resolves to, over enough calls to see an unstable one.
+func TestCommanderEditionLongestKeyword(t *testing.T) {
+	b := &matcher.Backend{CommanderKeywordMap: map[string]string{
+		"Darkhold":     "Darkhold Destiny Commander",
+		"Eldraine":     "Wilds of Eldraine Commander",
+		"Horizons 3":   "Modern Horizons 3 Commander",
+		"Super Heroes": "Marvel Super Heroes Commander",
+		"Star Trek":    "Star Trek Commander",
+	}}
+	for _, tt := range []struct {
+		edition, want string
+	}{
+		{"Marvel Super Heroes: Darkhold Destiny Commander", "Marvel Super Heroes Commander"},
+		{"Marvel: Darkhold Destiny Commander", "Darkhold Destiny Commander"},
+		{"Marvel: Darkhold Destiny Commander Variants", "Darkhold Destiny Commander"},
+		{"Marvel Super Heroes Commander", "Marvel Super Heroes Commander"},
+		{"Modern Horizons 3 Commander: Variants", "Modern Horizons 3 Commander"},
+		{"Star Trek Commander", "Star Trek Commander"},
+		{"Eldraine Darkhold Commander", "Darkhold Destiny Commander"},
+	} {
+		for range 100 {
+			got := Rules{}.AliasEdition(b, tt.edition)
+			if got != tt.want {
+				t.Errorf("AliasEdition(%q) = %q, want %q", tt.edition, got, tt.want)
+				break
+			}
+		}
+	}
+}
+
+// TestCommanderKeywords pins the sets the loader finds by a phrase, which a
+// set sharing only their longest word does not answer to.
+func TestCommanderKeywords(t *testing.T) {
+	realDatastore(t)
+	for edition, want := range map[string]string{
+		"Commander: Modern Horizons 3": "Modern Horizons 3 Commander",
+		"Commander: Star Trek":         "Star Trek Commander",
+		"Super Heroes Commander":       "Marvel Super Heroes Commander",
+		"Jumpstart Commander":          "Jumpstart Commander",
+		"Modern Horizons Commander":    "Modern Horizons Commander",
+	} {
+		got := Rules{}.AliasEdition(testBackend, edition)
+		if got != want {
+			t.Errorf("AliasEdition(%q) = %q, want %q", edition, got, want)
+		}
+	}
+}
