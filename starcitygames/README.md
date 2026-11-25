@@ -65,10 +65,10 @@ genuinely different products.** A League Tokens promo carries the *set
 token's* Scryfall id, not its own. A Timeshifts retro-frame carries the
 original printing's id. An Ampersand embossed card and its plain promo-pack
 twin carry each other's. When that happens, both catalog products resolve to
-the same uuid, and `mtgban/base.go`'s `Add` used to keep whichever arrived
-with the higher price - silently, no error, no log line. A $0.29 token
-listing would carry a $34.99 promo's price, or vice versa, and nothing said
-so.
+the same uuid, and filing both with `mtgban/base.go`'s `Add` would keep the
+two prices side by side on one card - silently, no error, no log line. A
+$0.29 token listing would carry a $34.99 promo's price, or vice versa, and
+nothing would say so.
 
 **The fix is never "trust the vendor id less in general."** A vendor's id is
 theirs, and overriding one is a per-vendor, per-shape call, made after
@@ -154,7 +154,7 @@ which is which":
 |---|---|---|
 | `fabPlainSibling` | a non-`"Marvel"` rarity landing on the Marvel-tagged twin (nothing excluded it) | a **general rule** - `rarity != "Marvel"` excludes a `marvel`-promoType candidate. Scoped: surveyed the whole datastore, 36 `(set, number, foil)` keys hold both a Marvel and non-Marvel row, 32 clean |
 | `fabRenamedTwin` | SCG sends the same name for two *actually different cards* (English "Pleiades, Superstar" vs. the Maori printing, filed as "Hinewhitu, Hautipua" with the English name folded into a promo type) | closed table, one entry - surveyed for any other renamed pair, found none |
-| `fabCreditedTwin` | two artist-commissioned prints share a name once "(Marvel)" is folded in (Aurora ROS008) | closed table, keyed on `Artist` - a field `datastore-gen` only started publishing (see below); **the go-to move once a field exists that the catalog itself never will** |
+| `fabCreditedTwin` | two artist-commissioned prints share a name once "(Marvel)" is folded in (Aurora ROS008) | closed table, keyed on `Artist` - a field `datastore-gen` publishes; **the go-to move once a field exists that the catalog itself never will** |
 | `fabMarkedSibling` | a `fabVariantMarker`-suffixed set code (`SUP2`/`ROS2`/…, distinct from a lettered *number*) names a second printing at the same number, told apart only by a treatment the datastore carries in `PromoTypes` | reads the sibling directly, no table |
 
 And one **refusal** table: `fabDuplicateStock` - Sanctuary of Aria's `027a`
@@ -263,10 +263,10 @@ index-only ones that went to another year, player, half or finish.
 `mtgban.InventoryRecord`/`BuylistRecord.Add*` come in four strictness
 levels (`AddRelaxed` < `Add` < `AddStrict` < `AddUnique`). This scraper's
 **primary** records call `AddUnique`: a second entry at one card, one grade
-is this whole defect class's own signature, and it's now rare enough (post
+is this whole defect class's own signature, and it's rare enough (post
 `#572`, `#573`, `#574`, `#578`, `#582`) that refusing it loudly - one log
-line per run - beats letting the dearer one silently win, which is what
-`Add`/`AddStrict` used to do.
+line per run - beats filing both prices on one card silently, which is what
+`Add` does with two different prices.
 
 The **`_CC`-marked second-stock bucket** (`secondStock`, `bucketKey`,
 `secondBucketMarker`) is a genuinely different, already-correct mechanism -
@@ -277,11 +277,19 @@ everything but quantity, meant to be **summed**, not refused. It still calls
 written twice; an `AddUnique` refusal is two listings that shouldn't be one
 price.
 
-Switching to `AddUnique` was itself measured, not assumed safe - replayed
-the full catalog through the real production `Add` calls before and after,
-across all four games, checking the delta was small, expected, and
-attributable (mostly Magic's known-deprioritized double-faced-token
-collisions, already muted; a handful of genuine catches). See PR #578.
+`AddUnique` was measured, not assumed safe: the full catalog, replayed
+through the production `Add` calls with and without it across all four
+games, differs by a small set of entries, each attributable. See PR #578.
+
+Two kinds of entry are refused without that log line, by the `ignore` flag
+in `starcitygames.go`: World Championship sets, and any product
+whose name contains "Token". The flag hides every `Add` error on
+them, retail and buylist, a bad price as much as a duplicate. Most two-sided
+tokens land on a sheet of their own (see below), so the duplicates it
+hides are token products that still resolve to one card, such as a sheet that
+lands on one face beside that face's single. The second is still refused,
+only unreported. A token that resolves to nothing is quiet too, at the
+match step.
 
 ## Method - how to find and fix the next one
 
@@ -318,7 +326,7 @@ This is the actual repeatable process, extracted from doing it five times
    pattern keyed on sku, verified once by hand against the live page/index
    (`fabRenamedTwins`, `fabCreditedTwins`, `promoShelfPrintings`), or (b) if
    it's genuinely general and datastore-gen can be taught to carry the field
-   (as happened for FaB's `Artist`), the better fix is upstream - see next.
+   (as FaB's `Artist` is), the better fix is upstream.
 6. **Survey the blast radius before shipping either a rule or a table.**
    Every guard and steer above was sized this way: group the whole datastore
    by the shape the rule would key on, count how many `(set, number, foil)`
@@ -338,7 +346,7 @@ This is the actual repeatable process, extracted from doing it five times
    A wrong hand-typed fixture would test nothing; a copied one is the shape
    that actually broke.
 9. **If the fix depends on a datastore field this checkout might not have
-   yet** (a fresh `datastore-gen` field not yet republished - see Aurora),
+   yet** (a fresh `datastore-gen` field not yet republished),
    guard the test with a skip, not a hard failure: `requireCredit` mirrors
    `requireSibling` (already established for Lorcana). CI's `cache-*` jobs
    pull a **pre-built** datastore from `b2://mtgban-datastore/<game>/
@@ -384,17 +392,6 @@ Of the catalog's 3,915 two-sided Magic products, 3,662 land on their sheet
   "Thoper"), numbers in the other order from the names, a Guild Kit's
   single number, the Star Trek alt-foil numbering, or no face row at that
   number. Some of these are right (Guild Kit's own Soldier // Soldier).
-
-## Upstream, not scraper-side: left alone on purpose
-
-- **Aurora's artist field, until republished.** `fabCreditedTwin` reads
-  `Card.Artist`, which `datastore-gen@698813b` now populates for FaB and
-  `matcher/fleshandblood@4f21ab43` now reads - but CI's pinned datastore
-  is whatever's currently published to B2, and republishing that is
-  someone's deliberate call, not this scraper's. Until it happens, the
-  steer is a safe no-op (`Artist == ""` on both candidates never matches
-  `want`) and its test (`TestResolveFleshAndBloodCreditedTwins`) skips
-  rather than fails.
 
 ## Environment
 

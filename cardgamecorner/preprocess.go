@@ -794,7 +794,7 @@ func internalPreprocess(b *matcher.Backend, cardName, edition, variation, extra 
 		}
 	}
 
-	// The store now writes "(Version N)" into the name of the older sets'
+	// The store writes "(Version N)" into the name of the older sets'
 	// multi-art commons. It says that the card has more than one art, never
 	// which one, and yet it counts as a variation and skips everything
 	// below - taking with it the image name those editions are keyed on in

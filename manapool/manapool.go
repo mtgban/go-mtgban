@@ -101,23 +101,9 @@ func (mp *Manapool) price(pricelist []Product) {
 			}
 			continue
 		}
-		// A two-sided token sheet prints one physical card for a pairing
-		// matcher/magic may already carry a combined entity for. mtgjson
-		// already models some of these natively (one single entity of its
-		// own, its own name already "X // Y") - the plain resolution above
-		// is already correct for those, told apart by its own Name already
-		// containing " // ". For the rest, Mana Pool's own scryfall_id
-		// names Scryfall's single representative face, not a combined one,
-		// so the plain resolution above lands on that one face alone -
-		// resolve through the combined entity instead, by that same id
-		// plus the listing's own name (see magic.MatchTokenPairing, shared
-		// with cardkingdom's own version of this same problem), and refuse
-		// rather than keep the single-face result when no combined entity
-		// is on file: mtgjson's own tokenProducts feed simply has no
-		// record of every pairing a vendor sells (see matcher/magic's
-		// own datastore pairing data), and a listing whose own
-		// name says two faces is worth more than a single-face guess would
-		// silently be wrong for is worth refusing instead.
+		// A row with a scryfall_id of its own, unlike a sheet matched by its
+		// faces above, can name two faces and land on one: price it on the
+		// pairing, or not at all.
 		co, err := mp.backend.GetUUID(cardID)
 		if err != nil {
 			continue
@@ -125,11 +111,8 @@ func (mp *Manapool) price(pricelist []Product) {
 		if strings.Contains(card.Name, " // ") && !strings.Contains(co.Name, " // ") &&
 			isTokenSheet(mp.backend, co) {
 			cardID = ""
-			// MatchTokenPairing answers either with a bare derived-entity
-			// uuid (no usable TCGplayer id at all) or a raw TCGplayer
-			// product id (an ordinary derived pairing) - MatchID resolves
-			// either shape to the real uuid record() needs, the same way
-			// the plain path above already did.
+			// The pairing is a derived uuid or a TCGplayer product id, and
+			// MatchID reads both
 			if id := magic.MatchTokenPairing(mp.backend, card.ScryfallID, card.Name, foil); id != "" {
 				cardID, _ = mp.backend.MatchID(id, foil, etched)
 			}

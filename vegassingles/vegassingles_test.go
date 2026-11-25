@@ -59,9 +59,8 @@ func readFixture(t *testing.T, name string) []HLProduct {
 	return products
 }
 
-// TestMovedHostIsNamed pins the failure that left the buylist stale: the old
-// host redirected to a web page, and the run reported only that "<" was not
-// JSON.
+// TestMovedHostIsNamed pins that a host answering with a web page in place of
+// JSON is named in the error, not reported only as invalid JSON.
 func TestMovedHostIsNamed(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "text/html;charset=UTF-8")

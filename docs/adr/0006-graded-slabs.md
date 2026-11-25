@@ -118,8 +118,9 @@ as one slab, each in its own helper:
 - A grader outside the list is an unread slab, also at ABU, where a slab that
   names no grader at all is graded by its shelf condition.
 
-This replaces today's mix, where Card Kingdom, ABU and Hareruya drop such a
-slab and Cool Stuff Inc files it as a raw NM copy under CSIUnique.
+Card Kingdom, ABU, Hareruya, and CardTrader's singles publish such a slab
+this way. Cool Stuff Inc is the exception until its checklist item lands: it
+files one as a raw NM copy under CSIUnique.
 
 `add` gains one rule: an entry whose `Slab` has a non-empty `Grader` outside
 the list, or a non-zero `Score` that is not 1-10 in half steps, or that has a
