@@ -73,13 +73,9 @@ func TestAddCheapestKeepsTheLowerPrice(t *testing.T) {
 	}
 }
 
-// TestPriceResolvesTokenPairing pins a real listing resolving to the
-// combined entity matcher/magic derives for it (a real, usable
-// TCGplayer id in mtgjson's own tokenProducts feed), not the single face
-// Mana Pool's own scryfall_id names on its own: Squirrel // Starscape
-// Cleric (The Lost Caverns of Ixalan Commander) ships as one physical
-// card, but Mana Pool's scryfall_id for this listing is Scryfall's own id
-// for the Squirrel face alone.
+// TestPriceResolvesTokenPairing pins a row whose own scryfall_id names one
+// face of a sheet, the Squirrel of Squirrel // Starscape Cleric, landing on
+// the pairing matcher/magic derives for it.
 func TestPriceResolvesTokenPairing(t *testing.T) {
 	b := withMagic(t)
 
@@ -216,13 +212,9 @@ func TestPriceRefusesSheetWithNoPairing(t *testing.T) {
 	}
 }
 
-// TestPriceRefusesUnresolvedTokenPairing pins the reverse: Human // Food
-// (Throne of Eldraine) is a real, live Mana Pool listing whose scryfall_id
-// names Scryfall's own Human face alone, and mtgjson's own tokenProducts
-// feed has no entry linking Human to Food at all - the plain resolution
-// below would otherwise silently price this two-sided card as if it were
-// a plain Human, so it must produce no inventory entry rather than that
-// wrong one.
+// TestPriceRefusesUnresolvedTokenPairing pins the reverse: a Human // Food
+// row whose own scryfall_id names the Human alone, with no pairing in the
+// datastore, is not priced as a plain Human.
 func TestPriceRefusesUnresolvedTokenPairing(t *testing.T) {
 	b := withMagic(t)
 
@@ -242,7 +234,7 @@ func TestPriceRefusesUnresolvedTokenPairing(t *testing.T) {
 		t.Fatal("Human TELD #2 not present in this datastore")
 	}
 	if co, _ := b.GetUUID(single); co == nil || co.Name != "Human" {
-		t.Fatal("scryfall_id 94057dc6... no longer names a bare Human face in this datastore")
+		t.Fatal("scryfall_id 94057dc6... does not name a bare Human face in this datastore")
 	}
 
 	mp := NewScraper(b)

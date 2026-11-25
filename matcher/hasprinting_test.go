@@ -133,8 +133,8 @@ func oldHasPrinting(b *Backend, name, field, value string, editions ...string) b
 	return false
 }
 
-// The old scans made widely printed cards pathological: every printing
-// re-scanned a full set with two normalizations per card.
+// A widely printed card is the worst case for oldHasPrinting, which scans a
+// full set for every printing with two normalizations per card.
 func BenchmarkHasPrintingWide(b *testing.B) {
 	back := realDatastore(b)
 	b.Run("new", func(b *testing.B) {

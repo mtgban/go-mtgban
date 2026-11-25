@@ -84,30 +84,26 @@ listing naming none of those languages is `ErrUnsupported`.
 The buylist download is an 18MB+ uncompressed file, and the storefront
 truncates it mid-stream roughly one fetch in three: HTTP 200, a short body,
 no transport error - nothing notices until the JSON decode reports an
-unexpected EOF. This took four commits to get right, in order:
+unexpected EOF. Retrying the whole file is not enough, since three bad
+attempts in a row is a ~1-in-25 event, so three rules handle it:
 
-1. Retry the whole file on failure (original behaviour). Not enough: three
-   bad attempts in a row is a ~1-in-25 event and it reddened the Pokemon
-   CI job on 2026-09-09.
-2. **`fetchWhole`** (#547): the response honours `Range` and states
+1. **`fetchWhole`** (#547): the response honours `Range` and states
    `Content-Length`, so ask only for the missing bytes each pass, and stop
    when the body is whole or a pass adds nothing.
-3. **Stop resuming a body that stops growing** (6dcb7f68): a server that
+2. **Stop resuming a body that stops growing** (6dcb7f68): a server that
    will not honour `Range` re-answers 200 with the whole file from byte 0
    every time, which "adds" the same truncated length forever. Track the
    *longest* body any pass has held and stop when a pass does not beat it,
    not when the latest pass alone adds nothing.
-4. **Ask about the header before trusting it** (#548): `Content-Length`
+3. **Ask about the header before trusting it** (#548): `Content-Length`
    only means anything while the transport doesn't touch the body - ask
    for `identity` encoding explicitly (checked live: CSI serves this path
    uncompressed regardless of what's offered, though it gzips its PHP
    pages). A response with no length at all (`-1`, e.g. chunked) has
-   nothing to resume against and must be reported as a short read, not
-   silently accepted as the whole file - the old order did the latter,
-   which is a truncation with **no error**, worse than the one this
-   started from.
+   nothing to resume against and must be reported as a short read:
+   accepting it as the whole file is a truncation with **no error**.
 
-The fix works around what can be worked around: a chunked body that ends
+This works around what can be worked around: a chunked body that ends
 cleanly at the wrong byte is indistinguishable from a real end of stream,
 by construction.
 
@@ -116,17 +112,16 @@ by construction.
 A card the search lists on two shelves at once (the One Piece Heroines
 Edition card, filed both under its own set and a crossover promo shelf)
 arrives as the same offer twice: same url, same condition, same seller.
-`offerSeen`'s dedupe key used to be exactly that triple, and a product
+Url, condition, and seller are not enough to key `offerSeen` on: a product
 row's *other* offers - its foil, its graded copies, its first-edition
 run - are also filed at the same url and the same `NM` condition as the
-plain copy. So the dedupe silently ate them as "the same offer already
-seen": Magic's retail row count fell from 101,645 to 74,279 the day the
-dedupe landed, Lorcana's by 40%, Riftbound's by 24% (#555). The key now
-includes the **resolved card id** and the **offer row id**, not just
-url+condition+seller - an offer is the printing it resolved to, at its
-condition, from its seller, behind its url, on its row. The row id is what
-keeps two unique copies of one card (two "Only 1 In Stock Unique" rows on
-/p/92911, each at its own price) as two entries.
+plain copy, and that key drops them as "the same offer already seen" (a
+quarter of Magic's retail rows, 40% of Lorcana's, #555). The key also
+includes the **resolved card id** and the **offer row id**: an offer is
+the printing it resolved to, at its condition, from its seller,
+behind its url, on its row. The row id is what keeps two unique copies of
+one card (two "Only 1 In Stock Unique" rows on /p/92911, each at its own
+price) as two entries.
 
 ## Cross-cutting mechanics
 

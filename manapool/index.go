@@ -85,17 +85,9 @@ func (mp *Index) price(singles []Product) {
 				continue
 			}
 
-			// See manapool.go's own price() for why a two-sided token
-			// sheet needs magic.MatchTokenPairing tried next, and to
-			// refuse rather than keep the plain result when it finds
-			// nothing: Mana Pool's own scryfall_id for one of these
-			// names only one of the two faces (mtgjson's own already-
-			// combined native pairings are told apart by their own Name
-			// already containing " // ", and need no override), so the
-			// plain resolution above would otherwise silently price the
-			// whole two-sided card as if the other half did not exist,
-			// and not every such pairing is one mtgjson's own
-			// tokenProducts feed has a record of at all.
+			// As in Manapool.price: a row with a scryfall_id of its own that
+			// names two faces and lands on one is priced on the pairing, or
+			// not at all.
 			co, err := mp.backend.GetUUID(cardID)
 			if err != nil {
 				continue
@@ -103,10 +95,8 @@ func (mp *Index) price(singles []Product) {
 			if strings.Contains(card.Name, " // ") && !strings.Contains(co.Name, " // ") &&
 				isTokenSheet(mp.backend, co) {
 				cardID = ""
-				// MatchTokenPairing answers either with a bare derived-
-				// entity uuid or a raw TCGplayer product id - MatchID
-				// resolves either shape to the real uuid this needs, the
-				// same way the plain path above already did.
+				// The pairing is a derived uuid or a TCGplayer product id,
+				// and MatchID reads both
 				if id := magic.MatchTokenPairing(mp.backend, card.ScryfallID, card.Name, finish.foil); id != "" {
 					cardID, _ = mp.backend.MatchID(id, finish.foil)
 				}
