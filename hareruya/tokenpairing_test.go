@@ -151,3 +151,39 @@ func TestPreprocessReadsTokenSheetFromTitle(t *testing.T) {
 		}
 	}
 }
+
+// TestUnpairedTitleSheetIsNotPricedOnAFace pins a title naming two
+// different faces the datastore pairs nowhere: the card_name's one face is
+// not a price for it, while a sheet the datastore files as one two-faced
+// card ("Human // Wolf" of FNM) still is. The MOM row is a title row of
+// the storefront's shape for a sheet it stocks none of today.
+func TestUnpairedTitleSheetIsNotPricedOnAFace(t *testing.T) {
+	b := realDatastore(t)
+
+	for _, tt := range []struct {
+		product Product
+		want    string
+	}{
+		{Product{ProductName: "(014/015)《スピリット+戦士トークン/Spirit+Warrior Token》[MOM]", ProductNameEN: "(014/015)《Spirit+Warrior Token》[MOM]", CardName: "Spirit Token", Language: "2", FoilFlag: "0"}, ""},
+		{Product{Product: "29750", ProductName: "《人間+狼トークン/Human+Wolf Token》(FNM)[流星マーク]  白/緑", ProductNameEN: "《Human+Wolf Token》[FNM]", CardName: "Human+Wolf Token", Language: "2", FoilFlag: "0"}, "Human // Wolf"},
+	} {
+		out, err := Preprocess(b, tt.product)
+		if err != nil {
+			t.Errorf("Preprocess(%s) = %v", tt.product.ProductNameEN, err)
+			continue
+		}
+		cardID, err := b.Match(out)
+		if err != nil {
+			t.Errorf("Match(%s) = %v", tt.product.ProductNameEN, err)
+			continue
+		}
+		priced := pricesSheet(b, tt.product, cardID)
+		co, _ := b.GetUUID(cardID)
+		if tt.want == "" && priced {
+			t.Errorf("%s priced on %s, want it refused", tt.product.ProductNameEN, co)
+		}
+		if tt.want != "" && (!priced || co.Name != tt.want) {
+			t.Errorf("%s priced=%v on %s, want %s", tt.product.ProductNameEN, priced, co, tt.want)
+		}
+	}
+}

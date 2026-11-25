@@ -415,6 +415,10 @@ func (ha *Hareruya) walkSet(ctx context.Context, channel chan<- responseChan, ca
 				continue
 			}
 
+			if !pricesSheet(ha.backend, product, cardID) {
+				continue
+			}
+
 			for _, row := range listingsFor(product, lazyData) {
 				cond := row.Condition
 				price := row.Price * ha.exchangeRate
