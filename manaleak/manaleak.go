@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/mtgban/go-mtgban/matcher"
+	"github.com/mtgban/go-mtgban/matcher/magic"
 	"github.com/mtgban/go-mtgban/mtgban"
 )
 
@@ -187,7 +188,7 @@ func (ml *Manaleak) match(product MLProduct) (string, error) {
 		}
 		cardID, err := ml.backend.MatchID(ml.backend.ConvertID(guess.space, inputID), foil, etched)
 		if err == nil && (!guess.confirm || ml.nameAgrees(cardID, cardName)) {
-			return cardID, nil
+			return ml.sheetOfFace(cardID, cardName, foil, etched)
 		}
 	}
 
@@ -217,6 +218,31 @@ func (ml *Manaleak) match(product MLProduct) (string, error) {
 		return ml.inSibling(in, etched)
 	}
 	return ml.backend.Match(&in)
+}
+
+// sheetOfFace answers the pairing a two-sided token sheet was printed as when
+// its image names one face alone, as some of the storefront's sheets reuse a
+// single token's picture; any other card is answered as it is. A pairing on
+// file in another finish only refuses the row, since the face is not the sheet.
+func (ml *Manaleak) sheetOfFace(cardID, cardName string, foil, etched bool) (string, error) {
+	co, err := ml.backend.GetUUID(cardID)
+	if err != nil || !strings.Contains(cardName, " // ") || strings.Contains(co.Name, " // ") {
+		return cardID, nil
+	}
+	set, err := ml.backend.GetSet(co.SetCode)
+	if err != nil || set.Type != "token" {
+		return cardID, nil
+	}
+	scryfallID := co.Identifiers["scryfallId"]
+	id := magic.MatchTokenPairing(ml.backend, scryfallID, cardName, foil)
+	pairID, err := ml.backend.MatchID(id, foil, etched)
+	if err == nil {
+		return pairID, nil
+	}
+	if magic.MatchTokenPairing(ml.backend, scryfallID, cardName, false) != "" {
+		return "", matcher.ErrUnsupported
+	}
+	return cardID, nil
 }
 
 // inSibling settles a wording match for a row on one of a set's own promo
