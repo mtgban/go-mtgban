@@ -101,6 +101,18 @@ one their "(V.2)" names). `versionPrintings` names by product id the
 printings of the versions the id map does not place;
 `docs/agents/cardmarket-census/versions.md` has where each row comes from.
 
+**A two-sided token sheet lands on its pairing or nowhere.** A product
+named "{X Token} // {Y Token}" is placed by `pairAtFaces`: both faces by
+name at the product's numbers in the edition's token set, else one face so
+and the other among its pairings, else mtgjson's own combined token. A
+product that names two different tokens and would land on one face is
+refused, on the id-map route (`resolveMapped`) and the name route
+(`resolveMagic`) alike.
+
+**A foil-only product whose guide row carries plain prices** is named in
+`foilOnlyProducts`, and Index drops its plain columns. Elsewhere such a row
+is caught by its Trend of 0.
+
 The same drift reaches a product through the id map too: `resolveMapped`
 answers from the map's own uuids before `Fallback`'s mcmId route ever runs,
 so a map entry carrying one of these same wrong links used to price
