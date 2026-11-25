@@ -329,7 +329,26 @@ func Preprocess(b *matcher.Backend, product Product) (*matcher.InputCard, error)
 	// English and both real face names, which is what the "Token" gate
 	// below tells apart.
 	if strings.Contains(product.CardName, "Token") && strings.Contains(product.CardName, "/") {
-		return preprocessTokenPair(b, product)
+		return preprocessTokenPair(b, product, strings.Replace(product.CardName, "/", " // ", 1))
+	}
+	// The English title names both faces where the card_name can name one
+	// ("Cat Token" for "(015/016)《Cat+Soldier Token》[CMR]")
+	sheet := tokenSheet(product)
+	if sheet != "" {
+		out, err := preprocessTokenPair(b, product, sheet)
+		if err == nil {
+			return out, nil
+		}
+		// A pairing sold only in the other finish is still this sheet
+		other := product
+		other.FoilFlag = "1"
+		if product.FoilFlag == "1" {
+			other.FoilFlag = "0"
+		}
+		_, otherErr := preprocessTokenPair(b, other, sheet)
+		if otherErr == nil {
+			return nil, err
+		}
 	}
 
 	cardName := product.CardName
@@ -559,12 +578,7 @@ func Preprocess(b *matcher.Backend, product Product) (*matcher.InputCard, error)
 // ordinal, this is a real anchor; unlike Cool Stuff Inc's own feed, the set
 // code sits beside the number in the same field rather than in one of its
 // own.
-func preprocessTokenPair(b *matcher.Backend, product Product) (*matcher.InputCard, error) {
-	faces := strings.SplitN(product.CardName, "/", 2)
-	if len(faces) != 2 {
-		return nil, matcher.ErrUnsupported
-	}
-	listingName := faces[0] + " // " + faces[1]
+func preprocessTokenPair(b *matcher.Backend, product Product, listingName string) (*matcher.InputCard, error) {
 	foil := product.FoilFlag == "1"
 
 	setCode := ""
@@ -587,21 +601,125 @@ func preprocessTokenPair(b *matcher.Backend, product Product) (*matcher.InputCar
 			setCode = tokenSet
 		}
 		number, _, _ := splitParens(b, product.ProductName)
-		for _, n := range hareruyaTokenPairNumbers(number) {
+		numbers := hareruyaTokenPairNumbers(number)
+		for _, n := range numbers {
 			if uuid := magic.MatchNativeTokenPair(b, setCode, n, listingName); uuid != "" {
 				if id, err := b.MatchID(uuid, foil); err == nil {
 					return &matcher.InputCard{ID: id}, nil
 				}
 			}
 			if tcgID := magic.MatchTokenPairingBySetNumber(b, setCode, n, listingName, foil); tcgID != "" {
-				if id, err := b.MatchID(tcgID, foil); err == nil {
+				id, err := b.MatchID(tcgID, foil)
+				if err == nil && pairNumbered(b, id, numbers) {
 					return &matcher.InputCard{ID: id}, nil
 				}
+			}
+		}
+		// A face in several pairings with one partner name is anchored
+		// with its partner, each by its own number
+		pairID := pairByNumbers(b, setCode, listingName, numbers, foil)
+		if pairID != "" {
+			id, err := b.MatchID(pairID, foil)
+			if err == nil {
+				return &matcher.InputCard{ID: id}, nil
 			}
 		}
 	}
 
 	return nil, matcher.ErrUnsupported
+}
+
+// pairByNumbers returns the pairing of a sheet's two faces, each found by
+// its name at one of the two numbers, or "" where either face is missing.
+func pairByNumbers(b *matcher.Backend, setCode, listingName string, numbers []string, foil bool) string {
+	if len(numbers) != 2 {
+		return ""
+	}
+	first, second := magic.SplitTokenPairName(listingName)
+	for _, order := range [][2]string{{numbers[0], numbers[1]}, {numbers[1], numbers[0]}} {
+		faceA := faceAt(b, first, setCode, order[0])
+		faceB := faceAt(b, second, setCode, order[1])
+		if faceA == "" || faceB == "" {
+			continue
+		}
+		pairID := magic.MatchTokenPairingByUUIDs(b, faceA, faceB, foil)
+		if pairID != "" {
+			return pairID
+		}
+	}
+	return ""
+}
+
+// pairNumbered reports whether a pairing carries both numbers a listing
+// gives, where it gives two: the partner found by name alone can sit at
+// another number.
+func pairNumbered(b *matcher.Backend, id string, numbers []string) bool {
+	if len(numbers) != 2 {
+		return true
+	}
+	co, err := b.GetUUID(id)
+	if err != nil {
+		return false
+	}
+	before, after, _ := strings.Cut(co.Number, "//")
+	return (before == numbers[0] && after == numbers[1]) || (before == numbers[1] && after == numbers[0])
+}
+
+// faceAt returns the one printing named face at number in a set, or "".
+func faceAt(b *matcher.Backend, face, setCode, number string) string {
+	for _, name := range []string{magic.StripFaceWrapping(face), magic.CleanFaceName(face)} {
+		cards := b.MatchInSetNumber(name, setCode, number)
+		if len(cards) == 1 {
+			return cards[0].UUID
+		}
+	}
+	return ""
+}
+
+// sheetTitleTable maps the face names a sheet's title misspells onto the
+// datastore's
+var sheetTitleTable = map[string]string{
+	"Ob Nixilis Regnited": "Ob Nixilis Reignited",
+	"Sapoling":            "Saproling",
+}
+
+// tokenSheet returns the faces of the token sheet the English title names,
+// "Saproling Token // Garruk, Apex Predator Emblem" for "《Saproling
+// Token+Emblem Garruk, Apex Predator》", and "" where it names one card or
+// a split card.
+func tokenSheet(product Product) string {
+	m := reCardName.FindStringSubmatch(product.ProductNameEN)
+	if len(m) < 2 {
+		return ""
+	}
+	title := strings.Join(strings.Fields(m[1]), " ")
+	for typo, fixup := range sheetTitleTable {
+		title = strings.Replace(title, typo, fixup, 1)
+	}
+	if !strings.HasSuffix(strings.ToLower(title), " token") && !strings.Contains(title, "Emblem") {
+		return ""
+	}
+	first, second, found := strings.Cut(title, "+")
+	if !found || strings.Contains(second, "+") {
+		return ""
+	}
+	return tokenFace(first) + " // " + tokenFace(second)
+}
+
+// tokenFace spells one face of a sheet's title as the datastore names it:
+// "token" capitalized, an emblem's word last.
+func tokenFace(face string) string {
+	face = strings.TrimSpace(face)
+	if lower, found := strings.CutSuffix(face, " token"); found {
+		face = lower + " Token"
+	}
+	name, emblem := strings.CutPrefix(face, "Emblem ")
+	if !emblem {
+		return face
+	}
+	name = strings.TrimSuffix(name, " Token")
+	name = strings.TrimSuffix(strings.TrimPrefix(name, "("), ")")
+	return name + " Emblem"
 }
 
 // hareruyaTokenPairNumbers splits the storefront's own compound number
