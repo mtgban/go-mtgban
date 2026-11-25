@@ -114,8 +114,9 @@ func (mint *MTGMintCard) lumpedArts(card Card, theCard *matcher.InputCard, err e
 
 // sheetOf returns the two-sided sheet a listing names when its sku names
 // only one face of it, which the catalog does for older sheets whose
-// product id the datastore files on a face, and cardID otherwise. The face
-// anchors the pair, and the numbers in the name do where it cannot.
+// product id the datastore files on a face. The face anchors the pair, and
+// the numbers in the name do where it cannot. A sheet of two faces with no
+// pairing returns "", any other listing cardID.
 func (mint *MTGMintCard) sheetOf(cardID, cardName, finish, setCode string) string {
 	co, err := mint.backend.GetUUID(cardID)
 	if err != nil || co.Identifiers["derivedTokenPair"] == "true" || strings.Contains(co.Name, " // ") {
@@ -129,18 +130,19 @@ func (mint *MTGMintCard) sheetOf(cardID, cardName, finish, setCode string) strin
 	} else {
 		theCard, err = preprocessTokenPair(mint.backend, cardName, finish, setCode)
 	}
-	if err != nil {
-		return cardID
+	if err == nil {
+		pairID, err = mint.backend.Match(theCard)
 	}
-	pairID, err = mint.backend.Match(theCard)
-	if err != nil {
-		return cardID
+	if err == nil {
+		pair, err := mint.backend.GetUUID(pairID)
+		if err == nil && (pair.Identifiers["derivedTokenPair"] == "true" || strings.Contains(pair.Name, " // ")) {
+			return pairID
+		}
 	}
-	pair, err := mint.backend.GetUUID(pairID)
-	if err != nil || (pair.Identifiers["derivedTokenPair"] != "true" && !strings.Contains(pair.Name, " // ")) {
-		return cardID
+	if namesTwoFaces(cardName) {
+		return ""
 	}
-	return pairID
+	return cardID
 }
 
 func (mint *MTGMintCard) processEntry(sku2uuid map[int]string, card Card, condition, finish, language, edition, setCode, editionID string) {
@@ -164,6 +166,9 @@ func (mint *MTGMintCard) processEntry(sku2uuid map[int]string, card Card, condit
 	cardID, found := sku2uuid[card.TCGplayerID]
 	if found && namesTokenSheet(card.Name) {
 		cardID = mint.sheetOf(cardID, card.Name, finish, setCode)
+		if cardID == "" {
+			return
+		}
 	}
 	if !found {
 		theCard, err := preprocess(mint.backend, card.Name, card.Number, finish, language, edition, setCode)
