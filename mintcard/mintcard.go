@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/mtgban/go-mtgban/matcher"
+	"github.com/mtgban/go-mtgban/matcher/magic"
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/tcgplayer"
 
@@ -111,6 +112,37 @@ func (mint *MTGMintCard) lumpedArts(card Card, theCard *matcher.InputCard, err e
 	return true
 }
 
+// sheetOf returns the two-sided sheet a listing names when its sku names
+// only one face of it, which the catalog does for older sheets whose
+// product id the datastore files on a face, and cardID otherwise. The face
+// anchors the pair, and the numbers in the name do where it cannot.
+func (mint *MTGMintCard) sheetOf(cardID, cardName, finish, setCode string) string {
+	co, err := mint.backend.GetUUID(cardID)
+	if err != nil || co.Identifiers["derivedTokenPair"] == "true" || strings.Contains(co.Name, " // ") {
+		return cardID
+	}
+	foil := strings.Contains(finish, "Foil")
+	theCard := &matcher.InputCard{}
+	pairID := magic.MatchTokenPairing(mint.backend, co.Identifiers["scryfallId"], sheetName(cardName), foil)
+	if pairID != "" {
+		theCard.ID, err = mint.backend.MatchID(pairID, foil)
+	} else {
+		theCard, err = preprocessTokenPair(mint.backend, cardName, finish, setCode)
+	}
+	if err != nil {
+		return cardID
+	}
+	pairID, err = mint.backend.Match(theCard)
+	if err != nil {
+		return cardID
+	}
+	pair, err := mint.backend.GetUUID(pairID)
+	if err != nil || (pair.Identifiers["derivedTokenPair"] != "true" && !strings.Contains(pair.Name, " // ")) {
+		return cardID
+	}
+	return pairID
+}
+
 func (mint *MTGMintCard) processEntry(sku2uuid map[int]string, card Card, condition, finish, language, edition, setCode, editionID string) {
 	cond, err := mtgban.ParseCondition(condition)
 	if err != nil {
@@ -130,6 +162,9 @@ func (mint *MTGMintCard) processEntry(sku2uuid map[int]string, card Card, condit
 	}
 
 	cardID, found := sku2uuid[card.TCGplayerID]
+	if found && namesTokenSheet(card.Name) {
+		cardID = mint.sheetOf(cardID, card.Name, finish, setCode)
+	}
 	if !found {
 		theCard, err := preprocess(mint.backend, card.Name, card.Number, finish, language, edition, setCode)
 		if err != nil {

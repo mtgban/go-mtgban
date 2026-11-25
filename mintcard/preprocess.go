@@ -65,6 +65,14 @@ func preprocess(b *matcher.Backend, cardName, number, finish, langauge, edition,
 		cardName = "Double-Faced Substitute Card"
 		setCode = "S" + setCode
 	}
+	// A sheet's own name can open on its emblem face, which the refusal
+	// of emblems below must not reach
+	if namesTokenSheet(cardName) {
+		out, err := preprocessTokenPair(b, cardName, finish, setCode)
+		if err == nil || strings.Count(cardName, "Token") > 1 {
+			return out, err
+		}
+	}
 	// The inserts a booster carries beside its cards, and the emblems the
 	// datastore files with the tokens, have no printing of their own here.
 	// A name the datastore carries whole is a card whatever it says:
@@ -84,9 +92,6 @@ func preprocess(b *matcher.Backend, cardName, number, finish, langauge, edition,
 	// under its one Chinese key
 	if setCode == "4BB" && langauge == "S.Chinese" {
 		langauge = "Chinese Traditional"
-	}
-	if strings.Count(cardName, "Token") > 1 {
-		return preprocessTokenPair(b, cardName, finish, setCode)
 	}
 	if strings.Contains(cardName, "Complete") && strings.Contains(cardName, "Set") {
 		return nil, matcher.ErrUnsupported
@@ -214,6 +219,51 @@ func preprocess(b *matcher.Backend, cardName, number, finish, langauge, edition,
 	}, nil
 }
 
+// namesTokenSheet reports whether a listing names both faces of a
+// two-sided token sheet, "Dog Illusion Token (3/19) // Emblem Lolth, Spider
+// Queen (17/19)" among them: an emblem is a face too.
+func namesTokenSheet(cardName string) bool {
+	return strings.Contains(cardName, " // ") &&
+		(strings.Contains(cardName, "Token") || strings.Contains(cardName, "Emblem"))
+}
+
+// emblemLast spells an emblem face the way the datastore names it, the
+// word last: "Emblem Lolth, Spider Queen (17/19)" is "Lolth, Spider Queen
+// Emblem (17/19)".
+func emblemLast(face string) string {
+	name, found := strings.CutPrefix(strings.TrimSpace(face), "Emblem ")
+	if !found {
+		return face
+	}
+	name, number, numbered := strings.Cut(strings.TrimSpace(name), " (")
+	name = strings.TrimSuffix(name, " Token") + " Emblem"
+	if numbered {
+		name += " (" + number
+	}
+	return name
+}
+
+// sheetFaceTable maps the storefront's misspelled face names onto the
+// datastore's
+var sheetFaceTable = map[string]string{
+	"Pentavie Token":          "Pentavite Token",
+	"Tibalt, Cosmic Imposter": "Tibalt, Cosmic Impostor",
+}
+
+// sheetName spells a two-sided listing's faces the way the token pair
+// helpers read them.
+func sheetName(cardName string) string {
+	cardName = missingSpaceBeforeParen.ReplaceAllString(cardName, "$1 $2")
+	for typo, fixup := range sheetFaceTable {
+		cardName = strings.Replace(cardName, typo, fixup, 1)
+	}
+	first, second := magic.SplitTokenPairName(cardName)
+	if second == "" {
+		return cardName
+	}
+	return emblemLast(first) + " // " + emblemLast(second)
+}
+
 // tokenPairNumber matches the per-face number a two-sided token's own name
 // carries beside it. Most sets spell it "Bird Token (2/21) // Saproling
 // Token (16/21)" - Bird is C16's own token #2, Saproling its #16, the
@@ -233,14 +283,14 @@ var tokenPairNumber = regexp.MustCompile(`\((\d+)(?:/\d+)?\)`)
 var missingSpaceBeforeParen = regexp.MustCompile(`(\S)(\(\d+(?:/\d+)?\))`)
 
 // preprocessTokenPair resolves a two-sided token listing - one whose own
-// name carries "Token" twice, sku2uuid's own TCGplayer sku lookup already
-// having found nothing for it - to the combined entity matcher/magic
+// name names both faces, sku2uuid's own TCGplayer sku lookup having found
+// nothing for it or only one face - to the combined entity matcher/magic
 // derives for it, anchored by the catalog's own set code (setCode is
 // already the datastore's own code here, unlike the wording other vendors
 // give an edition) and each face's own number.
 func preprocessTokenPair(b *matcher.Backend, cardName, finish, setCode string) (*matcher.InputCard, error) {
 	foil := strings.Contains(finish, "Foil")
-	cardName = missingSpaceBeforeParen.ReplaceAllString(cardName, "$1 $2")
+	cardName = sheetName(cardName)
 
 	tokenSet := setCode
 	if resolved := magic.SetTokenSetCode(b, setCode); resolved != "" {
