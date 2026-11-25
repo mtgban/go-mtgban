@@ -273,16 +273,6 @@ func sheetName(cardName string) string {
 	return emblemLast(first) + " // " + emblemLast(second)
 }
 
-// tokenPairNumber matches the per-face number a two-sided token's own name
-// carries beside it. Most sets spell it "Bird Token (2/21) // Saproling
-// Token (16/21)" - Bird is C16's own token #2, Saproling its #16, the
-// denominator its sheet's own token count and no part of either real
-// number - but some ("Elephant Token (006) // Insect Token (007)", DFT)
-// give the number bare, zero-padded, with no denominator at all. Both
-// forms confirmed against real listings to agree with mtgjson's own token
-// numbering exactly.
-var tokenPairNumber = regexp.MustCompile(`\((\d+)(?:/\d+)?\)`)
-
 // missingSpaceBeforeParen matches some catalog rows (measured: Commander
 // 2014/2015) writing the number's own parenthetical straight against
 // "Token" with no space - "Spirit Token(22/24)" - which
@@ -306,18 +296,16 @@ func preprocessTokenPair(b *matcher.Backend, cardName, finish, setCode string) (
 		tokenSet = resolved
 	}
 
-	for _, m := range tokenPairNumber.FindAllStringSubmatch(cardName, -1) {
-		number := strings.TrimLeft(m[1], "0")
-		if number == "" {
-			continue
-		}
+	for _, number := range magic.ListedFaceNumbers(cardName) {
 		if uuid := magic.MatchNativeTokenPair(b, tokenSet, number, cardName); uuid != "" {
 			if id, err := b.MatchID(uuid, foil); err == nil {
 				return &matcher.InputCard{ID: id}, nil
 			}
 		}
 		if tcgID := magic.MatchTokenPairingBySetNumber(b, tokenSet, number, cardName, foil); tcgID != "" {
-			if id, err := b.MatchID(tcgID, foil); err == nil {
+			// The partner is found by name alone, so its number may differ
+			id, err := b.MatchID(tcgID, foil)
+			if err == nil && magic.TokenPairAgrees(b, id, cardName) {
 				return &matcher.InputCard{ID: id}, nil
 			}
 		}

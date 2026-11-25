@@ -225,3 +225,36 @@ func TestTwoFacedSheetWithNoPairingIsRefused(t *testing.T) {
 		}
 	}
 }
+
+// TestSheetOfOtherFacesIsRefused pins that a sheet goes unpriced when the
+// only pairing found holds a token the listing does not name, or a token of
+// the same name at another number.
+func TestSheetOfOtherFacesIsRefused(t *testing.T) {
+	b := realDatastore(t)
+
+	const neoSpirit = "af3f43ba-5ccd-5df8-bb7b-5b26307c67b1"
+	for _, tt := range []struct {
+		name, finish     string
+		face             string
+		edition, setCode string
+	}{
+		{"Samurai Token (1/19) // Treasure Token (17/19)", "Regular", neoSpirit, "Kamigawa: Neon Dynasty", "NEO"},
+		{"Spirit Token (2/19) // Treasure Token (18/19)", "Regular", neoSpirit, "Kamigawa: Neon Dynasty", "NEO"},
+		{"Bird Token (2/21) // Saproling Token (17/21)", "Regular", "", "Commander 2016", "C16"},
+		{"Clue Token (040) // Construct Token (042)", "Regular", "", "Commander Masters", "CMM"},
+		{"Tribble Token (Non-Foil) (02) // Clue Token (Surge Foil) (038)", "Foil", "", "Star Trek Commander", "TRC"},
+	} {
+		card := Card{ID: "1", Name: tt.name, Quantity: 1, Price: "0.49"}
+		sku2uuid := map[int]string{}
+		if tt.face != "" {
+			card.TCGplayerID = 1
+			sku2uuid[1] = tt.face
+		}
+		mint := NewScraper(b)
+		mint.processEntry(sku2uuid, card, "Mint", tt.finish, "English", tt.edition, tt.setCode, "")
+		for cardID := range mint.inventory {
+			co, _ := b.GetUUID(cardID)
+			t.Errorf("%q priced on %s %q #%s, want a refusal", tt.name, co.SetCode, co.Name, co.Number)
+		}
+	}
+}
