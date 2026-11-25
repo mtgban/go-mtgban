@@ -93,10 +93,9 @@ func TestPreprocessRefusesTokenPairingWithNoMTGJSONLink(t *testing.T) {
 }
 
 // TestPreprocessIgnoresSingleFacedToken pins that an ordinary single-faced
-// token name, which contains "Token" only once, is never routed through
-// the two-sided pairing path: the gate is strings.Count(cardName,
-// "Token") > 1, so a plain token keeps going through the ordinary
-// preprocess pipeline below.
+// token name, which names no second face, is never routed through the
+// two-sided pairing path: the gate is namesTokenSheet, so a plain token
+// keeps going through the ordinary preprocess pipeline below.
 func TestPreprocessIgnoresSingleFacedToken(t *testing.T) {
 	b := realDatastore(t)
 
@@ -133,5 +132,66 @@ func TestPreprocessTokenPairNeedsTheTokenSetWalk(t *testing.T) {
 	}
 	if co.Identifiers["derivedTokenPair"] != "true" {
 		t.Errorf("resolved to %q, want a derived token pairing", co.Name)
+	}
+}
+
+// TestPreprocessResolvesTokenEmblemSheet pins the sheets whose second face
+// is an emblem, which the listing spells word first and with "Token" once:
+// each lands on the pairing the datastore derives, misspellings and all.
+func TestPreprocessResolvesTokenEmblemSheet(t *testing.T) {
+	b := realDatastore(t)
+
+	for _, tt := range []struct {
+		name, finish, edition, setCode, want string
+	}{
+		{"Treasure Token (15/19) // Emblem Lolth, Spider Queen (17/19)", "Foil", "Adventures in the Forgotten Realms", "AFR", "Treasure // Lolth, Spider Queen Emblem"},
+		{"Emblem Wrenn and Six (24/24) // Spirit Token (8/24)", "Regular", "Double Masters 2022", "2X2", "Spirit // Wrenn and Six Emblem"},
+		{"Dwarf Berserker Token (12/23) // Emblem Tibalt, Cosmic Imposter (21/23)", "Foil", "Kaldheim", "KHM", "Dwarf Berserker // Tibalt, Cosmic Impostor Emblem"},
+	} {
+		out, err := preprocess(b, tt.name, "", tt.finish, "English", tt.edition, tt.setCode)
+		if err != nil {
+			t.Errorf("preprocess(%q) = %v", tt.name, err)
+			continue
+		}
+		co, err := b.GetUUID(out.ID)
+		if err != nil {
+			t.Errorf("GetUUID(%s) = %v", out.ID, err)
+			continue
+		}
+		if co.Identifiers["derivedTokenPair"] != "true" || co.Name != tt.want {
+			t.Errorf("preprocess(%q) resolved to %q, want the pairing %q", tt.name, co.Name, tt.want)
+		}
+	}
+}
+
+// TestProcessEntryMovesSkuFaceToSheet pins a sku the catalog resolves to
+// one face of the sheet it sells: the listing lands on the pairing.
+func TestProcessEntryMovesSkuFaceToSheet(t *testing.T) {
+	b := realDatastore(t)
+
+	for _, tt := range []struct {
+		card             Card
+		face             string
+		edition, setCode string
+		want             string
+	}{
+		{Card{ID: "738567", Name: "Spirit Token (2/19) // Treasure Token (17/19)", Quantity: 1, Price: "0.49", TCGplayerID: 5434620}, "af3f43ba-5ccd-5df8-bb7b-5b26307c67b1", "Kamigawa: Neon Dynasty", "NEO", "Spirit // Treasure"},
+	} {
+		mint := NewScraper(b)
+		mint.processEntry(map[int]string{tt.card.TCGplayerID: tt.face}, tt.card, "Mint", "Regular", "English", tt.edition, tt.setCode, "")
+		if len(mint.inventory) != 1 {
+			t.Errorf("%q priced on %d cards, want 1", tt.card.Name, len(mint.inventory))
+			continue
+		}
+		for cardID := range mint.inventory {
+			co, err := b.GetUUID(cardID)
+			if err != nil {
+				t.Errorf("GetUUID(%s) = %v", cardID, err)
+				continue
+			}
+			if co.Identifiers["derivedTokenPair"] != "true" || co.Name != tt.want {
+				t.Errorf("%q priced on %q, want the pairing %q", tt.card.Name, co.Name, tt.want)
+			}
+		}
 	}
 }
