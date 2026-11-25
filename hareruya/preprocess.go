@@ -706,6 +706,27 @@ func tokenSheet(product Product) string {
 	return tokenFace(first) + " // " + tokenFace(second)
 }
 
+// namesTwoFaces reports whether a sheet names two different faces, which
+// only a two-faced card prices: a token backed by itself or by a greeting
+// is that token.
+func namesTwoFaces(sheet string) bool {
+	first, second := magic.SplitTokenPairName(sheet)
+	normA, normB := magic.NormalizeTokenFace(first), magic.NormalizeTokenFace(second)
+	return normA != normB && normA != "" && normB != "" && !strings.HasPrefix(normB, "(")
+}
+
+// pricesSheet reports whether cardID may price a listing: a title naming
+// two different faces is priced on a two-faced card, the pairing or one
+// the datastore files whole ("Human // Wolf" of FNM), never on one face.
+func pricesSheet(b *matcher.Backend, product Product, cardID string) bool {
+	sheet := tokenSheet(product)
+	if sheet == "" || !namesTwoFaces(sheet) {
+		return true
+	}
+	co, err := b.GetUUID(cardID)
+	return err == nil && strings.Contains(co.Name, " // ")
+}
+
 // tokenFace spells one face of a sheet's title as the datastore names it:
 // "token" capitalized, an emblem's word last.
 func tokenFace(face string) string {
