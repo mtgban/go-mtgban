@@ -458,7 +458,7 @@ func retailOnePiece(csi *Coolstuffinc, l sellListing) (*matcher.InputCard, strin
 	cardID = onePieceRefined(b, cardID, theCard.Edition, l.name, l.notes)
 	// A slab's finish, or a named printing's, is not told by the
 	// foil prefix, and a product id names its own printing.
-	if !l.foil && !l.graded && !l.slabbed && l.printing == "" && theCard.ID == "" {
+	if !l.foil && !l.oneOff && l.printing == "" && theCard.ID == "" {
 		cardID = onePieceNonfoilPrinting(b, cardID)
 	}
 	return theCard, cardID, nil

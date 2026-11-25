@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"html"
+	"math"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -386,21 +387,21 @@ func conditionPrinting(conditions string) string {
 	return ""
 }
 
-// gradedMarkers are the wordings a row carries when the copy is not being
-// sold at a condition tier: a slab named for the service that graded it, the
-// one-off the storefront files as unique, or the printing a single copy is
-// when it is sold on another printing's product - the shadowless Venusaur
-// offered on the unlimited Venusaur's page, at three times what the copy
-// beside it costs. None of those is a condition and none of their prices is
-// the card's, so such a row is published as its own seller rather than
-// beside the ordinary copies.
-var gradedMarkers = []string{"BGS", "PSA", "CGC", "TAG", "Non-Foil", "Unique", "Shadowless", "No Set Symbol"}
+// uniqueMarkers are the wordings a row carries when the copy is not being
+// sold at a condition tier, nor in a grading service's slab: the one-off the
+// storefront files as unique, or the printing a single copy is when it is
+// sold on another printing's product - the shadowless Venusaur offered on
+// the unlimited Venusaur's page, at three times what the copy beside it
+// costs. None of those is a condition and none of their prices is the
+// card's, so such a row is published as its own seller rather than beside
+// the ordinary copies.
+var uniqueMarkers = []string{"Non-Foil", "Unique", "Shadowless", "No Set Symbol"}
 
-// isGraded reports whether the condition wording names one of those rather
+// isUnique reports whether the condition wording names one of those rather
 // than a condition. A wording it does not know is refused by the condition
-// parser, which says so, so a new grading service costs a line here.
-func isGraded(conditions string) bool {
-	for _, marker := range gradedMarkers {
+// parser, which says so, so a new one costs a line here.
+func isUnique(conditions string) bool {
+	for _, marker := range uniqueMarkers {
 		if strings.Contains(conditions, marker) {
 			return true
 		}
@@ -408,22 +409,59 @@ func isGraded(conditions string) bool {
 	return false
 }
 
-// reSlab reads a slab's grader and score off the condition wording
-// ("PSA 10  PSA 10 ").
-var reSlab = regexp.MustCompile(`^(PSA|BGS|CGC) (\d+(?:\.\d+)?)\b`)
+// reSlab reads a slab's grader, and the score and words after it, off the
+// condition wording ("PSA 10", "PRE-ERRATA BGS 10"). SGC and ARS are graders
+// no Slab names yet, read so their slabs are published unread rather than
+// dropped.
+var reSlab = regexp.MustCompile(`\b(PSA|BGS|CGC|TAG|SGC|ARS)(\d.*|\s.*)?$`)
 
-// slabCondition grades a slab by its score, and reports false for any other
-// wording, or a score the grade table does not hold.
-func slabCondition(conditions string) (mtgban.Condition, bool) {
-	match := reSlab.FindStringSubmatch(strings.TrimPrefix(conditions, "Foil "))
+// slabCondition reads a slab off the condition wording and grades it by its
+// score: one between two half steps, or past the 10, is the one below, and
+// the words beside it are the label, less the printing they name. A scored
+// TAG slab is NM, TAG having no grade table. A slab it cannot read is NM, an
+// UnreadSlab, with its wording returned to log; that is "" for any other. A
+// wording naming no grader answers a nil slab.
+func slabCondition(conditions string) (mtgban.Condition, *mtgban.Slab, string) {
+	// The row writes the wording twice, a non-breaking space between.
+	wording, _, _ := strings.Cut(conditions, "\u00a0")
+	wording = strings.TrimSpace(wording)
+	match := reSlab.FindStringSubmatch(wording)
 	if match == nil {
-		return "", false
+		return "", nil, ""
 	}
-	score, err := strconv.ParseFloat(match[2], 64)
-	if err != nil {
-		return "", false
+
+	slab := &mtgban.Slab{Grader: match[1]}
+	rest := match[2]
+	for marker := range conditionPrintings {
+		rest = strings.ReplaceAll(rest, marker, "")
 	}
-	return mtgban.Slab{Grader: match[1], Score: score}.Fold()
+	var label []string
+	for field := range strings.FieldsSeq(rest) {
+		score, err := strconv.ParseFloat(field, 64)
+		if err == nil && slab.Score == 0 && score >= 1 && score < 11 {
+			slab.Score = min(math.Floor(score*2)/2, 10)
+			continue
+		}
+		label = append(label, field)
+	}
+	slab.Label = strings.Join(label, " ")
+	// CGC Pristine is a 10 whether or not the wording says so
+	if slab.Grader == "CGC" && slab.Score == 0 && slab.Label == "Pristine" {
+		slab.Score = 10
+	}
+	// BGS Quad 10, four 10 subgrades, is a Black Label
+	if slab.Grader == "BGS" && slab.Score == 10 && slab.Label == "Quad" {
+		slab.Label = "Black Label"
+	}
+
+	grade, found := slab.Fold()
+	if found {
+		return grade, slab, ""
+	}
+	if slab.Grader == "TAG" && slab.Score > 0 {
+		return mtgban.NM, slab, ""
+	}
+	return mtgban.NM, mtgban.UnreadSlab(match[1], wording), wording
 }
 
 // bundleRe matches the wording of the bundle promotion, whatever count it
@@ -461,8 +499,9 @@ type sellListing struct {
 	// finishes it says the copy is sold in.
 	printing string
 	run      []string
-	graded   bool
-	slabbed  bool
+
+	// oneOff is a slab, or a copy isUnique names.
+	oneOff bool
 }
 
 // retailResolvers names the printing an offer of each game is. A skipped
@@ -564,7 +603,6 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 
 			s.Find(`div[itemprop="offers"]`).Each(func(i int, se *goquery.Selection) {
 				var relaxed bool
-				var graded bool
 				fullRow := strings.TrimSpace(se.Text())
 
 				switch {
@@ -598,13 +636,13 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 
 				isFoil := strings.HasPrefix(conditions, "Foil")
 
-				slabGrade, slabbed := slabCondition(conditions)
-				// Read ahead of the graded rule, which drops the wording: a
+				slabGrade, slab, unread := slabCondition(conditions)
+				oneOff := slab != nil || isUnique(conditions)
+				// Read ahead of the one-off rule, which drops the wording: a
 				// slab names its printing too ("PSA 9 Pokemon Center").
 				printing := conditionPrinting(conditions)
-				if isGraded(conditions) {
+				if oneOff {
 					conditions = "Near Mint"
-					graded = true
 				}
 
 				if printing != "" {
@@ -668,8 +706,7 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 					foil:     isFoil,
 					printing: printing,
 					run:      runFinishes,
-					graded:   graded,
-					slabbed:  slabbed,
+					oneOff:   oneOff,
 				})
 				if errors.Is(err, matcher.ErrUnsupported) {
 					return
@@ -708,13 +745,17 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 						InstanceID: offerRowID(se),
 						SellerName: availableMarketNames[0],
 					},
-					relaxed: relaxed || graded,
+					relaxed: relaxed || oneOff,
 				}
 
-				if slabbed {
+				if slab != nil {
+					if unread != "" {
+						csi.printf(mtgban.UnreadSlabFormat, unread)
+					}
 					out.invEntry.Conditions = slabGrade
+					out.invEntry.Slab = slab
 					out.invEntry.SellerName = availableMarketNames[2]
-				} else if graded {
+				} else if oneOff {
 					out.invEntry.SellerName = availableMarketNames[1]
 				}
 				results <- out
@@ -1049,6 +1090,7 @@ func (csi *Coolstuffinc) InfoForScraper(name string) mtgban.ScraperInfo {
 	info := csi.Info()
 	info.Name = name
 	info.Shorthand = name2shorthand[name]
+	info.GradedMode = name == availableMarketNames[2]
 	return info
 }
 

@@ -105,8 +105,8 @@ seller, with a `Slab` holding what could be read and the store's wording in
 `Label`; a grader outside the list leaves `Grader` empty. The scraper logs it
 loudly with that wording (`unsupported slab "SGC 10", published as NM`). The
 listing is not lost while support for a new grader is added, and the log
-line is what says it is due. Card Kingdom, ABU and Hareruya read one wording
-as one slab, each in its own helper:
+line is what says it is due. Card Kingdom, ABU, Cool Stuff Inc and Hareruya
+read one wording as one slab, each in its own helper:
 
 - One field is the score, rounded down to a half step and held at 10 (11 and
   up is a typo); the rest of the wording is the label.
@@ -118,9 +118,8 @@ as one slab, each in its own helper:
 - A grader outside the list is an unread slab, also at ABU, where a slab that
   names no grader at all is graded by its shelf condition.
 
-Card Kingdom, ABU, Hareruya, and CardTrader's singles publish such a slab
-this way. Cool Stuff Inc is the exception until its checklist item lands: it
-files one as a raw NM copy under CSIUnique.
+Card Kingdom, ABU, Cool Stuff Inc, Hareruya, and CardTrader's singles publish
+such a slab this way.
 
 `add` gains one rule: an entry whose `Slab` has a non-empty `Grader` outside
 the list, or a non-zero `Score` that is not 1-10 in half steps, or that has a
@@ -274,7 +273,7 @@ lands beside it.
 - [x] go-mtgban: Card Kingdom, ABU, and Hareruya set `Slab` and `GradedMode`,
       and publish an unread slab as NM with a loud log; Card Kingdom sets
       `InstanceID`.
-- [ ] go-mtgban: Cool Stuff Inc does the same; its slabs all move to
+- [x] go-mtgban: Cool Stuff Inc does the same; its slabs all move to
       CSIGraded.
 - [x] go-mtgban: `cardtrader_sealed` skips graded products.
 - [x] go-mtgban: CardTrader graded singles, once a raw record shows what the

@@ -140,55 +140,135 @@ func TestBuylistYuGiOhNamesTheRarity(t *testing.T) {
 	}
 }
 
-// TestIsGraded pins which wordings mean the copy is not being sold at a
-// condition tier. One Piece sells PSA slabs, which the condition parser
-// refuses outright, so a slab not caught here is dropped rather than priced.
-func TestIsGraded(t *testing.T) {
+// TestIsUnique pins which wordings mean the copy is not being sold at a
+// condition tier, and that a slab is not one of them.
+func TestIsUnique(t *testing.T) {
 	for _, tt := range []struct {
 		conditions string
 		want       bool
 	}{
-		// The storefront repeats the wording in the row it is read from.
-		{"PSA 10  PSA 10 ", true},
-		{"BGS 9.5", true},
-		{"Unique", true},
+		{"Unique \u00a0See image for details.\u00a0", true},
 		{"Non-Foil", true},
+		{"PSA 10 \u00a0PSA 10\u00a0", false},
 		{"Near Mint", false},
 		{"Foil Near Mint", false},
 		{"Played", false},
 		{"", false},
 	} {
 		t.Run(tt.conditions, func(t *testing.T) {
-			if got := isGraded(tt.conditions); got != tt.want {
-				t.Errorf("isGraded(%q) = %v, want %v", tt.conditions, got, tt.want)
+			got := isUnique(tt.conditions)
+			if got != tt.want {
+				t.Errorf("isUnique(%q) = %v, want %v", tt.conditions, got, tt.want)
 			}
 		})
 	}
 }
 
-// TestSlabCondition pins that a slab grades by its score, read off the
-// storefront's own rows, and that every other graded wording does not.
+// TestSlabCondition pins how a slab is read off the storefront's own rows,
+// that one it cannot read is kept as NM, and that any other wording is raw.
 func TestSlabCondition(t *testing.T) {
+	type slab = mtgban.Slab
 	for _, tt := range []struct {
 		fullRow string
 		want    mtgban.Condition
-		slabbed bool
+		slab    *mtgban.Slab
+		unread  string
 	}{
-		{"1 PSA 10 \u00a0PSA 10\u00a0$299.99Add to Cart", mtgban.NM, true},
-		{"1 BGS 8.5 \u00a0BGS 8.5\u00a0$149.99Add to Cart", mtgban.SP, true},
-		{"1 BGS 9.5 \u00a0BGS 9.5\u00a0Was $349.99 Sale $314.99Add to Cart", mtgban.NM, true},
-		{"1 CGC 8.5 \u00a0CGC 8.5\u00a0$24.99Add to Cart", mtgban.NM, true},
-		{"1 PSA 9 Pokemon Center \u00a0PSA 9 Pokemon Center\u00a0$299.99Add to Cart", mtgban.NM, true},
-		{"1 TAG 10 \u00a0TAG 10\u00a0$99.99Add to Cart", "", false},
-		{"1 Unique See image for details. $59.99Add to Cart", "", false},
-		{"1 Near Mint $9.99Add to Cart", "", false},
+		{"1 PSA 10 \u00a0PSA 10\u00a0$299.99Add to Cart", mtgban.NM, &slab{Grader: "PSA", Score: 10}, ""},
+		{"1 BGS 8.5 \u00a0BGS 8.5\u00a0$149.99Add to Cart", mtgban.SP, &slab{Grader: "BGS", Score: 8.5}, ""},
+		{"1 BGS 9.5 \u00a0BGS 9.5\u00a0Was\u00a0$349.99 Sale $314.99Add to Cart", mtgban.NM, &slab{Grader: "BGS", Score: 9.5}, ""},
+		{"1 CGC 8.5 \u00a0CGC 8.5\u00a0$24.99Add to Cart", mtgban.NM, &slab{Grader: "CGC", Score: 8.5}, ""},
+		{"1 CGC 10 Pristine \u00a0CGC 10 Pristine\u00a0$99.99Add to Cart", mtgban.NM, &slab{Grader: "CGC", Score: 10, Label: "Pristine"}, ""},
+		{"1 PSA 9 Pokemon Center \u00a0PSA 9 Pokemon Center\u00a0$299.99Add to Cart", mtgban.NM, &slab{Grader: "PSA", Score: 9}, ""},
+		{"1 PRE-ERRATA BGS 10 \u00a0PRE-ERRATA BGS 10\u00a0$299.99Add to Cart", mtgban.NM, &slab{Grader: "BGS", Score: 10}, ""},
+		{"1 TAG 10 \u00a0TAG 10\u00a0Was\u00a0$99.99 Sale $89.99Add to Cart", mtgban.NM, &slab{Grader: "TAG", Score: 10}, ""},
+
+		// Wordings other stores print, which the storefront has not yet
+		{"1 CGC Pristine \u00a0CGC Pristine\u00a0$99.99Add to Cart", mtgban.NM, &slab{Grader: "CGC", Score: 10, Label: "Pristine"}, ""},
+		{"1 BGS Quad 10 \u00a0BGS Quad 10\u00a0$99.99Add to Cart", mtgban.NM, &slab{Grader: "BGS", Score: 10, Label: "Black Label"}, ""},
+		{"1 PSA Authentic \u00a0PSA Authentic\u00a0$99.99Add to Cart", mtgban.NM, &slab{Grader: "PSA", Label: "PSA Authentic"}, "PSA Authentic"},
+		{"1 TAG \u00a0TAG\u00a0$99.99Add to Cart", mtgban.NM, &slab{Grader: "TAG", Label: "TAG"}, "TAG"},
+		{"1 SGC 10 \u00a0SGC 10\u00a0$99.99Add to Cart", mtgban.NM, &slab{Label: "SGC 10"}, "SGC 10"},
+
+		{"1 Unique \u00a0See image for details.\u00a0$59.99Add to Cart", "", nil, ""},
+		{"1 PRE-ERRATA \u00a0PRE-ERRATA\u00a0$59.99Add to Cart", "", nil, ""},
+		{"1 Near Mint $9.99Add to Cart", "", nil, ""},
 	} {
 		t.Run(tt.fullRow, func(t *testing.T) {
-			got, slabbed := slabCondition(offerCondition(tt.fullRow, "1", ""))
-			if got != tt.want || slabbed != tt.slabbed {
-				t.Errorf("slabCondition(%q) = %q, %v; want %q, %v", tt.fullRow, got, slabbed, tt.want, tt.slabbed)
+			got, read, unread := slabCondition(offerCondition(tt.fullRow, "1", ""))
+			same := (read == nil) == (tt.slab == nil)
+			if same && read != nil {
+				same = *read == *tt.slab
+			}
+			if got != tt.want || !same || unread != tt.unread {
+				t.Errorf("slabCondition(%q) = %q, %+v, %q; want %q, %+v, %q", tt.fullRow, got, read, unread, tt.want, tt.slab, tt.unread)
 			}
 		})
+	}
+}
+
+// TestGradedMode pins that only the graded sub-seller is flagged as one.
+func TestGradedMode(t *testing.T) {
+	csi, err := NewScraper(&matcher.Backend{Game: matcher.GameMagic})
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range csi.MarketNames() {
+		info := csi.InfoForScraper(name)
+		if info.GradedMode != (name == "Cool Stuff Inc Graded") {
+			t.Errorf("InfoForScraper(%q).GradedMode = %v", name, info.GradedMode)
+		}
+	}
+}
+
+// TestGradedSeller walks a listing's plain, printing, unique and slab rows:
+// slabs land on the graded seller only, each with its Slab, and one that
+// cannot be read is published there as NM and logged.
+func TestGradedSeller(t *testing.T) {
+	b := readGameDatastore(t, "onepiece", "ONEPIECE_PATH")
+	csi, err := NewScraper(b)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var unread []string
+	csi.logCallback = func(format string, a ...any) {
+		if strings.HasSuffix(format, mtgban.UnreadSlabFormat) {
+			unread = append(unread, fmt.Sprint(a...))
+		}
+	}
+	searchFixture(t, "testdata/onepiece_graded_search.html")
+
+	type want struct {
+		seller string
+		slab   mtgban.Slab
+	}
+	wants := map[string]want{
+		"8404234":  {"Cool Stuff Inc", mtgban.Slab{}},
+		"10776981": {"Cool Stuff Inc", mtgban.Slab{}},
+		"12598564": {"Cool Stuff Inc Graded", mtgban.Slab{Grader: "BGS", Score: 10}},
+		"4":        {"Cool Stuff Inc (unique)", mtgban.Slab{}},
+		"5":        {"Cool Stuff Inc Graded", mtgban.Slab{Grader: "PSA", Label: "PSA Authentic"}},
+	}
+	got := searchResults(t, csi, "OP01 - Romance Dawn")
+	if len(got) != len(wants) {
+		t.Errorf("sent %d offers, want %d", len(got), len(wants))
+	}
+	for _, r := range got {
+		entry := r.invEntry
+		w := wants[entry.InstanceID]
+		var slab mtgban.Slab
+		if entry.Slab != nil {
+			slab = *entry.Slab
+		}
+		if entry.SellerName != w.seller || entry.Conditions != mtgban.NM || slab != w.slab {
+			t.Errorf("%s = %s %s %+v, want %s NM %+v", entry.InstanceID, entry.SellerName, entry.Conditions, slab, w.seller, w.slab)
+		}
+		if (entry.Slab != nil) != csi.InfoForScraper(entry.SellerName).GradedMode {
+			t.Errorf("%s in %s with slab %+v", entry.InstanceID, entry.SellerName, entry.Slab)
+		}
+	}
+	if !slices.Equal(unread, []string{"PSA Authentic"}) {
+		t.Errorf("logged unread slabs %q", unread)
 	}
 }
 
@@ -207,8 +287,10 @@ func TestMarketNamesCarryTheGradedSeller(t *testing.T) {
 				t.Fatalf("NewScraper(%q) = %v", game, err)
 			}
 			names := csi.MarketNames()
-			if !slices.Contains(names, "Cool Stuff Inc (unique)") {
-				t.Errorf("MarketNames() = %v, want the graded seller among them", names)
+			for _, want := range []string{"Cool Stuff Inc (unique)", "Cool Stuff Inc Graded"} {
+				if !slices.Contains(names, want) {
+					t.Errorf("MarketNames() = %v, want %q among them", names, want)
+				}
 			}
 		})
 	}
@@ -273,25 +355,25 @@ func TestIsSkippedCondition(t *testing.T) {
 	}
 }
 
-// TestIsGradedTakesTheSingleCopyPrintings pins the copies a storefront sells
+// TestIsUniqueTakesTheSingleCopyPrintings pins the copies a storefront sells
 // on another printing's product. The shadowless Venusaur is offered on the
 // unlimited Venusaur's page at $299.99 beside a $99.99 unique copy, so its
 // price is not the product's and must not sit with the ordinary conditions.
-func TestIsGradedTakesTheSingleCopyPrintings(t *testing.T) {
+func TestIsUniqueTakesTheSingleCopyPrintings(t *testing.T) {
 	for _, conditions := range []string{
 		"Shadowless  Shadowless ",
 		"No Set Symbol  No Set Symbol ",
 	} {
 		t.Run(conditions, func(t *testing.T) {
-			if !isGraded(conditions) {
-				t.Errorf("isGraded(%q) = false, want true", conditions)
+			if !isUnique(conditions) {
+				t.Errorf("isUnique(%q) = false, want true", conditions)
 			}
 		})
 	}
 	for _, conditions := range []string{"Near Mint", "Foil Near Mint", "Played"} {
 		t.Run(conditions, func(t *testing.T) {
-			if isGraded(conditions) {
-				t.Errorf("isGraded(%q) = true, want false", conditions)
+			if isUnique(conditions) {
+				t.Errorf("isUnique(%q) = true, want false", conditions)
 			}
 		})
 	}
