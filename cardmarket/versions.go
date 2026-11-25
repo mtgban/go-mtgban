@@ -434,6 +434,12 @@ var etchedPrintings = map[int]struct{ set, number string }{
 	567767: {"H1R", "31"}, // Sword of Sinew and Steel
 }
 
+// foilOnlyProducts are Magic products made in foil only whose guide row
+// carries plain prices all the same; their plain columns are dropped.
+var foilOnlyProducts = map[int]bool{
+	773666: true, // MH3 Copy // Shapeshifter (V.2), the Ripple Foil sheet
+}
+
 // unplacedProducts are products no evidence places on a printing, or
 // that name a printing never made: the V.2 to V.4 of an October Superdrop 2022
 // card, whose Japanese printings sit beside the English one; the Modern
