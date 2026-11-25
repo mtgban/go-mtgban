@@ -36,6 +36,13 @@ var missingPALPtags = map[string]string{
 	"15": "Indonesia",
 }
 
+// The keywords of the commander sets whose longest word other sets share
+var commanderKeywords = map[string]string{
+	"M3C": "Horizons 3",
+	"MSC": "Super Heroes",
+	"TRC": "Star Trek",
+}
+
 // The language a foreign-only set is sold in, of the several it was printed in
 var forcedLanguages = map[string]string{
 	"FBB": "Italian",

@@ -135,6 +135,23 @@ func parseWorldChampPrefix(variation string) (string, bool) {
 	return "", false
 }
 
+// commanderKeywordEdition returns the commander set whose keyword the edition
+// holds, or nothing. The longest of several keywords answers, as the most
+// specific, and the first in alphabetical order among equally long ones.
+func commanderKeywordEdition(b *matcher.Backend, edition string) string {
+	edition = strings.ToLower(edition)
+	best := ""
+	for key := range b.CommanderKeywordMap {
+		if !strings.Contains(edition, strings.ToLower(key)) {
+			continue
+		}
+		if len(key) > len(best) || (len(key) == len(best) && key < best) {
+			best = key
+		}
+	}
+	return b.CommanderKeywordMap[best]
+}
+
 // parseCommanderEdition returns the Commander edition the text names, or an
 // empty string when it names none.
 func parseCommanderEdition(b *matcher.Backend, edition, variant string) string {
@@ -175,25 +192,23 @@ func parseCommanderEdition(b *matcher.Backend, edition, variant string) string {
 	}
 
 	// Well-known extra tags
-	perSetCommander := map[string]string{
-		"Launch":  "Commander 2011 Launch Party",
-		"Arsenal": "Commander's Arsenal",
-		"Ikoria":  "Commander 2020",
-		"Starter": "Starter Commander Decks",
+	switch {
+	case strings.Contains(edition, "Launch"):
+		return "Commander 2011 Launch Party"
+	case strings.Contains(edition, "Arsenal"):
+		return "Commander's Arsenal"
+	case strings.Contains(edition, "Ikoria"):
+		return "Commander 2020"
+	case strings.Contains(edition, "Starter"):
+		return "Starter Commander Decks"
 	}
-	for key, ed := range perSetCommander {
-		if strings.Contains(edition, key) {
-			return ed
+	ed := commanderKeywordEdition(b, edition)
+	if ed != "" {
+		// Bundle promos retain the commander set and its collector numbers.
+		if strings.Contains(edition, "Promo") || (strings.Contains(variant, "Promo") && !matcher.Contains(variant, "Bundle")) {
+			ed += " Promos"
 		}
-	}
-	for key, ed := range b.CommanderKeywordMap {
-		if strings.Contains(strings.ToLower(edition), strings.ToLower(key)) {
-			// Bundle promos retain the commander set and its collector numbers.
-			if strings.Contains(edition, "Promo") || (strings.Contains(variant, "Promo") && !matcher.Contains(variant, "Bundle")) {
-				ed += " Promos"
-			}
-			return ed
-		}
+		return ed
 	}
 
 	// Collection series
