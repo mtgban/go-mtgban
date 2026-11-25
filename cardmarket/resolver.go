@@ -409,7 +409,15 @@ func resolveMagic(r *resolver, product *cm.Product) (string, string, bool, error
 	// ("T 2/6", "CT 37/2") states its faces' collector numbers, which a
 	// pair numbered otherwise is another printing of. Resolved or not,
 	// this listing is done here: falling into Preprocess/Match below would
-	// only refuse it again, more noisily.
+	// only refuse it again, more noisily. A face named at its own number in
+	// the edition's token set anchors the pair first, since two names
+	// alone repeat across sets.
+	if twoSidedToken(product) {
+		cardID = r.pairAtFaces(product, false)
+		if cardID != "" {
+			return cardID, r.pairAtFaces(product, true), true, nil
+		}
+	}
 	if strings.Contains(product.Name, "Token") && strings.Contains(product.Name, " // ") {
 		if pairID := magic.MatchTokenPairingByNamesAndEdition(r.backend, product.Name, product.ExpansionName, false); pairID != "" {
 			cardID, _ = r.backend.MatchID(pairID, false)
@@ -487,12 +495,8 @@ var tokenFace = regexp.MustCompile(`^[A-Z]*0*([0-9]+[a-z]?)$`)
 // numbers other than those of the pair cardID, which a product whose Number
 // does not read as two faces never does.
 func (r *resolver) otherFaces(product *cm.Product, cardID string) bool {
-	_, faces, found := strings.Cut(product.Number, " ")
-	if !found {
-		faces = product.Number
-	}
-	front, back, found := strings.Cut(faces, "/")
-	if !found {
+	got := tokenFaceNumbers(product.Number)
+	if got == nil {
 		return false
 	}
 	co, err := r.backend.GetUUID(cardID)
@@ -503,14 +507,7 @@ func (r *resolver) otherFaces(product *cm.Product, cardID string) bool {
 	if !found {
 		return false
 	}
-	var got, want []string
-	for _, face := range []string{front, back} {
-		m := tokenFace.FindStringSubmatch(face)
-		if m == nil {
-			return false
-		}
-		got = append(got, m[1])
-	}
+	var want []string
 	for _, face := range []string{pairFront, pairBack} {
 		m := tokenFace.FindStringSubmatch(face)
 		if m == nil {
@@ -521,6 +518,127 @@ func (r *resolver) otherFaces(product *cm.Product, cardID string) bool {
 	slices.Sort(got)
 	slices.Sort(want)
 	return !slices.Equal(got, want)
+}
+
+// tokenFaceNumbers reads a two-faced token product's Number ("T 14/8",
+// "CT 01/02") as its faces' collector numbers in the order of the product's
+// name, or nil where the Number does not read as two faces.
+func tokenFaceNumbers(number string) []string {
+	_, faces, found := strings.Cut(number, " ")
+	if !found {
+		faces = number
+	}
+	front, back, found := strings.Cut(faces, "/")
+	if !found {
+		return nil
+	}
+	var out []string
+	for _, face := range []string{front, back} {
+		m := tokenFace.FindStringSubmatch(face)
+		if m == nil {
+			return nil
+		}
+		out = append(out, m[1])
+	}
+	return out
+}
+
+// twoSidedToken reports whether a Magic product sells a two-sided token
+// sheet, whose faces need not both be named tokens ("Giant Teddy Bear (Pink
+// 5/5) // Acorn Stash").
+func twoSidedToken(product *cm.Product) bool {
+	return strings.Contains(product.Name, " // ") &&
+		(strings.Contains(product.Name, "Token") || product.Rarity == "Token")
+}
+
+// pairAtFaces names the pairing a two-sided token product sells: both faces
+// found by name at the product's numbers in the edition's token set, else
+// one face found so and the other by name among its pairings, else
+// mtgjson's own combined token at either number. Cardmarket writes the
+// numbers in either order. Empty where no face anchors.
+func (r *resolver) pairAtFaces(product *cm.Product, foil bool) string {
+	setCode := magic.EditionTokenSetCode(r.backend, product.ExpansionName)
+	numbers := tokenFaceNumbers(product.Number)
+	if setCode == "" || numbers == nil {
+		return ""
+	}
+	first, second := magic.SplitTokenPairName(product.Name)
+	for _, order := range [][]string{numbers, {numbers[1], numbers[0]}} {
+		faceA := r.tokenFaceAt(setCode, order[0], first)
+		faceB := r.tokenFaceAt(setCode, order[1], second)
+		pairID := magic.MatchTokenPairingByUUIDs(r.backend, faceA, faceB, foil)
+		if pairID == "" {
+			continue
+		}
+		cardID, _ := r.backend.MatchID(pairID, foil)
+		if cardID != "" {
+			return cardID
+		}
+	}
+	for _, listing := range []string{first + " // " + second, second + " // " + first} {
+		for _, number := range numbers {
+			pairID := magic.MatchTokenPairingBySetNumber(r.backend, setCode, number, listing, foil)
+			if pairID == "" {
+				continue
+			}
+			cardID, _ := r.backend.MatchID(pairID, foil)
+			if cardID != "" && !r.otherFaces(product, cardID) {
+				return cardID
+			}
+		}
+	}
+	for _, number := range numbers {
+		combined := magic.MatchNativeTokenPair(r.backend, setCode, number, product.Name)
+		if combined == "" {
+			continue
+		}
+		cardID, _ := r.backend.MatchID(combined, foil)
+		if cardID != "" {
+			return cardID
+		}
+	}
+	return ""
+}
+
+// tokenFaceAt names the one token of the set at number called name, as a
+// product spells one face of a sheet, or empty where none or several are.
+func (r *resolver) tokenFaceAt(setCode, number, name string) string {
+	for _, face := range []string{magic.StripFaceWrapping(name), magic.CleanFaceName(name)} {
+		cards := r.backend.MatchInSetNumber(face, setCode, number)
+		if len(cards) == 1 {
+			return cards[0].UUID
+		}
+	}
+	return ""
+}
+
+// oneFace reports whether cardID is a single face of a two-sided token
+// product, rather than a pairing or mtgjson's own combined token.
+func (r *resolver) oneFace(product *cm.Product, cardID string) bool {
+	if cardID == "" || !twoSidedToken(product) {
+		return false
+	}
+	co, err := r.backend.GetUUID(cardID)
+	return err == nil && !strings.Contains(co.Name, " // ")
+}
+
+// facePairing names the pairing the face cardID of a two-sided token
+// product makes with the product's other face, or empty where the
+// datastore pairs the two nowhere.
+func (r *resolver) facePairing(product *cm.Product, cardID string, foil bool) string {
+	co, err := r.backend.GetUUID(cardID)
+	if err != nil {
+		return ""
+	}
+	pairID := magic.MatchTokenPairing(r.backend, co.Identifiers["scryfallId"], product.Name, foil)
+	if pairID == "" {
+		return ""
+	}
+	pairCardID, _ := r.backend.MatchID(pairID, foil)
+	if pairCardID == "" || r.otherFaces(product, pairCardID) {
+		return ""
+	}
+	return pairCardID
 }
 
 // foilOnlyShelf reports whether product's shelf sells only the foil shown,
@@ -923,6 +1041,19 @@ func (r *resolver) placeMapped(id int, mapped cm.CatalogProduct, expansion cm.Ex
 			return resolved{product: product, cardID: cardID, cardIDFoil: cardIDFoil}
 		}
 		cardID, cardIDFoil = r.resolveUUIDs(product, r.magicPrintings(id))
+		// A two-sided token product linked to one of its faces sells the
+		// pairing that face makes with the other, else the one its name and
+		// number anchor, before the face itself.
+		if r.oneFace(product, cardID) {
+			pairID := r.facePairing(product, cardID, false)
+			if pairID != "" {
+				return resolved{product: product, cardID: pairID, cardIDFoil: r.facePairing(product, cardID, true)}
+			}
+			pairID = r.pairAtFaces(product, false)
+			if pairID != "" {
+				return resolved{product: product, cardID: pairID, cardIDFoil: r.pairAtFaces(product, true), byName: true}
+			}
+		}
 		if cardID != "" {
 			return resolved{product: product, cardID: cardID, cardIDFoil: cardIDFoil}
 		}
