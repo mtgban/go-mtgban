@@ -11,6 +11,7 @@ import (
 	"net/url"
 	"regexp"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
@@ -75,6 +76,52 @@ func retryForbidden(ctx context.Context, resp *http.Response, err error) (bool, 
 		return true, nil
 	}
 	return retryablehttp.DefaultRetryPolicy(ctx, resp, err)
+}
+
+// checkStatus refuses a response that is not a success. Whatever the
+// storefront answers a refusal with parses as a page holding no rows and
+// linking nowhere, which reads as the results ending.
+func checkStatus(resp *http.Response) error {
+	if resp.StatusCode/100 != 2 {
+		return fmt.Errorf("unexpected %d status code for %s", resp.StatusCode, resp.Request.URL)
+	}
+	return nil
+}
+
+// walkCount counts the parts of a walk that finished, and keeps the first
+// error of those that did not.
+type walkCount struct {
+	walked atomic.Int64
+	first  atomic.Pointer[error]
+}
+
+// add records how one part of the walk ended, and hands its error back.
+func (w *walkCount) add(err error) error {
+	if err != nil {
+		w.first.CompareAndSwap(nil, &err)
+		return err
+	}
+	w.walked.Add(1)
+	return nil
+}
+
+// lostError reports the part of a walk that was lost, so that a short
+// inventory does not replace a full one. A cancelled walk also loses what
+// it never asked for.
+func (w *walkCount) lostError(ctx context.Context, total int, what string) error {
+	lost := total - int(w.walked.Load())
+	if lost == 0 {
+		return nil
+	}
+	err := ctx.Err()
+	if err != nil {
+		return fmt.Errorf("%d of %d %s lost: %w", lost, total, what, err)
+	}
+	first := w.first.Load()
+	if first == nil {
+		return fmt.Errorf("%d of %d %s lost", lost, total, what)
+	}
+	return fmt.Errorf("%d of %d %s lost, first: %w", lost, total, what, *first)
 }
 
 // CSIPriceEntry is one card in the buylist feed.
@@ -185,9 +232,10 @@ func fetchWhole(ctx context.Context, client *http.Client, link string) ([]byte, 
 		if err != nil {
 			return nil, err
 		}
-		if resp.StatusCode/100 != 2 {
+		err = checkStatus(resp)
+		if err != nil {
 			resp.Body.Close()
-			return nil, fmt.Errorf("unexpected %d status code", resp.StatusCode)
+			return nil, err
 		}
 		// A server that will not honour the range answers with the whole
 		// file again, so what arrives replaces what we held instead of
@@ -251,6 +299,11 @@ func LoadBuylistEditions(ctx context.Context, client *http.Client, shelf string)
 		return nil, err
 	}
 	defer resp.Body.Close()
+
+	err = checkStatus(resp)
+	if err != nil {
+		return nil, err
+	}
 
 	doc, err := goquery.NewDocumentFromReader(resp.Body)
 	if err != nil {
@@ -348,12 +401,9 @@ func fetchSearchPage(ctx context.Context, client *http.Client, link string) (*go
 	}
 	defer resp.Body.Close()
 
-	// Whatever the storefront answers a refusal with parses as a page
-	// holding no rows and linking nowhere, which reads as the shelf
-	// ending rather than as the error it is. Say so instead: the
-	// worker pool logs the shelf and carries on with the others.
-	if resp.StatusCode/100 != 2 {
-		return nil, fmt.Errorf("unexpected %d status code for %s", resp.StatusCode, link)
+	err = checkStatus(resp)
+	if err != nil {
+		return nil, err
 	}
 
 	return goquery.NewDocumentFromReader(resp.Body)
@@ -403,6 +453,11 @@ func Search(ctx context.Context, client *http.Client, shelf, itemName string, sk
 	v.Set("resultsPerPage", "25")
 	v.Set("submit", "Search")
 
+	return postSearch(ctx, client, v)
+}
+
+// postSearch submits a search form and returns the first page of results.
+func postSearch(ctx context.Context, client *http.Client, v url.Values) (*SearchResult, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, csiSearchURL, strings.NewReader(v.Encode()))
 	if err != nil {
 		return nil, err
@@ -415,6 +470,11 @@ func Search(ctx context.Context, client *http.Client, shelf, itemName string, sk
 		return nil, err
 	}
 	defer resp.Body.Close()
+
+	err = checkStatus(resp)
+	if err != nil {
+		return nil, err
+	}
 
 	data, err := io.ReadAll(resp.Body)
 	if err != nil {
