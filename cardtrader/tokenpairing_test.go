@@ -350,3 +350,71 @@ func TestPreprocessAnchorsTheSecondFaceNumber(t *testing.T) {
 		}
 	}
 }
+
+// TestProcessProductsRefusesTokenSheetOnAFace pins a sheet of two different
+// tokens whose pairing the datastore does not mint: its ids name the Horror
+// face alone, and the listing is refused rather than priced as that face.
+func TestProcessProductsRefusesTokenSheetOnAFace(t *testing.T) {
+	b := realDatastore(t)
+
+	bp := tokenBlueprint(3609, "Horror // Zombie", "Archenemy: Nicol Bolas", "3/20", "8cfb1a9c-3f34-4362-bc2d-4cd584488820")
+	bp.GameID = GameMagic
+	bp.TCGplayerID = 134946
+
+	ct := &Market{
+		backend:     b,
+		gameID:      GameMagic,
+		blueprints:  map[int]*Blueprint{bp.ID: &bp},
+		logCallback: func(string, ...any) {},
+	}
+	var p Product
+	p.ID = 1
+	p.BlueprintID = bp.ID
+	p.Quantity = 1
+	p.Price.Cents = 100
+	p.Price.Currency = "USD"
+	p.Properties.Condition = "Near Mint"
+	p.Properties.MTGLanguage = "en"
+
+	ch := make(chan resultChan, 1)
+	ct.processProducts(ch, bp.ID, []Product{p})
+	close(ch)
+	for result := range ch {
+		co, err := b.GetUUID(result.cardID)
+		if err == nil {
+			t.Errorf("blueprint %d landed on %s %q #%s, want a refusal", bp.ID, co.SetCode, co.Name, co.Number)
+		}
+	}
+}
+
+// TestTokenSheetOnFaceReadsCardTraderSpacing pins the refusal reading a pair
+// name however Card Trader spaces its separator: two different tokens on one
+// face are refused, the same token on both sides of its sheet is kept.
+func TestTokenSheetOnFaceReadsCardTraderSpacing(t *testing.T) {
+	b := realDatastore(t)
+
+	bp := tokenBlueprint(276925, "Thopter //Dog", "Murders at Karlov Manor Collectors", "T 20/1", "")
+	bp.TCGplayerID = 537562
+	card, err := Preprocess(b, &bp)
+	if err != nil {
+		t.Fatalf("Preprocess(%d) = %v", bp.ID, err)
+	}
+	pair, err := b.GetUUID(card.ID)
+	if err != nil {
+		t.Fatalf("blueprint %d: GetUUID(%q) = %v", bp.ID, card.ID, err)
+	}
+	face := pair.Identifiers["tokenPairPartA"]
+	if !tokenSheetOnFace(b, &bp, face) {
+		t.Errorf("blueprint %d on its face %s is kept, want it refused", bp.ID, face)
+	}
+	if tokenSheetOnFace(b, &bp, card.ID) {
+		t.Errorf("blueprint %d on its pairing %s is refused, want it kept", bp.ID, card.ID)
+	}
+
+	// Blueprint 149464's own name is "Walker // Walker", spaced here the
+	// way 276925 is; SLD Walker #149 is its printing.
+	walker := tokenBlueprint(149464, "Walker //Walker", "Secret Lair Drop Series", "149", "b4c637c4-c1cc-4852-9561-78add390ef52")
+	if tokenSheetOnFace(b, &walker, "50fcb456-82d6-5452-8318-8a58a6ee5f0f") {
+		t.Errorf("blueprint %d on its one printing is refused, want it kept", walker.ID)
+	}
+}

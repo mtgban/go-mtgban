@@ -202,6 +202,20 @@ func pairNumbered(b *matcher.Backend, id, n1, n2 string) bool {
 	return (partA.Number == n1 && partB.Number == n2) || (partA.Number == n2 && partB.Number == n1)
 }
 
+// tokenSheetOnFace reports whether a blueprint selling two different tokens
+// on one sheet resolved to a card that is not a pairing.
+func tokenSheetOnFace(b *matcher.Backend, bp *Blueprint, cardID string) bool {
+	if !isTwoSidedTokenBlueprint(bp, bp.Name) {
+		return false
+	}
+	first, second := magic.SplitTokenPairName(ctPairName(bp.Name))
+	if magic.NormalizeTokenFace(first) == magic.NormalizeTokenFace(second) {
+		return false
+	}
+	co, err := b.GetUUID(cardID)
+	return err == nil && !strings.Contains(co.Name, " // ")
+}
+
 // ctPairSeparatorRe matches the "//" between a two-sided pairing's faces,
 // tolerating Card Trader's own inconsistent spacing around it ("Hero //
 // Hero", but also "Thopter //Dog" on blueprint 276925).
