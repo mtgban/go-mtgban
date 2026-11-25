@@ -145,6 +145,30 @@ func TestPlaceMappedTokenPairOverFace(t *testing.T) {
 	}
 }
 
+// TestResolveMappedRefusesLoneFace pins a sheet of two different tokens
+// mtgjson links to one of them, with no pairing of the two to land on,
+// refused; and a sheet of one token on both sides kept on that token.
+func TestResolveMappedRefusesLoneFace(t *testing.T) {
+	b := realDatastore(t)
+	res := &resolver{backend: b, gameID: cm.GameMagic}
+	for _, tt := range []struct {
+		id      int
+		mapped  cm.CatalogProduct
+		edition string
+		want    string
+	}{
+		{781728, cm.CatalogProduct{Name: "Angel Token (W 3/3) // Spirit Token (W 1/1)", Number: "T 1/1341", Rarity: "Token"},
+			"Secret Lair Commander Deck: Angels: They're Just Like Us but Cooler", ""},
+		{359440, cm.CatalogProduct{Name: "Mowu Token // Mowu Token", Number: "T 01/02", Rarity: "Token"},
+			"Global Series Jiang Yanggu & Mu Yanling", "10024b0a-7812-5c34-9f04-58ccd5c1520b"},
+	} {
+		got := res.resolveMapped(tt.id, tt.mapped, cm.Expansion{Name: tt.edition})
+		if got.cardID != tt.want {
+			t.Errorf("resolveMapped(%d) = %q, want %q", tt.id, got.cardID, tt.want)
+		}
+	}
+}
+
 // TestOtherFaces pins the face numbers a token product's Number states
 // against its pair's: TMH3 sells Copy #1 and Copy #37 beside Eldrazi Angel
 // #2, and only the first is the pair the datastore has.

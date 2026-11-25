@@ -622,6 +622,13 @@ func (r *resolver) oneFace(product *cm.Product, cardID string) bool {
 	return err == nil && !strings.Contains(co.Name, " // ")
 }
 
+// distinctFaces reports whether a two-sided token product names two
+// different tokens, rather than one token on both sides.
+func distinctFaces(product *cm.Product) bool {
+	first, second := magic.SplitTokenPairName(product.Name)
+	return magic.NormalizeTokenFace(first) != magic.NormalizeTokenFace(second)
+}
+
 // facePairing names the pairing the face cardID of a two-sided token
 // product makes with the product's other face, or empty where the
 // datastore pairs the two nowhere.
@@ -1013,6 +1020,11 @@ func (r *resolver) numberedPrinting(product *cm.Product, uuids []string) string 
 // a product the datastore does not link yet is matched rather than lost.
 func (r *resolver) resolveMapped(id int, mapped cm.CatalogProduct, expansion cm.Expansion) resolved {
 	res := r.placeMapped(id, mapped, expansion)
+	// A sheet of two different tokens the datastore pairs nowhere is not
+	// either token alone; a sheet of one token twice is that token's.
+	if r.gameID == cm.GameMagic && r.oneFace(res.product, res.cardID) && distinctFaces(res.product) {
+		return resolved{product: res.product}
+	}
 	if res.cardID != "" && r.gameID == cm.GameMagic && r.soldFoilApart(mapped, expansion) {
 		res.cardIDFoil = res.cardID
 	}
