@@ -60,7 +60,7 @@ name.
 // Slab is a grading service's label on one copy. Grader and Score are
 // empty when the store does not say them.
 type Slab struct {
-	Grader string  `json:"grader,omitempty"` // "PSA", "BGS", "CGC", "TAG"
+	Grader string  `json:"grader,omitempty"` // one of Graders: "PSA", "BGS", ...
 	Score  float64 `json:"score,omitempty"`  // 1 to 10, in half steps
 	Label  string  `json:"label,omitempty"`  // "Pristine", "Black Label"
 }
@@ -73,12 +73,13 @@ graderless "Graded" rows). The pointer costs eight bytes on every entry of
 every store, where an inline struct would cost forty.
 
 Graders come from a closed list in `mtgban`, the ones the four stores name
-today (PSA, BGS, CGC, TAG), and scores are 1 to 10 in half steps; a scraper
-maps the store's wording onto those, the way a `<tag>Condition` helper maps
-condition words before `ParseCondition`. `Label` is free text and is kept
-and shown as the store printed it: a new premium label must not cost the
-listing. A score the store does not give (ABU's "Less than 8") is zero, and
-the bucket goes in `Label`.
+today (PSA, BGS, CGC, TAG) and the two CardTrader adds (GRAAD, AiGrading),
+and scores are 1 to 10 in half steps; a scraper maps the store's wording
+onto those, the way a `<tag>Condition` helper maps condition words before
+`ParseCondition`. `Label` is free text and is kept and shown as the store
+printed it: a new premium label must not cost the listing. A score the
+store does not give (ABU's "Less than 8") is zero, and the bucket goes in
+`Label`.
 
 Cert numbers and subgrades are left out. ABU's subgrades are copied between
 slabs, Card Kingdom's title number is not known to be a cert, and Hareruya's
@@ -111,9 +112,10 @@ read one wording as one slab, each in its own helper:
   up is a typo); the rest of the wording is the label.
 - CGC Pristine with no score is a 10. BGS Quad 10, four 10 subgrades, is a
   10 labelled Black Label.
-- TAG is in the grader list with no column in the fold table. A TAG slab with
-  a score keeps its grader, score and label and is published as NM without a
-  log line: there is nothing in it left to read. One with no score is unread.
+- TAG, GRAAD and AiGrading are in the grader list with no column in the fold
+  table. Such a slab with a score keeps its grader, score and label and is
+  published as NM without a log line: there is nothing in it left to read.
+  One with no score is unread.
 - A grader outside the list is an unread slab, also at ABU, where a slab that
   names no grader at all is graded by its shelf condition.
 

@@ -61,6 +61,10 @@ func TestUnreadSlab(t *testing.T) {
 	if *got != (Slab{Grader: "TAG", Label: "TAG 10"}) {
 		t.Errorf("grader with no fold table: got %+v", *got)
 	}
+	got = UnreadSlab("GRAAD", "GRAAD")
+	if *got != (Slab{Grader: "GRAAD", Label: "GRAAD"}) {
+		t.Errorf("grader with no fold table: got %+v", *got)
+	}
 	got = UnreadSlab("SGC", "SGC 10")
 	if *got != (Slab{Label: "SGC 10"}) {
 		t.Errorf("unsupported grader: got %+v", *got)
