@@ -61,7 +61,7 @@ func TestCTSlab(t *testing.T) {
 		{"9.5 bgs", "BGS", 9.5, "", mtgban.NM},
 		{"9.5 GEM MINT BECKETT", "BGS", 9.5, "", mtgban.NM},
 
-		// No score to read, the grader kept; TAG has no grades to fold by
+		// No score to read, the grader kept
 		{"grade 9 PSA non-retro foil", "PSA", 0, "grade 9 PSA non-retro foil", ""},
 		{"CGC Certified", "CGC", 0, "CGC Certified", ""},
 		{"[BGS]", "BGS", 0, "BGS", ""},
@@ -70,13 +70,16 @@ func TestCTSlab(t *testing.T) {
 		{"AUTHENTIC ALTERED BGS 0012345678", "BGS", 0, "AUTHENTIC ALTERED BGS 0012345678", ""},
 		{"GRADED CGC (undergraded) EXC-", "CGC", 0, "GRADED CGC (undergraded) EXC-", ""},
 		{"CGC1O PRISTINE", "CGC", 0, "CGC1O PRISTINE", ""},
-		{"[TAG 9.0]", "TAG", 0, "TAG 9.0", ""},
-		// A grader outside the supported ones, whoever it compares itself to
-		{"[GRAAD 9.5]", "", 0, "GRAAD 9.5", ""},
-		{"GRAAD 10, PSA 10 equivalent", "", 0, "GRAAD 10, PSA 10 equivalent", ""},
-		{"Graad 9.5 for PSA ", "", 0, "Graad 9.5 for PSA", ""},
-		{"[AiGrad 8.5] BGS 8", "", 0, "AiGrad 8.5", ""},
 		{"", "", 0, "Graded", ""},
+		// A grader with no grades to fold by is NM, whoever it compares itself to
+		{"[TAG 9.0]", "TAG", 9, "", mtgban.NM},
+		{"[GRAAD 9.5]", "GRAAD", 9.5, "", mtgban.NM},
+		{"GRAAD 10, PSA 10 equivalent", "GRAAD", 10, "", mtgban.NM},
+		{"Graad 9.5 for PSA ", "GRAAD", 9.5, "", mtgban.NM},
+		{"GRADATA GRAAD VOTO 9", "GRAAD", 9, "", mtgban.NM},
+		{"graded 9 by GRAAD", "GRAAD", 9, "", mtgban.NM},
+		{"[AiGrad 8.5] BGS 8", "AiGrading", 8.5, "", mtgban.NM},
+		{"AiGrading 10", "AiGrading", 10, "", mtgban.NM},
 
 		// Wordings no listing in the capture carries
 		{"PSA 1st Edition 9", "PSA", 0, "PSA 1st Edition 9", ""},
@@ -93,7 +96,7 @@ func TestCTSlab(t *testing.T) {
 		{"Graded 9 PSA, see photo", "PSA", 9, "", mtgban.NM},
 		{"Graded 9 by PSA see photo", "PSA", 9, "", mtgban.NM},
 		{"price tag 5 PSA 9", "PSA", 9, "", mtgban.NM},
-		{"tag 9", "TAG", 0, "tag 9", ""},
+		{"tag 9", "TAG", 9, "", mtgban.NM},
 		{"PSA PR 1", "PSA", 1, "", mtgban.HP},
 		{"PSA POOR 1", "PSA", 1, "", mtgban.HP},
 		{"PSA FAIR 1.5", "PSA", 1.5, "", mtgban.HP},
