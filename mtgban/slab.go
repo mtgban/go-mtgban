@@ -10,7 +10,7 @@ import (
 // lists it. Grader and Score are empty where the store does not give them;
 // an entry with no Slab is a raw copy. See docs/adr/0006-graded-slabs.md.
 type Slab struct {
-	// Grader is one of the services in graders.
+	// Grader is one of the services in Graders.
 	Grader string `json:"grader,omitempty"`
 
 	// Score is from 1 to 10, in half steps, or zero when the store gives
@@ -23,8 +23,9 @@ type Slab struct {
 	Label string `json:"label,omitempty"`
 }
 
-// graders are the grading services a Slab may name.
-var graders = []string{"PSA", "BGS", "CGC", "TAG", "GRAAD", "AiGrading"}
+// Graders are the grading services a Slab may name, in the order a list of
+// slabs runs.
+var Graders = []string{"PSA", "BGS", "CGC", "TAG", "GRAAD", "AiGrading"}
 
 // UnreadSlabFormat is the line a scraper logs, with the store's wording, for
 // a slab it publishes as NM because it could not read it.
@@ -34,7 +35,7 @@ const UnreadSlabFormat = "unsupported slab %q, published as NM"
 // keeping the store's wording, to be published as NM and logged with
 // UnreadSlabFormat. A grader outside the supported ones is left out.
 func UnreadSlab(grader, wording string) *Slab {
-	if !slices.Contains(graders, grader) {
+	if !slices.Contains(Graders, grader) {
 		grader = ""
 	}
 	return &Slab{Grader: grader, Label: wording}
@@ -65,7 +66,7 @@ func sameSlab(a, b *Slab) bool {
 // valid reports whether the slab names a supported grader, or none, and a
 // score in range, or none.
 func (s Slab) valid() bool {
-	if s.Grader != "" && !slices.Contains(graders, s.Grader) {
+	if s.Grader != "" && !slices.Contains(Graders, s.Grader) {
 		return false
 	}
 	if s.Score == 0 {
