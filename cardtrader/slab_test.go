@@ -3,6 +3,7 @@ package cardtrader
 import (
 	"testing"
 
+	"github.com/mtgban/go-mtgban/matcher"
 	"github.com/mtgban/go-mtgban/mtgban"
 )
 
@@ -110,6 +111,29 @@ func TestCTSlab(t *testing.T) {
 		}
 		if grade != wantGrade || unread != wantUnread {
 			t.Errorf("%q: got %s, %q; want %s, %q", tt.description, grade, unread, wantGrade, wantUnread)
+		}
+	}
+}
+
+// TestInfoForScraper pins each sub-seller's published name and shorthand:
+// a graded seller is named for its tier, and GradedMode marks it.
+func TestInfoForScraper(t *testing.T) {
+	ct := &Market{backend: &matcher.Backend{Game: matcher.GameMagic}}
+	for _, tt := range []struct {
+		name, wantName, wantShorthand string
+		graded                        bool
+	}{
+		{"Card Trader", "Card Trader", "CT", false},
+		{"Card Trader Zero", "Card Trader Zero", "CT0", false},
+		{"Card Trader 1DR", "Card Trader 1DR", "CT1DR", false},
+		{"Card Trader Graded", "Card Trader", "CTGraded", true},
+		{"Card Trader Zero Graded", "Card Trader Zero", "CT0Graded", true},
+		{"Card Trader 1DR Graded", "Card Trader 1DR", "CT1DRGraded", true},
+	} {
+		info := ct.InfoForScraper(tt.name)
+		if info.Name != tt.wantName || info.Shorthand != tt.wantShorthand || info.GradedMode != tt.graded {
+			t.Errorf("InfoForScraper(%q) = %q %q graded=%t, want %q %q graded=%t", tt.name,
+				info.Name, info.Shorthand, info.GradedMode, tt.wantName, tt.wantShorthand, tt.graded)
 		}
 	}
 }

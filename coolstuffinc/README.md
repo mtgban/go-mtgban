@@ -148,7 +148,8 @@ price) as two entries.
   finish collision - a Foil-etched card's Near Mint and Near Mint Foil rows -
   doesn't refuse itself out) and `availableMarketNames`/`name2shorthand`
   (`Cool Stuff Inc` / `Cool Stuff Inc (unique)` / `Cool Stuff Inc Graded`,
-  shorthands `CSI`/`CSIUnique`/`CSIGraded`, the last in `GradedMode`) all
+  shorthands `CSI`/`CSIUnique`/`CSIGraded`, the last in `GradedMode` and
+  published as `Cool Stuff Inc`) all
   serve one fact: a single graded/unique copy sold on a printing's page is
   not that printing's market price, and pricing it as one prints a $500 slab
   as a card's going rate.

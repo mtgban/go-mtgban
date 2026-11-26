@@ -152,7 +152,8 @@ starcitygames, strikezone, tcgplayer's `TCGGame`/`TCGGameIndex`/`TCGSYPList`,
 and vegassingles. The behavior flags are `MetadataOnly` (index
 prices only, no conditions or quantities), `NoQuantityInventory`,
 `SealedMode`, `GradedMode` (a singles seller of slabs only, every entry
-with its `Slab`), `CreditMultiplier`
+with its `Slab`; it is named for its store, so the flag and the shorthand
+are what tell it apart), `CreditMultiplier`
 (store-credit ratio), `Family` (price-coalescing group), plus
 `InventoryTimestamp`/`BuylistTimestamp` (`*time.Time`; **nil = never
 loaded** - used as the load-completion sentinel).

@@ -1090,7 +1090,11 @@ func (csi *Coolstuffinc) InfoForScraper(name string) mtgban.ScraperInfo {
 	info := csi.Info()
 	info.Name = name
 	info.Shorthand = name2shorthand[name]
-	info.GradedMode = name == availableMarketNames[2]
+	if name == "Cool Stuff Inc Graded" {
+		// Named for the store; GradedMode marks it.
+		info.Name = "Cool Stuff Inc"
+		info.GradedMode = true
+	}
 	return info
 }
 

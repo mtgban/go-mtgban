@@ -473,10 +473,14 @@ func (abu *ABUGames) InfoForScraper(name string) mtgban.ScraperInfo {
 	info := abu.Info()
 	info.Name = name
 	info.Shorthand = name2shorthand[name]
-	if info.Shorthand == "ABUCredit" {
+	switch info.Shorthand {
+	case "ABUCredit":
 		info.CreditMultiplier = 1
+	case "ABUGraded":
+		// Named for the store; GradedMode marks it.
+		info.Name = "ABU Games"
+		info.GradedMode = true
 	}
-	info.GradedMode = info.Shorthand == "ABUGraded"
 	return info
 }
 

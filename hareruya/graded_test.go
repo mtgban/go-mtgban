@@ -85,8 +85,16 @@ func TestGradedMode(t *testing.T) {
 	ha := NewScraper(&matcher.Backend{})
 	for _, name := range ha.MarketNames() {
 		info := ha.InfoForScraper(name)
-		if info.GradedMode != (name == "Hareruya Graded") {
+		graded := name == "Hareruya Graded"
+		if info.GradedMode != graded {
 			t.Errorf("InfoForScraper(%q).GradedMode = %v", name, info.GradedMode)
+		}
+		wantName := name
+		if graded {
+			wantName = "Hareruya"
+		}
+		if info.Name != wantName {
+			t.Errorf("InfoForScraper(%q).Name = %q, want %q", name, info.Name, wantName)
 		}
 	}
 }

@@ -383,8 +383,9 @@ func TestGradedPageCarriesSlabs(t *testing.T) {
 	if !slices.Equal(logs, wantLogs) {
 		t.Errorf("logs = %q, want %q", logs, wantLogs)
 	}
-	if !ck.Info().GradedMode {
-		t.Error("Info().GradedMode = false")
+	info := ck.Info()
+	if !info.GradedMode || info.Name != "Card Kingdom" {
+		t.Errorf("Info() = %q graded=%t, want \"Card Kingdom\" graded", info.Name, info.GradedMode)
 	}
 }
 
