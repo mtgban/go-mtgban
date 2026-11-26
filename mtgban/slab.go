@@ -24,7 +24,7 @@ type Slab struct {
 }
 
 // graders are the grading services a Slab may name.
-var graders = []string{"PSA", "BGS", "CGC", "TAG"}
+var graders = []string{"PSA", "BGS", "CGC", "TAG", "GRAAD", "AiGrading"}
 
 // UnreadSlabFormat is the line a scraper logs, with the store's wording, for
 // a slab it publishes as NM because it could not read it.
