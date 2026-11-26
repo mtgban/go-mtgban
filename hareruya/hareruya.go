@@ -918,7 +918,11 @@ func (ha *Hareruya) InfoForScraper(name string) mtgban.ScraperInfo {
 	info := ha.Info()
 	info.Name = name
 	info.Shorthand = name2shorthand[name]
-	info.GradedMode = name == availableMarketNames[1]
+	if name == "Hareruya Graded" {
+		// Named for the store; GradedMode marks it.
+		info.Name = "Hareruya"
+		info.GradedMode = true
+	}
 	return info
 }
 

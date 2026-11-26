@@ -215,8 +215,16 @@ func TestGradedMode(t *testing.T) {
 	}
 	for _, name := range csi.MarketNames() {
 		info := csi.InfoForScraper(name)
-		if info.GradedMode != (name == "Cool Stuff Inc Graded") {
+		graded := name == "Cool Stuff Inc Graded"
+		if info.GradedMode != graded {
 			t.Errorf("InfoForScraper(%q).GradedMode = %v", name, info.GradedMode)
+		}
+		wantName := name
+		if graded {
+			wantName = "Cool Stuff Inc"
+		}
+		if info.Name != wantName {
+			t.Errorf("InfoForScraper(%q).Name = %q, want %q", name, info.Name, wantName)
 		}
 	}
 }

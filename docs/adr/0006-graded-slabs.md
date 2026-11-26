@@ -283,7 +283,7 @@ lands beside it.
 - [ ] mtgban-website: rename `gradedStore`; graded labels in pickers and
       the redirect lookup; the Graded page; the slab beside the store name
       in singles search.
-- [ ] go-mtgban, after the site labels them: graded stores named for their
+- [x] go-mtgban, after the site labels them: graded stores named for their
       store.
 - [ ] Decision 5, at a later stage: mtgban-website's `rawSingles` predicate,
       the API included.

@@ -233,7 +233,7 @@ func (ck *Graded) Inventory() mtgban.InventoryRecord {
 
 // Info describes this scraper. See mtgban.Scraper.
 func (ck *Graded) Info() (info mtgban.ScraperInfo) {
-	info.Name = "Card Kingdom Graded"
+	info.Name = "Card Kingdom"
 	info.Shorthand = "CKGraded"
 	info.InventoryTimestamp = &ck.inventoryDate
 	info.Game = ck.backend.Game

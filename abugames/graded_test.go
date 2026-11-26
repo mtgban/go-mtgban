@@ -99,8 +99,16 @@ func TestInfoForScraperGradedMode(t *testing.T) {
 	abu := NewScraper(&matcher.Backend{})
 	for _, name := range slices.Concat(availableMarketNames, availableTraderNames) {
 		info := abu.InfoForScraper(name)
-		if info.GradedMode != (name == "ABU Games Graded") {
+		graded := name == "ABU Games Graded"
+		if info.GradedMode != graded {
 			t.Errorf("%s: GradedMode %t", name, info.GradedMode)
+		}
+		wantName := name
+		if graded {
+			wantName = "ABU Games"
+		}
+		if info.Name != wantName {
+			t.Errorf("%s: Name %q, want %q", name, info.Name, wantName)
 		}
 	}
 }

@@ -1048,7 +1048,12 @@ func (ct *Market) InfoForScraper(name string) mtgban.ScraperInfo {
 	info := ct.Info()
 	info.Name = name
 	info.Shorthand = name2shorthand[name]
-	info.GradedMode = slices.Contains(gradedMarketNames, name)
+	i := slices.Index(gradedMarketNames, name)
+	if i >= 0 {
+		// Named for its tier; GradedMode marks it.
+		info.Name = availableMarketNames[i]
+		info.GradedMode = true
+	}
 	return info
 }
 
