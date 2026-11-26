@@ -280,12 +280,12 @@ lands beside it.
 - [x] go-mtgban: `cardtrader_sealed` skips graded products.
 - [x] go-mtgban: CardTrader graded singles, once a raw record shows what the
       feed says about the grade.
-- [ ] mtgban-website: rename `gradedStore`; graded labels in pickers and
+- [x] mtgban-website: rename `gradedStore`; graded labels in pickers and
       the redirect lookup; the Graded page; the slab beside the store name
       in singles search.
 - [x] go-mtgban, after the site labels them: graded stores named for their
       store.
-- [ ] Decision 5, at a later stage: mtgban-website's `rawSingles` predicate,
+- [x] Decision 5, at a later stage: mtgban-website's `rawSingles` predicate,
       the API included.
-- [ ] Docs: `SPECIFICATIONS.md` and `coolstuffinc/README.md` name all four
+- [x] Docs: `SPECIFICATIONS.md` and `coolstuffinc/README.md` name all four
       graded sellers.
