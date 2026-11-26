@@ -118,7 +118,7 @@ func ctCondition(s string) (mtgban.Condition, error) {
 }
 
 const (
-	slabGraderExpr = `(PSA|BGS|BEC?KETT?|CGC|TAG)`
+	slabGraderExpr = `(PSA|BGS|BEC?KETT?|CGC|CERTIFIED\s+GUARANTY\s+COMPANY|TAG)`
 	slabScoreExpr  = `(10(?:[.,’]\d+)?|[1-9](?:[.,’]\d+)?)`
 
 	// A score ends short of any letter, digit or ordinal mark, past the quad and
@@ -143,7 +143,7 @@ var reSlabScoreFirst = regexp.MustCompile(`(?i)(?:\b(?:GRADED?|GRADAT[AO])\s+` +
 // reSlabGrader is the first grader a description names. GRAAD and AiGrad are
 // not in the supported list, but their slabs are compared to the others':
 // "GRAAD 10, PSA 10 equivalent". TAG is a word of its own in lower case.
-var reSlabGrader = regexp.MustCompile(`(?:^|[^\pL])((?i:PSA|BGS|BEC?KETT?|CGC|GRAAD|AIGRAD)|TAG)(?:[^\pL]|$)`)
+var reSlabGrader = regexp.MustCompile(`(?:^|[^\pL])((?i:PSA|BGS|BEC?KETT?|CGC|CERTIFIED\s+GUARANTY\s+COMPANY|GRAAD|AIGRAD)|TAG)(?:[^\pL]|$)`)
 
 // slabLabels are the labels a grader sets apart from its plain 10, the higher
 // first: a Black Label is worded as a Pristine too.
@@ -233,11 +233,13 @@ func slabGrade(description string) (grader string, score float64) {
 // slabGrader spells a grader as a Slab names it, "" for an unsupported one.
 func slabGrader(name string) string {
 	name = strings.ToUpper(name)
-	switch name {
-	case "PSA", "BGS", "CGC", "TAG":
+	switch {
+	case name == "PSA", name == "BGS", name == "CGC", name == "TAG":
 		return name
-	case "GRAAD", "AIGRAD":
+	case name == "GRAAD", name == "AIGRAD":
 		return ""
+	case strings.HasPrefix(name, "CERTIFIED"):
+		return "CGC"
 	default:
 		return "BGS"
 	}

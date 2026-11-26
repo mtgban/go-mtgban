@@ -35,6 +35,7 @@ func TestCTSlab(t *testing.T) {
 		{"\nBeckett BGS 9,5", "BGS", 9.5, "", mtgban.NM},
 		{"Cgc 7’5", "CGC", 7.5, "", mtgban.SP},
 		{"CGC grade 9.5", "CGC", 9.5, "", mtgban.NM},
+		{"graded by certified guaranty company 10", "CGC", 10, "", mtgban.NM},
 		{"GRADED CGC UNIVERSAL GRADE 9", "CGC", 9, "", mtgban.NM},
 		{"GRADATO BGS VOTO 8", "BGS", 8, "", mtgban.SP},
 		{"becket 9,5 ", "BGS", 9.5, "", mtgban.NM},
