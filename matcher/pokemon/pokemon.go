@@ -137,6 +137,11 @@ type DatastoreCard struct {
 	ExternalLinks struct {
 		TcgPlayerID int `json:"tcgPlayerId"`
 
+		// FormerTcgPlayerIDs are products TCGplayer deleted that sold this
+		// card. Other sources still file it under them, so they resolve to
+		// it, but never in place of a product TCGplayer sells.
+		FormerTcgPlayerIDs []int `json:"formerTcgPlayerIds,omitempty"`
+
 		// TcgdexID is the tcgdex identifier, annotated where the builder
 		// could align the two sources.
 		TcgdexID string `json:"tcgdexId,omitempty"`
@@ -280,6 +285,10 @@ func (payload *Datastore) newBackend() *matcher.Backend {
 		}
 	}
 
+	// The deleted products a card was sold as, indexed once every live
+	// product is, which keeps its own id.
+	formerIDs := map[string]string{}
+
 	// Group sibling entries back into their product: a product priced in
 	// several printings is the same card several times, and the matcher
 	// wants it once, with FoilUUIDs naming the uuid each printing prices.
@@ -369,6 +378,17 @@ func (payload *Datastore) newBackend() *matcher.Backend {
 		if id := card.ExternalLinks.TcgdexID; id != "" {
 			identifiers["tcgdexId"] = id
 		}
+		for _, former := range card.ExternalLinks.FormerTcgPlayerIDs {
+			pid := fmt.Sprint(former)
+			// Two cards claiming one deleted product is the datastore's
+			// error; the first claim stands and the second is logged.
+			prev, claimed := formerIDs[pid]
+			if claimed && prev != card.ID {
+				b.Logf("former TCGplayer id %s claimed by %s and %s; keeping %s", pid, prev, card.ID, prev)
+				continue
+			}
+			formerIDs[pid] = card.ID
+		}
 		if card.ExternalLinks.CardmarketID != 0 {
 			mcmID := fmt.Sprint(card.ExternalLinks.CardmarketID)
 			identifiers["mcmId"] = mcmID
@@ -385,6 +405,12 @@ func (payload *Datastore) newBackend() *matcher.Backend {
 		qualified := qualifiedName(card, printingsByName)
 		for _, entry := range group {
 			b.AddPrinting(&convertedCard, entry.ID, matcher.FinishSlug(entry.Finish), card.Name, qualified)
+		}
+	}
+
+	for pid, uuid := range formerIDs {
+		if _, sold := b.ExternalIdentifiers[matcher.IDSpaceTCGplayer][pid]; !sold {
+			b.ExternalIdentifiers[matcher.IDSpaceTCGplayer][pid] = uuid
 		}
 	}
 
