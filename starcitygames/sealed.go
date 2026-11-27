@@ -97,6 +97,10 @@ func buildProductMap(b *matcher.Backend) map[string]string {
 	return out
 }
 
+// sealedHoldsOwnID is the refusal of a listing whose name reaches a product
+// the datastore already lists a SKU for.
+const sealedHoldsOwnID = "product holds its own sku"
+
 // runTag matches the print run Star City Games writes into a sealed product
 // name, where the datastore writes it as a bracketed suffix.
 var runTag = regexp.MustCompile(`\s*\((1st Edition|Unlimited)\)\s*`)
@@ -159,8 +163,8 @@ func (scg *Sealed) processProduct(p CatalogProduct) {
 	}
 
 	// Sealed products are keyed by their SKU, which mtgban stores as the
-	// scgId; the games whose datastore does not catalog it (riftbound,
-	// lorcana) resolve by name instead, English only, unique or nothing.
+	// scgId; outside Magic a SKU the datastore does not carry resolves by
+	// name instead, English only, unique or nothing.
 	uuid, found := scg.productMap[p.SKU]
 	if !found {
 		if scg.backend.Game == matcher.GameMagic {
@@ -176,7 +180,7 @@ func (scg *Sealed) processProduct(p CatalogProduct) {
 			return
 		}
 		// The name resolver is the whole reason this scraper prices a
-		// fraction of the sealed catalog for the games with no sku in the
+		// fraction of the sealed catalog for the products with no sku in the
 		// datastore, so say which name and which refusal, the way the
 		// singles path says which card it could not place. Magic is exempt:
 		// it is keyed by sku and never asks the resolver, so its whole
@@ -186,6 +190,12 @@ func (scg *Sealed) processProduct(p CatalogProduct) {
 		if err != nil {
 			scg.printf("%q (sku=%s): %s", name, p.SKU, err)
 			scg.drop(err.Error())
+			return
+		}
+		co, err := scg.backend.GetUUID(resolved)
+		if err == nil && co.Identifiers["scgId"] != "" {
+			scg.printf("%q (sku=%s): %s", name, p.SKU, sealedHoldsOwnID)
+			scg.drop(sealedHoldsOwnID)
 			return
 		}
 		uuid = resolved

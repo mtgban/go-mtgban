@@ -1,20 +1,22 @@
 package matcher
 
 import (
-	"fmt"
+	"maps"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 )
 
 // Sealed-name resolution: storefronts name sealed products in their own
-// vocabulary, and only Magic gets marketplace ids from its datastore, so
-// the other games resolve a vendor's product name against the sealed
-// namespace. Tuned against the real Cardmarket and StarCityGames catalogs
-// for Riftbound and Lorcana; every rule below exists because its absence
-// mismatched a real product, and the discipline throughout is unique or
-// nothing: a wrong sealed match silently reroutes a product's whole price
-// history, while a dropped one only loses coverage.
+// vocabulary. Magic's sealed products carry every store's id; the other
+// games carry whatever ids their datastore publishes, and a store product
+// with no id there is resolved by name against the sealed namespace. Tuned
+// against the real Cardmarket and StarCityGames catalogs for Riftbound and
+// Lorcana; every rule below exists because its absence mismatched a real
+// product, and the discipline throughout is unique or nothing: a wrong
+// sealed match silently reroutes a product's whole price history, while a
+// dropped one only loses coverage.
 
 var sealedTokenRe = regexp.MustCompile(`[a-z0-9]+`)
 var sealedCountRe = regexp.MustCompile(`^\d+x?$`)
@@ -975,7 +977,7 @@ func SealedIsLanguageVariant(name string) bool {
 
 // AddSealed files a sealed product in the sealed namespace: its uuid in
 // AllSealedUUIDs and in its set's bucket, its name in the sealed name index,
-// and the product id as an identifier for BuildSealedProductMap rather than
+// and its store ids as Identifiers for BuildSealedProductMap rather than
 // in the external identifier index - which is how Magic keeps sealed out of
 // MatchID's reach.
 //
@@ -984,10 +986,10 @@ func SealedIsLanguageVariant(name string) bool {
 // what the sealed views read, but the name index and the uuid map answer for
 // what was already there.
 //
-// A zero product id carries no identifier at all rather than the zero value,
-// which would give BuildSealedProductMap one shared key for every unlinked
-// listing to funnel onto.
-func (b *Backend) AddSealed(uuid, name, setCode, image string, tcgplayerProductID int) {
+// Empty ids are dropped, and a product left with none carries no
+// Identifiers at all, since an empty id would give the scrapers' id maps
+// one shared key for every unlinked listing.
+func (b *Backend) AddSealed(uuid, name, setCode, image string, ids map[string]string) {
 	set := b.Sets[setCode]
 	if set == nil {
 		return
@@ -1004,10 +1006,14 @@ func (b *Backend) AddSealed(uuid, name, setCode, image string, tcgplayerProductI
 		},
 		Language: "English",
 	}
-	if tcgplayerProductID != 0 {
-		card.Identifiers = map[string]string{
-			"tcgplayerProductId": fmt.Sprint(tcgplayerProductID),
+	for idName, id := range ids {
+		if id == "" {
+			continue
 		}
+		if card.Identifiers == nil {
+			card.Identifiers = map[string]string{}
+		}
+		card.Identifiers[idName] = id
 	}
 
 	set.SealedProduct = append(set.SealedProduct, SealedProduct{
@@ -1053,6 +1059,20 @@ func (b *Backend) AddSealed(uuid, name, setCode, image string, tcgplayerProductI
 	}
 	b.AllSealedUUIDs = append(b.AllSealedUUIDs, uuid)
 	b.SetSealedUUIDs[setCode] = append(b.SetSealedUUIDs[setCode], uuid)
+}
+
+// SealedIdentifiers is the map a loader hands AddSealed: a sealed entry's
+// identifiers, with tcgplayerProductId filled from tcgPlayerID when absent.
+func SealedIdentifiers(identifiers map[string]string, tcgPlayerID int) map[string]string {
+	if tcgPlayerID == 0 || identifiers["tcgplayerProductId"] != "" {
+		return identifiers
+	}
+	ids := maps.Clone(identifiers)
+	if ids == nil {
+		ids = map[string]string{}
+	}
+	ids["tcgplayerProductId"] = strconv.Itoa(tcgPlayerID)
+	return ids
 }
 
 // SortSealed puts the sealed indexes in order, once every product is filed.

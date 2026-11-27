@@ -300,15 +300,33 @@ func extrasNameACard(b *matcher.Backend, extras, candidate []string) bool {
 // a run that resolved nothing at all looks exactly like a run with nothing to
 // resolve.
 //
-// Magic routes through the id the datastore records; the other games' data
-// carries no miniaturemarket ids, so the product is resolved by its listed
-// name, English only, unique or nothing. A failing name retries without its
-// trailing decoration ("(New Arrival)"), which resolution rightly refuses to
-// see past on its own.
+// A listing is found first by the id the datastore records. Magic stops
+// there; in the other games a listing whose id the datastore lacks is
+// resolved by its listed name, English only, unique or nothing. A failing
+// name retries without its trailing decoration ("(New Arrival)"), which
+// resolution rightly refuses to see past on its own. A name never lands on a
+// product that holds an id of its own.
 func (mm *Miniaturemarket) resolveListing(id, listed string) (string, string) {
 	if uuid, found := mm.productMap[id]; found {
 		return uuid, ""
 	}
+	uuid, reason := mm.resolveListingName(listed)
+	if reason != "" {
+		return "", reason
+	}
+	co, err := mm.backend.GetUUID(uuid)
+	if err == nil && co.Identifiers["miniaturemarketId"] != "" {
+		return "", sealedHoldsOwnID
+	}
+	return uuid, ""
+}
+
+// sealedHoldsOwnID is the refusal of a listing whose name reaches a product
+// the datastore already lists an id for.
+const sealedHoldsOwnID = "product holds its own id"
+
+// resolveListingName resolves a listing the datastore has no id for.
+func (mm *Miniaturemarket) resolveListingName(listed string) (string, string) {
 	if mm.backend.Game == matcher.GameMagic {
 		return "", "no datastore id"
 	}

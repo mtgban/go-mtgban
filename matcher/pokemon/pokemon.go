@@ -162,6 +162,7 @@ type DatastoreSealed struct {
 	ExternalLinks struct {
 		TcgPlayerID int `json:"tcgPlayerId"`
 	} `json:"externalLinks"`
+	Identifiers map[string]string `json:"identifiers"`
 }
 
 // Load reads a Pokemon datastore from r and returns a Backend for it, or an
@@ -427,7 +428,7 @@ func (payload *Datastore) newBackend() *matcher.Backend {
 	// identifier index, mirroring how Magic keeps sealed out of MatchID's
 	// reach - and AddSealed is what files them there.
 	for _, product := range payload.Sealed {
-		b.AddSealed(product.ID, product.Name, product.SetCode, product.Image, product.ExternalLinks.TcgPlayerID)
+		b.AddSealed(product.ID, product.Name, product.SetCode, product.Image, matcher.SealedIdentifiers(product.Identifiers, product.ExternalLinks.TcgPlayerID))
 	}
 	b.Complete(NewRules(b))
 

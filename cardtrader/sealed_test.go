@@ -79,11 +79,22 @@ func TestBuildProductMap(t *testing.T) {
 		t.Fatal("no distinct tcg-indexed product found")
 	}
 
-	// A name the resolver answers, to probe the name pass gate with.
+	// A name the resolver answers, to probe the name pass gate with: one of
+	// a product with no cardtraderId, since a name never lands on a product
+	// that holds one.
+	held := map[string]bool{}
+	for _, uuids := range ctMap {
+		for _, uuid := range uuids {
+			held[uuid] = true
+		}
+	}
 	var resolvableName string
 	var resolvedUUID string
-	for _, uuids := range ctMap {
-		co, err := b.GetUUID(uuids[0])
+	for _, sealedUUID := range b.GetSealedUUIDs() {
+		if held[sealedUUID] {
+			continue
+		}
+		co, err := b.GetUUID(sealedUUID)
 		if err != nil {
 			continue
 		}
@@ -93,7 +104,7 @@ func TestBuildProductMap(t *testing.T) {
 			continue
 		}
 		uuid, err := b.ResolveSealed(co.Name)
-		if err == nil {
+		if err == nil && !held[uuid] {
 			resolvableName = co.Name
 			resolvedUUID = uuid
 			break
@@ -162,8 +173,8 @@ func sealedRunsBackend() *matcher.Backend {
 			"CRU": {Name: "Crucible of War", Code: "CRU"},
 		},
 	}
-	backend.AddSealed("cru-1e", "Crucible of War Booster Box [1st Edition]", "CRU", "", 0)
-	backend.AddSealed("cru-unl", "Crucible of War Booster Box [Unlimited Edition]", "CRU", "", 0)
+	backend.AddSealed("cru-1e", "Crucible of War Booster Box [1st Edition]", "CRU", "", nil)
+	backend.AddSealed("cru-unl", "Crucible of War Booster Box [Unlimited Edition]", "CRU", "", nil)
 	backend.SortSealed()
 	backend.IndexSets()
 	return backend
@@ -284,7 +295,7 @@ func sealedAccessoryBackend() *matcher.Backend {
 			"SLV": {Name: "Sleeves Promos", Code: "SLV"},
 		},
 	}
-	backend.AddSealed("cru-box", "Crucible of War Booster Box", "CRU", "", 0)
+	backend.AddSealed("cru-box", "Crucible of War Booster Box", "CRU", "", nil)
 	backend.SortSealed()
 	backend.IndexSets()
 	return backend
@@ -358,7 +369,7 @@ func sealedSubsumedBackend() *matcher.Backend {
 			"BND": {Name: "Bundle Promos", Code: "BND"},
 		},
 	}
-	backend.AddSealed("cru-box", "Booster Box", "CRU", "", 0)
+	backend.AddSealed("cru-box", "Booster Box", "CRU", "", nil)
 	backend.SortSealed()
 	backend.IndexSets()
 	return backend
@@ -377,8 +388,8 @@ func sealedShelfCodeBackend() *matcher.Backend {
 			"ST10": {Name: "Starter Deck 10: Generation Pulse", Code: "ST10"},
 		},
 	}
-	backend.AddSealed("gd05-case", "Freedom Ascension Booster Box Case", "GD05", "", 0)
-	backend.AddSealed("st10-deck", "Starter Deck 10: Generation Pulse", "ST10", "", 0)
+	backend.AddSealed("gd05-case", "Freedom Ascension Booster Box Case", "GD05", "", nil)
+	backend.AddSealed("st10-deck", "Starter Deck 10: Generation Pulse", "ST10", "", nil)
 	backend.SortSealed()
 	backend.IndexSets()
 	return backend
@@ -417,6 +428,93 @@ func TestBuildProductMapTrimsShelfCode(t *testing.T) {
 		got := ct.buildProductMap(map[int]*Blueprint{1: blueprint})[1]
 		if !slices.Equal(got, tt.want) {
 			t.Errorf("%q on %q: got %v, want %v", tt.name, tt.shelf, got, tt.want)
+		}
+	}
+}
+
+// TestBuildProductMapKeepsAnIDsProduct pins that the TCGplayer id and the name
+// never land on a product with a cardtraderId: both are refused, counted and
+// logged, while a product with none is still found both ways.
+func TestBuildProductMapKeepsAnIDsProduct(t *testing.T) {
+	backend := &matcher.Backend{
+		Game:           "gundam",
+		UUIDs:          map[string]*matcher.CardObject{},
+		Hashes:         map[string][]string{},
+		SetSealedUUIDs: map[string][]string{},
+		Sets: map[string]*matcher.Set{
+			"GD05": {Name: "Freedom Ascension", Code: "GD05"},
+		},
+	}
+	backend.AddSealed("gd05-box", "Freedom Ascension Booster Box", "GD05", "",
+		map[string]string{"cardtraderId": "501", "tcgplayerProductId": "10"})
+	backend.AddSealed("gd05-pack", "Freedom Ascension Booster Pack", "GD05", "",
+		map[string]string{"tcgplayerProductId": "5"})
+	backend.AddSealed("gd05-deck", "Freedom Ascension Starter Deck", "GD05", "", nil)
+	backend.SortSealed()
+	backend.IndexSets()
+
+	ct, err := NewScraperSealed(backend, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var logs []string
+	ct.logCallback = func(format string, a ...any) { logs = append(logs, fmt.Sprintf(format, a...)) }
+	productMap := ct.buildProductMap(map[int]*Blueprint{
+		501: {ID: 501, Name: "Mystery Assortment"},
+		// Its name would reach the pack: a refused link is not retried by name
+		600: {ID: 600, Name: "Freedom Ascension Booster Pack", TCGplayerID: 10},
+		601: {ID: 601, Name: "Freedom Ascension Booster Box"},
+		602: {ID: 602, Name: "Mystery Assortment", TCGplayerID: 5},
+		603: {ID: 603, Name: "Freedom Ascension Starter Deck"},
+	})
+
+	want := map[int]string{501: "gd05-box", 602: "gd05-pack", 603: "gd05-deck"}
+	if len(productMap) != len(want) {
+		t.Errorf("placed %v, want %v", productMap, want)
+	}
+	for id, uuid := range want {
+		if !slices.Equal(productMap[id], []string{uuid}) {
+			t.Errorf("blueprint %d: got %v, want [%s]", id, productMap[id], uuid)
+		}
+	}
+	for _, line := range []string{
+		`[CTSealed] "Freedom Ascension Booster Pack" (600): ` + sealedHoldsOwnID,
+		`[CTSealed] "Freedom Ascension Booster Box" (601): ` + sealedHoldsOwnID,
+		"[CTSealed] Dropped 2 blueprints: " + sealedHoldsOwnID,
+	} {
+		if !slices.Contains(logs, line) {
+			t.Errorf("logged %q, want %q among them", logs, line)
+		}
+	}
+}
+
+// TestBuildProductMapUnusableIDHoldsNothing pins that a cardtraderId no id
+// map can index leaves its product to the name, rather than hiding it.
+func TestBuildProductMapUnusableIDHoldsNothing(t *testing.T) {
+	for _, id := range []string{"abc", " 1 ", " "} {
+		backend := &matcher.Backend{
+			Game:           "gundam",
+			UUIDs:          map[string]*matcher.CardObject{},
+			Hashes:         map[string][]string{},
+			SetSealedUUIDs: map[string][]string{},
+			Sets: map[string]*matcher.Set{
+				"GD05": {Name: "Freedom Ascension", Code: "GD05"},
+			},
+		}
+		backend.AddSealed("gd05-box", "Freedom Ascension Booster Box", "GD05", "",
+			map[string]string{"cardtraderId": id})
+		backend.SortSealed()
+		backend.IndexSets()
+
+		ct, err := NewScraperSealed(backend, "")
+		if err != nil {
+			t.Fatal(err)
+		}
+		productMap := ct.buildProductMap(map[int]*Blueprint{
+			601: {ID: 601, Name: "Freedom Ascension Booster Box"},
+		})
+		if !slices.Equal(productMap[601], []string{"gd05-box"}) {
+			t.Errorf("cardtraderId %q: placed %v, want gd05-box by name", id, productMap)
 		}
 	}
 }

@@ -60,8 +60,8 @@ type GalleryBlade struct {
 }
 
 // GallerySealed is a sealed product: a booster box, a display, a starter
-// bundle. It has no collector number, no finish and no gallery entry - the
-// TCGplayer product id is its whole identity.
+// bundle. It has no collector number, no finish and no gallery entry - its
+// store ids are its whole identity.
 type GallerySealed struct {
 	ID            string `json:"id"`
 	Name          string `json:"name"`
@@ -70,6 +70,7 @@ type GallerySealed struct {
 	ExternalLinks struct {
 		TcgPlayerID int `json:"tcgPlayerId"`
 	} `json:"externalLinks"`
+	Identifiers map[string]string `json:"identifiers"`
 }
 
 // GallerySet is one set as the gallery publishes it.
@@ -415,7 +416,7 @@ func (gallery *GalleryBlade) newBackend(properties map[string][]string) *matcher
 	// Sealed products live in the sealed namespace throughout; AddSealed
 	// is what files them there.
 	for _, product := range gallery.Sealed.Items {
-		b.AddSealed(product.ID, product.Name, product.SetCode, product.Image, product.ExternalLinks.TcgPlayerID)
+		b.AddSealed(product.ID, product.Name, product.SetCode, product.Image, matcher.SealedIdentifiers(product.Identifiers, product.ExternalLinks.TcgPlayerID))
 	}
 	b.Complete(Rules{})
 

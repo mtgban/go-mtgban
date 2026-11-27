@@ -168,6 +168,7 @@ type AllCards struct {
 		ExternalLinks struct {
 			TcgPlayerID int `json:"tcgPlayerId"`
 		} `json:"externalLinks"`
+		Identifiers map[string]string `json:"identifiers"`
 	} `json:"sealed,omitempty"`
 
 	// treatments are the promo types each printing carries, by uuid, which
@@ -650,7 +651,7 @@ func (ac *AllCards) newBackend() *matcher.Backend {
 				ReleaseDateTime: releaseDateTime,
 			}
 		}
-		b.AddSealed(product.ID, product.Name, product.SetCode, product.Image, product.ExternalLinks.TcgPlayerID)
+		b.AddSealed(product.ID, product.Name, product.SetCode, product.Image, matcher.SealedIdentifiers(product.Identifiers, product.ExternalLinks.TcgPlayerID))
 	}
 
 	b.Complete(Rules{treatments: ac.treatments})
