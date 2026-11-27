@@ -5,12 +5,14 @@ import (
 	"github.com/mtgban/go-mtgban/mtgban"
 )
 
+// sealedGames are the games "miniaturemarket_sealed" registers for.
+var sealedGames = []matcher.Game{
+	matcher.GameMagic, matcher.GameLorcana, matcher.GameRiftbound,
+	matcher.GameOnePiece, matcher.GameFleshAndBlood, matcher.GameGundam,
+}
+
 func init() {
-	mtgban.Register("miniaturemarket_sealed",
-		[]matcher.Game{
-			matcher.GameMagic, matcher.GameLorcana, matcher.GameRiftbound,
-			matcher.GameOnePiece, matcher.GameFleshAndBlood, matcher.GameGundam,
-		},
+	mtgban.Register("miniaturemarket_sealed", sealedGames,
 		func(b *matcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
 			scraper, err := NewScraperSealed(b)
 			if err != nil {

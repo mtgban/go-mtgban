@@ -3,7 +3,9 @@
 package miniaturemarket
 
 import (
+	"cmp"
 	"context"
+	"errors"
 	"fmt"
 	"maps"
 	"net/http"
@@ -295,10 +297,24 @@ func extrasNameACard(b *matcher.Backend, extras, candidate []string) bool {
 }
 
 // resolveListing names the sealed product a storefront listing prices, or
-// says why none was found. Every listing this scraper leaves behind leaves it
-// here, which is why the reason is returned rather than swallowed: otherwise
-// a run that resolved nothing at all looks exactly like a run with nothing to
-// resolve.
+// says why none was found: matchListing's answer as a uuid or a reason.
+func (mm *Miniaturemarket) resolveListing(id, listed string) (string, string) {
+	match := mm.matchListing(id, listed)
+	if match.UUID == "" {
+		return "", match.Reason
+	}
+	return match.UUID, ""
+}
+
+// noDatastoreID is why a Magic listing the datastore holds no id for is
+// dropped; Magic sealed is matched by id alone.
+const noDatastoreID = "no datastore id"
+
+// matchListing decides which sealed product a storefront listing is, before
+// its price is read, or says why none was found. Every listing this scraper
+// leaves behind leaves it here, which is why the reason is returned rather
+// than swallowed: otherwise a run that resolved nothing at all looks exactly
+// like a run with nothing to resolve.
 //
 // A listing is found first by the id the datastore records. Magic stops
 // there; in the other games a listing whose id the datastore lacks is
@@ -306,36 +322,47 @@ func extrasNameACard(b *matcher.Backend, extras, candidate []string) bool {
 // name retries without its trailing decoration ("(New Arrival)"), which
 // resolution rightly refuses to see past on its own. A name never lands on a
 // product that holds an id of its own.
-func (mm *Miniaturemarket) resolveListing(id, listed string) (string, string) {
+func (mm *Miniaturemarket) matchListing(id, listed string) mtgban.SealedMatch {
+	match := mtgban.SealedMatch{StoreID: id, Name: listed}
 	if uuid, found := mm.productMap[id]; found {
-		return uuid, ""
+		match.UUID = uuid
+		match.Via = mtgban.SealedByID
+		return match
 	}
-	uuid, reason := mm.resolveListingName(listed)
-	if reason != "" {
-		return "", reason
+	match = mm.matchListingName(match, listed)
+	if match.UUID == "" {
+		return match
 	}
-	co, err := mm.backend.GetUUID(uuid)
+	co, err := mm.backend.GetUUID(match.UUID)
 	if err == nil && co.Identifiers["miniaturemarketId"] != "" {
-		return "", sealedHoldsOwnID
+		match.UUID = ""
+		match.Via = mtgban.SealedRefused
+		match.Reason = sealedHoldsOwnID
 	}
-	return uuid, ""
+	return match
 }
 
 // sealedHoldsOwnID is the refusal of a listing whose name reaches a product
 // the datastore already lists an id for.
 const sealedHoldsOwnID = "product holds its own id"
 
-// resolveListingName resolves a listing the datastore has no id for.
-func (mm *Miniaturemarket) resolveListingName(listed string) (string, string) {
+// matchListingName fills in match for a listing the datastore has no id for.
+func (mm *Miniaturemarket) matchListingName(match mtgban.SealedMatch, listed string) mtgban.SealedMatch {
 	if mm.backend.Game == matcher.GameMagic {
-		return "", "no datastore id"
+		match.Via = mtgban.SealedSkipped
+		match.Reason = noDatastoreID
+		return match
 	}
 	name := strings.TrimSpace(sealedName(mm.backend.Game, listed))
 	if name == "" {
-		return "", "unnamed listing"
+		match.Via = mtgban.SealedSkipped
+		match.Reason = "unnamed listing"
+		return match
 	}
 	if matcher.SealedIsLanguageVariant(name) {
-		return "", "language variant"
+		match.Via = mtgban.SealedSkipped
+		match.Reason = "language variant"
+		return match
 	}
 	// A trailing parenthetical is the storefront's decoration on some
 	// products and the product's own on others - "(Preorder)" against
@@ -350,9 +377,11 @@ func (mm *Miniaturemarket) resolveListingName(listed string) (string, string) {
 		spellings = append(spellings, trimmed)
 	}
 
+	match.Via = mtgban.SealedByName
 	uuid, err := mm.backend.ResolveSealed(name)
 	if err == nil {
-		return uuid, ""
+		match.UUID = uuid
+		return match
 	}
 	// The resolver's refusal on the name as listed is the one worth
 	// reporting: every attempt after this one is a guess at what else the
@@ -360,16 +389,22 @@ func (mm *Miniaturemarket) resolveListingName(listed string) (string, string) {
 	// reader nothing about the name that did.
 	refusal := err
 	for _, spelling := range spellings[1:] {
-		if uuid, err = mm.backend.ResolveSealed(spelling); err == nil {
-			return uuid, ""
+		uuid, err = mm.backend.ResolveSealed(spelling)
+		if err == nil {
+			match.UUID = uuid
+			return match
 		}
 	}
 	for _, spelling := range spellings {
-		if uuid, err = resolveByNamedCard(mm.backend, spelling); err == nil {
-			return uuid, ""
+		uuid, err = resolveByNamedCard(mm.backend, spelling)
+		if err == nil {
+			match.UUID = uuid
+			return match
 		}
 	}
-	return "", refusal.Error()
+	match.Via = mtgban.SealedRefused
+	match.Reason = refusal.Error()
+	return match
 }
 
 func (mm *Miniaturemarket) mainURL() string {
@@ -386,6 +421,11 @@ type respChan struct {
 	// silence, which is what a run pricing none of a game looked like.
 	drop string
 	name string
+
+	// id and via say which listing a priced record is and how it was
+	// placed, for the line a run ends on.
+	id  string
+	via mtgban.SealedVia
 }
 
 func (mm *Miniaturemarket) printf(format string, a ...any) {
@@ -394,37 +434,74 @@ func (mm *Miniaturemarket) printf(format string, a ...any) {
 	}
 }
 
-func (mm *Miniaturemarket) processPage(ctx context.Context, channel chan<- respChan, page int) error {
+// fetchPage reads one page of the widget's listing, handing logf a line
+// when the page does not parse. A strict read refuses a non-2xx answer,
+// which Load parses anyway.
+func (mm *Miniaturemarket) fetchPage(ctx context.Context, page int, strict bool, logf mtgban.LogCallbackFunc) (*goquery.Document, error) {
 	u, err := url.Parse(mm.mainURL())
 	if err != nil {
-		return err
+		return nil, err
 	}
 	v := u.Query()
 	v.Set("p", fmt.Sprint(page))
 	u.RawQuery = v.Encode()
+	return mm.fetchDoc(ctx, u.String(), strict, logf)
+}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), http.NoBody)
+// fetchDoc reads and parses one page, refusing a non-2xx answer when strict.
+func (mm *Miniaturemarket) fetchDoc(ctx context.Context, link string, strict bool, logf mtgban.LogCallbackFunc) (*goquery.Document, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	resp, err := mm.client.Do(req)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer resp.Body.Close()
 
+	if strict && (resp.StatusCode < 200 || resp.StatusCode > 299) {
+		return nil, fmt.Errorf("status %d", resp.StatusCode)
+	}
+
 	doc, err := goquery.NewDocumentFromReader(resp.Body)
 	if err != nil {
-		mm.printf("newDoc - %s", err.Error())
+		logf("newDoc - %s", err.Error())
+		return nil, err
+	}
+	return doc, nil
+}
+
+// listingSelector picks the listings out of a page.
+const listingSelector = `div[class="product-info"]`
+
+// listing is one product of the widget's listing, by its id and name.
+type listing struct {
+	id   string
+	name string
+}
+
+// listingOf reads a listing's id and name.
+func listingOf(s *goquery.Selection) listing {
+	id, _ := s.Find(`input[name="product-id"]`).Attr("value")
+	return listing{
+		id:   id,
+		name: strings.TrimSpace(s.Find(`a.product-name`).Text()),
+	}
+}
+
+func (mm *Miniaturemarket) processPage(ctx context.Context, channel chan<- respChan, page int) error {
+	doc, err := mm.fetchPage(ctx, page, false, mm.printf)
+	if err != nil {
 		return err
 	}
 
-	doc.Find(`div[class="product-info"]`).Each(func(i int, s *goquery.Selection) {
-		listed := strings.TrimSpace(s.Find(`a.product-name`).Text())
-		id, _ := s.Find(`input[name="product-id"]`).Attr("value")
-		uuid, drop := mm.resolveListing(id, listed)
-		if drop != "" {
-			channel <- respChan{drop: drop, name: listed}
+	doc.Find(listingSelector).Each(func(i int, s *goquery.Selection) {
+		row := listingOf(s)
+		listed := row.name
+		match := mm.matchListing(row.id, listed)
+		if match.UUID == "" {
+			channel <- respChan{drop: match.Reason, name: listed}
 			return
 		}
 
@@ -441,11 +518,13 @@ func (mm *Miniaturemarket) processPage(ctx context.Context, channel chan<- respC
 		}
 
 		channel <- respChan{
-			cardID: uuid,
+			cardID: match.UUID,
 			invEntry: &mtgban.InventoryEntry{
 				Price: price,
 				URL:   link,
 			},
+			id:  row.id,
+			via: match.Via,
 		}
 	})
 
@@ -455,19 +534,13 @@ func (mm *Miniaturemarket) processPage(ctx context.Context, channel chan<- respC
 // NumberOfPages returns how many pages the widget paginates into, read off
 // the last link in its pagination.
 func (mm *Miniaturemarket) NumberOfPages(ctx context.Context) (int, error) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, mm.mainURL(), http.NoBody)
-	if err != nil {
-		return 0, err
-	}
-	resp, err := mm.client.Do(req)
-	if err != nil {
-		return 0, err
-	}
-	defer resp.Body.Close()
+	return mm.numberOfPages(ctx, false)
+}
 
-	doc, err := goquery.NewDocumentFromReader(resp.Body)
+// numberOfPages is NumberOfPages, refusing a non-2xx answer when strict.
+func (mm *Miniaturemarket) numberOfPages(ctx context.Context, strict bool) (int, error) {
+	doc, err := mm.fetchDoc(ctx, mm.mainURL(), strict, mm.printf)
 	if err != nil {
-		mm.printf("newDoc - %s", err.Error())
 		return 0, err
 	}
 
@@ -487,8 +560,8 @@ func (mm *Miniaturemarket) NumberOfPages(ctx context.Context) (int, error) {
 	return strconv.Atoi(num)
 }
 
-// Load fetches everything this scraper offers. See mtgban.Scraper.
-func (mm *Miniaturemarket) Load(ctx context.Context) error {
+// buildProductMap indexes the sealed products by their miniaturemarket id.
+func (mm *Miniaturemarket) buildProductMap() {
 	for _, uuid := range mm.backend.GetSealedUUIDs() {
 		co, err := mm.backend.GetUUID(uuid)
 		if err != nil || co.Identifiers["miniaturemarketId"] == "" {
@@ -496,6 +569,11 @@ func (mm *Miniaturemarket) Load(ctx context.Context) error {
 		}
 		mm.productMap[co.Identifiers["miniaturemarketId"]] = uuid
 	}
+}
+
+// Load fetches everything this scraper offers. See mtgban.Scraper.
+func (mm *Miniaturemarket) Load(ctx context.Context) error {
+	mm.buildProductMap()
 	mm.printf("Loaded %d sealed products", len(mm.productMap))
 	if mm.backend.Game != matcher.GameMagic {
 		mm.printf("Resolving %s products by name", mm.backend.Game)
@@ -518,6 +596,7 @@ func (mm *Miniaturemarket) Load(ctx context.Context) error {
 	// The consumer runs on one goroutine, so the tally needs no locking.
 	var listed, priced int
 	dropped := map[string]int{}
+	pricedVia := map[string]mtgban.SealedVia{}
 	mtgban.WorkerPool(ctx, mm.maxConcurrency, pageNums,
 		func(ctx context.Context, page int, results chan<- respChan) error {
 			return mm.processPage(ctx, results, page)
@@ -531,7 +610,7 @@ func (mm *Miniaturemarket) Load(ctx context.Context) error {
 				// which refusal, the way the other sealed scrapers do. The
 				// products carrying no id of ours are the ordinary case for
 				// Magic and are counted rather than listed.
-				if record.drop != "no datastore id" {
+				if record.drop != noDatastoreID {
 					mm.printf("%q: %s", record.name, record.drop)
 				}
 				return
@@ -540,7 +619,9 @@ func (mm *Miniaturemarket) Load(ctx context.Context) error {
 			err := mm.inventory.AddRelaxed(record.cardID, record.invEntry)
 			if err != nil {
 				mm.printf("%v", err)
+				return
 			}
+			pricedVia[record.id] = record.via
 		},
 		mm.printf,
 	)
@@ -548,10 +629,161 @@ func (mm *Miniaturemarket) Load(ctx context.Context) error {
 	for _, reason := range slices.Sorted(maps.Keys(dropped)) {
 		mm.printf("Dropped %d listings: %s", dropped[reason], reason)
 	}
+	byID, bridged, named := pricedByVia(pricedVia)
+	mm.printf("Priced %d products by id, %d through a bridge, %d by name", byID, bridged, named)
 
 	mm.inventoryDate = time.Now()
 
 	return nil
+}
+
+// pricedByVia counts the products of a run by how each was placed.
+func pricedByVia(priced map[string]mtgban.SealedVia) (byID, bridged, named int) {
+	for _, via := range priced {
+		switch via {
+		case mtgban.SealedByID:
+			byID++
+		case mtgban.SealedByBridge:
+			bridged++
+		case mtgban.SealedByName:
+			named++
+		}
+	}
+	return byID, bridged, named
+}
+
+// newSealedMatcher builds the scraper the export matches through, refusing
+// Magic, which is matched by id alone, and every game the sealed scraper is
+// not registered for.
+func newSealedMatcher(b *matcher.Backend) (*Miniaturemarket, error) {
+	if !slices.Contains(sealedGames, b.Game) {
+		return nil, fmt.Errorf("no sealed scraper for game %q", b.Game)
+	}
+	if b.Game == matcher.GameMagic {
+		return nil, errors.New("magic sealed is matched by id alone")
+	}
+	mm, err := NewScraperSealed(b)
+	if err != nil {
+		return nil, err
+	}
+	mm.buildProductMap()
+	return mm, nil
+}
+
+// MatchSealedCatalog walks the widget's listing the way Load does and
+// answers what the scraper's matching decides for each product, by id. It
+// prices nothing. The store's listing shows in-stock products only, so the
+// export reports only those; a listing carrying no id is left out. A page
+// that fails or answers a non-2xx status, or a walk finding no listing at
+// all, is an error rather than a short answer.
+func MatchSealedCatalog(ctx context.Context, b *matcher.Backend) ([]mtgban.SealedMatch, error) {
+	mm, err := newSealedMatcher(b)
+	if err != nil {
+		return nil, err
+	}
+	return mm.matchSealedCatalog(ctx)
+}
+
+// matchSealedCatalog is the export's fetch and match, over mm's client.
+func (mm *Miniaturemarket) matchSealedCatalog(ctx context.Context) ([]mtgban.SealedMatch, error) {
+	totalPages, err := mm.numberOfPages(ctx, true)
+	if err != nil {
+		return nil, err
+	}
+	pageNums := make([]int, totalPages)
+	for i := range pageNums {
+		pageNums[i] = i + 1
+	}
+
+	type pageResult struct {
+		page     int
+		listings []listing
+		err      error
+	}
+	var listings []listing
+	var walked int
+	var lost error
+	mtgban.WorkerPool(ctx, mm.maxConcurrency, pageNums,
+		func(ctx context.Context, page int, results chan<- pageResult) error {
+			found, err := mm.pageListings(ctx, page)
+			results <- pageResult{page: page, listings: found, err: err}
+			return nil
+		},
+		func(result pageResult) {
+			if result.err != nil {
+				if lost == nil {
+					lost = fmt.Errorf("page %d: %w", result.page, result.err)
+				}
+				return
+			}
+			walked++
+			listings = append(listings, result.listings...)
+		},
+		nil,
+	)
+	if lost != nil {
+		return nil, lost
+	}
+	if walked != totalPages {
+		ctxErr := ctx.Err()
+		if ctxErr != nil {
+			return nil, fmt.Errorf("walked %d of %d pages: %w", walked, totalPages, ctxErr)
+		}
+		return nil, fmt.Errorf("walked %d of %d pages", walked, totalPages)
+	}
+	// The widget always lists something, so a walk finding nothing read a
+	// page that was not the listing.
+	if len(listings) == 0 {
+		return nil, fmt.Errorf("no listings on %d pages", totalPages)
+	}
+	return mm.matchCatalog(listings), nil
+}
+
+// pageListings answers every listing on one page.
+func (mm *Miniaturemarket) pageListings(ctx context.Context, page int) ([]listing, error) {
+	doc, err := mm.fetchPage(ctx, page, true, func(string, ...any) {})
+	if err != nil {
+		return nil, err
+	}
+	var listings []listing
+	doc.Find(listingSelector).Each(func(i int, s *goquery.Selection) {
+		listings = append(listings, listingOf(s))
+	})
+	return listings, nil
+}
+
+// matchCatalog matches every listing carrying an id, one answer per id, a
+// placed answer kept over one placing nothing, sorted by the id's number.
+func (mm *Miniaturemarket) matchCatalog(listings []listing) []mtgban.SealedMatch {
+	answers := map[string]mtgban.SealedMatch{}
+	for _, row := range listings {
+		if row.id == "" {
+			continue
+		}
+		prev, found := answers[row.id]
+		if found && prev.UUID != "" {
+			continue
+		}
+		match := mm.matchListing(row.id, row.name)
+		if found && match.UUID == "" {
+			continue
+		}
+		answers[row.id] = match
+	}
+	return slices.SortedFunc(maps.Values(answers), func(a, b mtgban.SealedMatch) int {
+		return compareIDs(a.StoreID, b.StoreID)
+	})
+}
+
+// compareIDs orders two ids by their number, falling back to their text
+// for an id that is not one, or for two spelling one number apart.
+func compareIDs(a, b string) int {
+	x, errA := strconv.Atoi(a)
+	y, errB := strconv.Atoi(b)
+	if errA != nil || errB != nil || x == y {
+		return strings.Compare(a, b)
+	}
+	return cmp.Compare(x, y)
 }
 
 // Inventory returns what Load collected. See mtgban.Seller.
