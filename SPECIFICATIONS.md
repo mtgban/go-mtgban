@@ -830,6 +830,23 @@ A derived token pair (`Identifiers["derivedTokenPair"]`) is filed under its
 own name, either face first, and in each face's bucket, where a search finds
 it; `entry4Name` passes over it at every step, the fallback included.
 
+**Store ids on sealed products.** A sealed product carries at most one id
+per store, in `Identifiers`. Magic's come from MTGJSON. The eight datastore
+loaders read a sealed entry's optional `identifiers` object, string values
+keyed by go-mtgban's identifier names (`tcgplayerProductId`, `mcmId`,
+`cardtraderId`, `csiId`, `scgId`, `miniaturemarketId`), and hand
+`AddSealed` its map through `matcher.SealedIdentifiers`, which fills
+`tcgplayerProductId` from `externalLinks.tcgPlayerId` when the object lacks
+it; `AddSealed` drops empty values. Outside Magic, the five sealed scrapers
+try the store's id first, per product, and fall back for the rest:
+Cardmarket to its print runs, the CardTrader bridge and the name, CardTrader
+to the TCGplayer id and the name, Cool Stuff Inc (by the retail row's
+`data-pid` and the buylist's `PID`), Star City Games and Miniature Market to
+the name. A fallback never lands on a product holding that store's id (for
+Cardmarket and CardTrader, one that is a number): the listing is refused as
+"product holds its own id" (each store words it its own way), logged and,
+where the scraper tallies drops, counted.
+
 Sealed products are modeled end-to-end, in `matcher/sealed`, whose
 functions take the backend first:
 
