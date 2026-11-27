@@ -65,6 +65,7 @@ slow run queues the next one instead of starting a second catalog walk;
 the later Pokemon and YuGiOh jobs use the same group too.`,
 	},
 	{Game: "magic", Store: "cardmarket_sealed", Cron: "35 19 * * *", Group: "bantool-cardmarket", Affiliate: "MKM_PARTNER"},
+	{Game: "magic", Store: "cardmonstergames", Cron: "42 7,19 * * *"},
 	{Game: "magic", Store: "cardtrader", Cron: "50 12 * * *", Group: "bantool-cardtrader", Affiliate: "CT_PARTNER"},
 	{Game: "magic", Store: "cardtrader_sealed", Cron: "46 16 * * *", Group: "bantool-cardtrader", Affiliate: "CT_PARTNER"},
 	{Game: "magic", Store: "coolstuffinc", Cron: "45 */4 * * *", Group: "bantool-coolstuffinc", Affiliate: "CSI_PARTNER"},

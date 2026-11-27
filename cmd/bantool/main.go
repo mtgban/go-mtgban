@@ -43,6 +43,7 @@ import (
 	_ "github.com/mtgban/go-mtgban/abugames"
 	_ "github.com/mtgban/go-mtgban/arcanafrisia"
 	_ "github.com/mtgban/go-mtgban/cardkingdom"
+	_ "github.com/mtgban/go-mtgban/cardmonstergames"
 	_ "github.com/mtgban/go-mtgban/coolstuffinc"
 	_ "github.com/mtgban/go-mtgban/gamenerdz"
 	_ "github.com/mtgban/go-mtgban/hareruya"
@@ -250,8 +251,8 @@ func tcgSYPCatalog() (tcgplayer.SYPCatalog, error) {
 }
 
 // tcgCatalog reads the catalog dump tcg_index, tcg_market and tcg_sealed
-// price from, and mintcard names its listings' skus by: the products the
-// category sells and their skus.
+// price from, and mintcard and cardmonstergames name their listings' skus
+// by: the products the category sells and their skus.
 func tcgCatalog() (*tcgapi.CatalogDump, error) {
 	path := os.Getenv("TCGPLAYER_CATALOG_PATH")
 	if path == "" {
@@ -340,7 +341,7 @@ func scraperResources(b *matcher.Backend, key string) ([]mtgban.Option, error) {
 			opts = append(opts, cardgamecorner.WithBridge(bridge))
 		}
 
-	case "tcg_index", "tcg_market", "tcg_sealed", "mintcard":
+	case "tcg_index", "tcg_market", "tcg_sealed", "mintcard", "cardmonstergames":
 		catalog, err := tcgCatalog()
 		if err != nil {
 			return nil, err
