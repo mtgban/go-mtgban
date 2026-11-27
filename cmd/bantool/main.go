@@ -43,6 +43,7 @@ import (
 	_ "github.com/mtgban/go-mtgban/abugames"
 	_ "github.com/mtgban/go-mtgban/arcanafrisia"
 	_ "github.com/mtgban/go-mtgban/cardkingdom"
+	_ "github.com/mtgban/go-mtgban/cardrush"
 	_ "github.com/mtgban/go-mtgban/coolstuffinc"
 	_ "github.com/mtgban/go-mtgban/gamenerdz"
 	_ "github.com/mtgban/go-mtgban/hareruya"
