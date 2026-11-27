@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 	"time"
@@ -15,10 +16,12 @@ import (
 	"github.com/mtgban/go-mtgban/mtgban"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/hashicorp/go-retryablehttp"
 )
 
 const (
-	defaultConcurrency = 8
+	// The store answers 503 to about half of four concurrent requests.
+	defaultConcurrency = 2
 
 	inventoryURL = "https://www.toamagic.com/catalog/magic_singles/8?layout=false"
 )
@@ -41,7 +44,13 @@ func NewScraper(b *matcher.Backend) *TOAMagic {
 	toa := TOAMagic{backend: b}
 	toa.inventory = mtgban.InventoryRecord{}
 	toa.maxConcurrency = defaultConcurrency
-	toa.client = mtgban.NewHTTPClient()
+	// The store throttles rather than rejecting outright, so retry slower
+	// and longer instead of giving up in seconds.
+	toa.client = mtgban.NewHTTPClient(
+		mtgban.WithHTTPBackoff(retryablehttp.RateLimitLinearJitterBackoff),
+		mtgban.WithHTTPRetryWait(2*time.Second, 10*time.Second),
+		mtgban.WithHTTPRetries(20),
+	)
 	return &toa
 }
 
@@ -104,8 +113,15 @@ func (toa *TOAMagic) inventoryOffers(meta *goquery.Selection) []offer {
 }
 
 func (toa *TOAMagic) processProduct(ctx context.Context, channel chan<- responseChan, productPath string) error {
-	link := "https://www.toamagic.com" + productPath + "?layout=false&filter_by_stock=in-stock"
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
+	u, err := url.Parse("https://www.toamagic.com" + productPath)
+	if err != nil {
+		return err
+	}
+	q := u.Query()
+	q.Set("layout", "false")
+	q.Set("filter_by_stock", "in-stock")
+	u.RawQuery = q.Encode()
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), http.NoBody)
 	if err != nil {
 		return err
 	}
