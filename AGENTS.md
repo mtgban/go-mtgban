@@ -132,7 +132,7 @@ review comment. The tree is gofmt-clean today; keep it that way.
 
 Do not narrow the test or vet invocation to a subset of packages. Tests live
 in `mtgban/`, in `matcher/`, every one of its nine `matcher/<game>`
-sub-packages and `matcher/sealed`, and in 21 of the 25 scraper packages
+sub-packages and `matcher/sealed`, and in 22 of the 26 scraper packages
 (only `cardsphere`, `mtgstocks`, `secretdeskorrigans`, and `toamagic` have
 none).
 A subset run can pass while CI fails. `matcher/magic` carries the largest
@@ -148,9 +148,9 @@ environment variables:
   suite and `matcher/magic`, both of which load it through `magic.Load`, as
   well as every scraper suite that needs a real Magic datastore to test its
   `preprocess.go` (abugames, cardgamecorner, cardkingdom, cardmarket,
-  cardtrader, coolstuffinc, gamenerdz, hareruya, manaleak, manapool, mintcard,
-  mtgseattle, sealedev, starcitygames, strikezone, tcgplayer, trolltrader, and
-  vegassingles; grep a package's tests for `ALLPRINTINGS5_PATH` rather than
+  cardmonstergames, cardtrader, coolstuffinc, gamenerdz, hareruya, manaleak,
+  manapool, mintcard, mtgseattle, sealedev, starcitygames, strikezone,
+  tcgplayer, trolltrader, and vegassingles; grep a package's tests for `ALLPRINTINGS5_PATH` rather than
   for a skip message, which is not worded the same everywhere). Magic is the
   one game whose datastore is not built by `datastore-gen`.
 - `LORCANA_PATH`, `RIFTBOUND_PATH`, `ONEPIECE_PATH`, `YUGIOH_PATH`,

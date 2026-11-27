@@ -1050,7 +1050,9 @@ slabs as `CSIGraded`, one-off copies as `CSIUnique`), `hareruya`
 grade is filed at the best offer at it or below, the one PLD skips included,
 `InfoForScraper`, graded slabs as `ABUGraded`), `mtgseattle`
 (`CreditMultiplier 1.33`), `mintcard` (rides TCG SKUs,
-`CreditMultiplier 1.1`), `vegassingles` (buylist alone, read from Hippolink by
+`CreditMultiplier 1.1`), `cardmonstergames` (a Shopify store whose
+singles carry TCGplayer SKUs, retail alone, `NoQuantityInventory`),
+`vegassingles` (buylist alone, read from Hippolink by
 TCGplayer product id), `manaleak` (GBP), `miniaturemarket` (sealed-only),
 and the unregistered `secretdeskorrigans` (CAD, French) and `toamagic`
 (Spanish), which bantool does not run.

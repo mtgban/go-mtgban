@@ -1,0 +1,116 @@
+{
+  "products": [
+    {
+      "id": 10289561731328,
+      "title": "Omniscience - Core Set 2019 - Near Mint",
+      "handle": "omniscience-core-set-2019-near-mint",
+      "vendor": "Magic: The Gathering",
+      "product_type": "MTG Single",
+      "variants": [
+        {
+          "id": 50921956278528,
+          "title": "Default Title",
+          "sku": "3765175",
+          "available": true,
+          "price": "7.00"
+        }
+      ]
+    },
+    {
+      "id": 10289628152064,
+      "title": "Tribute to the World Tree - March of the Machine - Near Mint Foil",
+      "handle": "tribute-to-the-world-tree-march-of-the-machine-near-mint-foil",
+      "vendor": "Magic: The Gathering",
+      "product_type": "MTG Single",
+      "variants": [
+        {
+          "id": 50922193027328,
+          "title": "Default Title",
+          "sku": "7053662",
+          "available": true,
+          "price": "19.00"
+        }
+      ]
+    },
+    {
+      "id": 10315193614592,
+      "title": "Boseiju, Who Endures - Kamigawa: Neon Dynasty - Near Mint",
+      "handle": "boseiju-who-endures-kamigawa-neon-dynasty-near-mint",
+      "vendor": "Magic: The Gathering",
+      "product_type": "MTG Single",
+      "variants": [
+        {
+          "id": 51008633340160,
+          "title": "Default Title",
+          "sku": "5375534",
+          "available": true,
+          "price": "60.00"
+        }
+      ]
+    },
+    {
+      "id": 10315206590720,
+      "title": "Yuna, Hope of Spira (Borderless) (Surge Foil) - FINAL FANTASY - Near Mint",
+      "handle": "yuna-hope-of-spira-borderless-surge-foil-final-fantasy-near-mint",
+      "vendor": "Magic: The Gathering",
+      "product_type": "MTG Single",
+      "variants": [
+        {
+          "id": 51008736526592,
+          "title": "Default Title",
+          "sku": "8700810",
+          "available": true,
+          "price": "170.00"
+        }
+      ]
+    },
+    {
+      "id": 10336922829056,
+      "title": "Pokémon TCG: Delta Reign Booster Bundle",
+      "handle": "poke-delta-reign-booster-bundle",
+      "vendor": "Pokemon - Sealed",
+      "product_type": "Pokemon - Sealed",
+      "variants": [
+        {
+          "id": 51152365945088,
+          "title": "Default Title",
+          "sku": "9460105",
+          "available": true,
+          "price": "39.99"
+        }
+      ]
+    },
+    {
+      "id": 8208279175424,
+      "title": "Necrogen Rotpriest (Showcase) [Phyrexia: All Will Be One]",
+      "handle": "6943142",
+      "vendor": "Card Monster Games",
+      "product_type": "MTG Singles",
+      "variants": [
+        {
+          "id": 43782605439232,
+          "title": "Lightly Played",
+          "sku": "",
+          "available": false,
+          "price": "1000.00"
+        }
+      ]
+    },
+    {
+      "id": 10289634181376,
+      "title": "Valakut Awakening - Zendikar Rising - Near Mint",
+      "handle": "valakut-awakening-zendikar-rising-near-mint",
+      "vendor": "Magic: The Gathering",
+      "product_type": "MTG Single",
+      "variants": [
+        {
+          "id": 50922207871232,
+          "title": "Default Title",
+          "sku": "4539307",
+          "available": false,
+          "price": "17.00"
+        }
+      ]
+    }
+  ]
+}
