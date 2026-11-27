@@ -15,12 +15,14 @@ credential is needed: the only setting is an optional affiliate id,
 
 ## The core problem
 
-**CSI publishes no identifier at all, for any game, on either feed.** The
+**CSI publishes no outside identifier, for any game, on either feed.** The
 buylist (`CSIPriceEntry`) carries a `PID` - CSI's own internal product id,
-used only to build a debug URL - and nothing else that names a printing
-independently of its wording. The retail HTML search carries not even
-that: no scryfall id, no tcgplayer id, in the row markup for any game. So
-every resolution, for every game, on both sides, is **wording- and
+which the datastore knows for sealed product alone (below) - and nothing
+else that names a printing independently of its wording. The retail HTML
+search carries the same id as a row's `data-pid` and nothing more: no
+scryfall id, no tcgplayer id, in the row markup for any game. So every
+singles resolution for every game, and outside Magic every sealed one the
+datastore holds no id for, on both sides, is **wording- and
 shelf-driven**: the printing is whatever `Name` + `ItemSet`/shelf +
 `Variation` (built from `Notes`/`Number`) + `Foil` happens to name, and
 when the shelf itself names the wrong thing, nothing catches it.
@@ -33,11 +35,17 @@ much larger than a single defect class fixed several times; it is one
 translation layer per game, independently discovered and independently
 broken.
 
-The **one** identifier-driven path in the whole package is Magic sealed
-product: `NewScraperSealed` builds `productMap` from `co.Identifiers["csiId"]`
-on every sealed Magic uuid the datastore carries - a field this scraper
-reads but never writes, populated upstream (MTGJSON/datastore-gen). Every
-other resolution, sealed or singles, any game, goes through wording.
+The **one** identifier-driven path in the whole package is sealed product:
+`NewScraperSealed` builds `productMap` from the datastore's `csiId` - for
+Magic from `co.Identifiers["csiId"]` on every sealed uuid, for the other
+games from `BuildSealedIDMap("csiId")`, every id a product carries. An id
+two products share prices one of them: for Magic the last in
+`GetSealedUUIDs` order, for the other games the last by product name,
+which puts a Foil variant last. The field is one this scraper
+reads but never writes, populated upstream (MTGJSON/datastore-gen), and it
+is the id space of the buylist's `PID`, the retail row's `data-pid` and the
+`/p/<id>` link path alike. Every other resolution, sealed or singles, any
+game, goes through wording.
 
 ## Data sources
 
@@ -58,10 +66,11 @@ Three feeds, all live.
   above; the other five sealed-wired games (`Sealed.scrapeBysets`) instead
   run the *same* search endpoint as singles, once per sealed-product word
   ("booster", "deck", "trove", "gift", "bundle", "case", "box", "kit",
-  "vault", "collection"), and resolve each hit through
-  `matcher.ResolveSealed` - a card row simply fails to resolve and drops
-  out. Lorcana's sealed carries no `ItemSet` facet at all, which is why the
-  sealed search goes by name rather than by shelf.
+  "vault", "collection"). A hit whose `data-pid` is in the product-map is
+  settled by it, with no name clean-up, language check or resolver; any
+  other resolves through `matcher.ResolveSealed` - a card row simply fails
+  to resolve and drops out. Lorcana's sealed carries no `ItemSet` facet at
+  all, which is why the sealed search goes by name rather than by shelf.
 
 Every request the package makes (the search POSTs and pages, the edition
 lists, the Magic sealed pages and the buylist download) treats a non-2xx
