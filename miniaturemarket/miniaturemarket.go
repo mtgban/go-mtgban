@@ -300,9 +300,10 @@ func extrasNameACard(b *matcher.Backend, extras, candidate []string) bool {
 // a run that resolved nothing at all looks exactly like a run with nothing to
 // resolve.
 //
-// Magic routes through the id the datastore records; the other games' data
-// carries no miniaturemarket ids, so the product is resolved by its listed
-// name, English only, unique or nothing. A failing name retries without its
+// A listing is found first by the id the datastore records, any of a
+// product's ids outside Magic. Magic stops there; in the other games a
+// listing whose id the datastore lacks is resolved by its listed name,
+// English only, unique or nothing. A failing name retries without its
 // trailing decoration ("(New Arrival)"), which resolution rightly refuses to
 // see past on its own.
 func (mm *Miniaturemarket) resolveListing(id, listed string) (string, string) {
@@ -469,8 +470,16 @@ func (mm *Miniaturemarket) NumberOfPages(ctx context.Context) (int, error) {
 	return strconv.Atoi(num)
 }
 
-// Load fetches everything this scraper offers. See mtgban.Scraper.
-func (mm *Miniaturemarket) Load(ctx context.Context) error {
+// buildProductMap indexes the sealed products by their miniaturemarket id,
+// every one a product carries outside Magic. An id two products share
+// prices the last, as Magic's overwrite does.
+func (mm *Miniaturemarket) buildProductMap() {
+	if mm.backend.Game != matcher.GameMagic {
+		for id, uuids := range mm.backend.BuildSealedIDMap("miniaturemarketId") {
+			mm.productMap[id] = uuids[len(uuids)-1]
+		}
+		return
+	}
 	for _, uuid := range mm.backend.GetSealedUUIDs() {
 		co, err := mm.backend.GetUUID(uuid)
 		if err != nil || co.Identifiers["miniaturemarketId"] == "" {
@@ -478,9 +487,18 @@ func (mm *Miniaturemarket) Load(ctx context.Context) error {
 		}
 		mm.productMap[co.Identifiers["miniaturemarketId"]] = uuid
 	}
+}
+
+// Load fetches everything this scraper offers. See mtgban.Scraper.
+func (mm *Miniaturemarket) Load(ctx context.Context) error {
+	mm.buildProductMap()
 	mm.printf("Loaded %d sealed products", len(mm.productMap))
 	if mm.backend.Game != matcher.GameMagic {
-		mm.printf("Resolving %s products by name", mm.backend.Game)
+		if len(mm.productMap) == 0 {
+			mm.printf("Resolving %s products by name", mm.backend.Game)
+		} else {
+			mm.printf("Resolving the other %s products by name", mm.backend.Game)
+		}
 	}
 
 	totalPages, err := mm.NumberOfPages(ctx)

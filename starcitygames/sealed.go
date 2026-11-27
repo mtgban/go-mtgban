@@ -80,9 +80,17 @@ func (scg *Sealed) printf(format string, a ...any) {
 }
 
 // buildProductMap indexes the sealed products by their SCG id (the catalog SKU)
-// so a catalog product can be resolved to its mtgban uuid directly.
+// so a catalog product can be resolved to its mtgban uuid directly. Outside
+// Magic it holds every SKU a product carries; an id two products share
+// prices the last, as Magic's overwrite does.
 func buildProductMap(b *matcher.Backend) map[string]string {
 	out := map[string]string{}
+	if b.Game != matcher.GameMagic {
+		for id, uuids := range b.BuildSealedIDMap("scgId") {
+			out[id] = uuids[len(uuids)-1]
+		}
+		return out
+	}
 	for _, uuid := range b.GetSealedUUIDs() {
 		co, err := b.GetUUID(uuid)
 		if err != nil {
@@ -159,8 +167,9 @@ func (scg *Sealed) processProduct(p CatalogProduct) {
 	}
 
 	// Sealed products are keyed by their SKU, which mtgban stores as the
-	// scgId; the games whose datastore does not catalog it (riftbound,
-	// lorcana) resolve by name instead, English only, unique or nothing.
+	// scgId, a product carrying any number of them outside Magic. Outside
+	// Magic a SKU the datastore does not carry resolves by name instead,
+	// English only, unique or nothing.
 	uuid, found := scg.productMap[p.SKU]
 	if !found {
 		if scg.backend.Game == matcher.GameMagic {
@@ -176,7 +185,7 @@ func (scg *Sealed) processProduct(p CatalogProduct) {
 			return
 		}
 		// The name resolver is the whole reason this scraper prices a
-		// fraction of the sealed catalog for the games with no sku in the
+		// fraction of the sealed catalog for the products with no sku in the
 		// datastore, so say which name and which refusal, the way the
 		// singles path says which card it could not place. Magic is exempt:
 		// it is keyed by sku and never asks the resolver, so its whole

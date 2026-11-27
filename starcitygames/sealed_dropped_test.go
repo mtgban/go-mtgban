@@ -91,3 +91,90 @@ func TestSealedDropAccounting(t *testing.T) {
 		t.Errorf("the refused name was logged %d times, want 1", named)
 	}
 }
+
+// TestSealedEveryScgID pins that a product carrying two scgIds is priced
+// under either sku, its name never asked.
+func TestSealedEveryScgID(t *testing.T) {
+	b := &matcher.Backend{
+		Game:           matcher.GameLorcana,
+		UUIDs:          map[string]*matcher.CardObject{},
+		Hashes:         map[string][]string{},
+		SetSealedUUIDs: map[string][]string{},
+		Sets: map[string]*matcher.Set{
+			"WSP": {Name: "Winterspell", Code: "WSP"},
+		},
+	}
+	b.AddSealed("wsp-box", "Winterspell Booster Box", "WSP", "",
+		matcher.SealedIDs{"scgId": {"SLD-LOR-BBX-011-EN", "SLD-LOR-BBX-011-EN-2"}})
+	b.SortSealed()
+	b.IndexSets()
+
+	scg, err := NewScraperSealed(b, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	scg.productMap = buildProductMap(b)
+
+	for _, sku := range []string{"SLD-LOR-BBX-011-EN", "SLD-LOR-BBX-011-EN-2"} {
+		scg.processProduct(CatalogProduct{
+			SKU: sku, Name: "Lorcana: Mystery Assortment",
+			Game: "Disney Lorcana", ProductType: ProductTypeSealed, Language: "English",
+			Variants: []CatalogVariant{{SKU: sku + "-NM", Qty: 1, Price: "100.00"}},
+		})
+	}
+	var skus []string
+	for _, entry := range scg.inventory["wsp-box"] {
+		skus = append(skus, entry.OriginalID)
+	}
+	if len(skus) != 2 {
+		t.Errorf("the box was priced under %v, want both skus (dropped %v)", skus, scg.dropped)
+	}
+}
+
+// TestSealedUnlistedScgID pins that a sku the datastore carries and the
+// catalog does not list costs nothing: no price, no drop and no log line,
+// beside a listed sku priced as usual.
+func TestSealedUnlistedScgID(t *testing.T) {
+	b := &matcher.Backend{
+		Game:           matcher.GameLorcana,
+		UUIDs:          map[string]*matcher.CardObject{},
+		Hashes:         map[string][]string{},
+		SetSealedUUIDs: map[string][]string{},
+		Sets: map[string]*matcher.Set{
+			"WSP": {Name: "Winterspell", Code: "WSP"},
+		},
+	}
+	b.AddSealed("wsp-box", "Winterspell Booster Box", "WSP", "",
+		matcher.SealedIDs{"scgId": {"SLD-LOR-BBX-011-EN"}})
+	b.AddSealed("wsp-case", "Winterspell Booster Box Case", "WSP", "",
+		matcher.SealedIDs{"scgId": {"SLD-LOR-CAS-011-EN"}})
+	b.SortSealed()
+	b.IndexSets()
+
+	scg, err := NewScraperSealed(b, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var logs []string
+	scg.logCallback = func(format string, a ...any) { logs = append(logs, fmt.Sprintf(format, a...)) }
+	scg.productMap = buildProductMap(b)
+
+	scg.processProduct(CatalogProduct{
+		SKU: "SLD-LOR-BBX-011-EN", Name: "Lorcana: Winterspell Booster Box",
+		Game: "Disney Lorcana", ProductType: ProductTypeSealed, Language: "English",
+		Variants: []CatalogVariant{{SKU: "SLD-LOR-BBX-011-EN-NM", Qty: 1, Price: "100.00"}},
+	})
+
+	if len(scg.inventory["wsp-box"]) != 1 {
+		t.Errorf("the listed box holds %v, want one price", scg.inventory["wsp-box"])
+	}
+	if len(scg.inventory["wsp-case"]) != 0 {
+		t.Errorf("the unlisted case holds %v, want no price", scg.inventory["wsp-case"])
+	}
+	if len(scg.dropped) != 0 {
+		t.Errorf("dropped %v, want nothing", scg.dropped)
+	}
+	if len(logs) != 0 {
+		t.Errorf("logged %q, want nothing", logs)
+	}
+}

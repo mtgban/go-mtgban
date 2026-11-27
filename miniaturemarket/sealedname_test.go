@@ -1,6 +1,11 @@
 package miniaturemarket
 
 import (
+	"context"
+	"errors"
+	"fmt"
+	"net/http"
+	"slices"
 	"testing"
 
 	"github.com/mtgban/go-mtgban/matcher"
@@ -365,5 +370,94 @@ func TestResolveGundamPremiumCollection(t *testing.T) {
 			}
 			t.Errorf("resolveListing landed on %q, want %s", co.Name, tt.want)
 		})
+	}
+}
+
+// TestResolveListingEveryID pins that a product carrying two
+// miniaturemarketIds is found under either, its listed name never asked.
+func TestResolveListingEveryID(t *testing.T) {
+	b := &matcher.Backend{
+		Game:           matcher.GameGundam,
+		UUIDs:          map[string]*matcher.CardObject{},
+		Hashes:         map[string][]string{},
+		SetSealedUUIDs: map[string][]string{},
+		Sets: map[string]*matcher.Set{
+			"GD05": {Name: "Freedom Ascension", Code: "GD05"},
+		},
+	}
+	b.AddSealed("gd05-box", "Freedom Ascension Booster Box", "GD05", "",
+		matcher.SealedIDs{"miniaturemarketId": {"111", "222"}})
+	b.SortSealed()
+	b.IndexSets()
+
+	mm, err := NewScraperSealed(b)
+	if err != nil {
+		t.Fatal(err)
+	}
+	mm.buildProductMap()
+	for _, id := range []string{"111", "222"} {
+		uuid, drop := mm.resolveListing(id, "Mystery Assortment")
+		if uuid != "gd05-box" {
+			t.Errorf("id %s: resolveListing = (%q, %q), want gd05-box", id, uuid, drop)
+		}
+	}
+}
+
+// failingTransport refuses every request, so Load stops right after the
+// lines it prints before its first fetch.
+type failingTransport struct{}
+
+func (failingTransport) RoundTrip(*http.Request) (*http.Response, error) {
+	return nil, errors.New("no network in this test")
+}
+
+// TestLoadSaysWhatResolvesByName pins the line Load opens a non-Magic run
+// with: the one it has always printed when the datastore carries no
+// miniaturemarket id, and a wording of its own when some products have one.
+func TestLoadSaysWhatResolvesByName(t *testing.T) {
+	for _, tt := range []struct {
+		desc string
+		ids  matcher.SealedIDs
+		want []string
+	}{
+		{
+			"no ids",
+			nil,
+			[]string{"[MMSealed] Loaded 0 sealed products", "[MMSealed] Resolving gundam products by name"},
+		},
+		{
+			"some ids",
+			matcher.SealedIDs{"miniaturemarketId": {"111"}},
+			[]string{"[MMSealed] Loaded 1 sealed products", "[MMSealed] Resolving the other gundam products by name"},
+		},
+	} {
+		b := &matcher.Backend{
+			Game:           matcher.GameGundam,
+			UUIDs:          map[string]*matcher.CardObject{},
+			Hashes:         map[string][]string{},
+			SetSealedUUIDs: map[string][]string{},
+			Sets: map[string]*matcher.Set{
+				"GD05": {Name: "Freedom Ascension", Code: "GD05"},
+			},
+		}
+		b.AddSealed("gd05-box", "Freedom Ascension Booster Box", "GD05", "", tt.ids)
+		b.SortSealed()
+		b.IndexSets()
+
+		mm, err := NewScraperSealed(b)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var logs []string
+		mm.logCallback = func(format string, a ...any) { logs = append(logs, fmt.Sprintf(format, a...)) }
+		mm.client = &http.Client{Transport: failingTransport{}}
+
+		err = mm.Load(context.Background())
+		if err == nil {
+			t.Fatalf("%s: Load succeeded with no network", tt.desc)
+		}
+		if !slices.Equal(logs, tt.want) {
+			t.Errorf("%s: logged %q, want %q", tt.desc, logs, tt.want)
+		}
 	}
 }

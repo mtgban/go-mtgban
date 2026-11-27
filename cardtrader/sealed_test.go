@@ -162,8 +162,8 @@ func sealedRunsBackend() *matcher.Backend {
 			"CRU": {Name: "Crucible of War", Code: "CRU"},
 		},
 	}
-	backend.AddSealed("cru-1e", "Crucible of War Booster Box [1st Edition]", "CRU", "", 0)
-	backend.AddSealed("cru-unl", "Crucible of War Booster Box [Unlimited Edition]", "CRU", "", 0)
+	backend.AddSealed("cru-1e", "Crucible of War Booster Box [1st Edition]", "CRU", "", nil)
+	backend.AddSealed("cru-unl", "Crucible of War Booster Box [Unlimited Edition]", "CRU", "", nil)
 	backend.SortSealed()
 	backend.IndexSets()
 	return backend
@@ -284,7 +284,7 @@ func sealedAccessoryBackend() *matcher.Backend {
 			"SLV": {Name: "Sleeves Promos", Code: "SLV"},
 		},
 	}
-	backend.AddSealed("cru-box", "Crucible of War Booster Box", "CRU", "", 0)
+	backend.AddSealed("cru-box", "Crucible of War Booster Box", "CRU", "", nil)
 	backend.SortSealed()
 	backend.IndexSets()
 	return backend
@@ -358,7 +358,7 @@ func sealedSubsumedBackend() *matcher.Backend {
 			"BND": {Name: "Bundle Promos", Code: "BND"},
 		},
 	}
-	backend.AddSealed("cru-box", "Booster Box", "CRU", "", 0)
+	backend.AddSealed("cru-box", "Booster Box", "CRU", "", nil)
 	backend.SortSealed()
 	backend.IndexSets()
 	return backend
@@ -377,8 +377,8 @@ func sealedShelfCodeBackend() *matcher.Backend {
 			"ST10": {Name: "Starter Deck 10: Generation Pulse", Code: "ST10"},
 		},
 	}
-	backend.AddSealed("gd05-case", "Freedom Ascension Booster Box Case", "GD05", "", 0)
-	backend.AddSealed("st10-deck", "Starter Deck 10: Generation Pulse", "ST10", "", 0)
+	backend.AddSealed("gd05-case", "Freedom Ascension Booster Box Case", "GD05", "", nil)
+	backend.AddSealed("st10-deck", "Starter Deck 10: Generation Pulse", "ST10", "", nil)
 	backend.SortSealed()
 	backend.IndexSets()
 	return backend
@@ -417,6 +417,38 @@ func TestBuildProductMapTrimsShelfCode(t *testing.T) {
 		got := ct.buildProductMap(map[int]*Blueprint{1: blueprint})[1]
 		if !slices.Equal(got, tt.want) {
 			t.Errorf("%q on %q: got %v, want %v", tt.name, tt.shelf, got, tt.want)
+		}
+	}
+}
+
+// TestBuildProductMapEveryCardtraderID pins that a product carrying two
+// cardtraderIds is found under either blueprint, whatever its name says.
+func TestBuildProductMapEveryCardtraderID(t *testing.T) {
+	backend := &matcher.Backend{
+		Game:           "gundam",
+		UUIDs:          map[string]*matcher.CardObject{},
+		Hashes:         map[string][]string{},
+		SetSealedUUIDs: map[string][]string{},
+		Sets: map[string]*matcher.Set{
+			"GD05": {Name: "Freedom Ascension", Code: "GD05"},
+		},
+	}
+	backend.AddSealed("gd05-box", "Freedom Ascension Booster Box", "GD05", "",
+		matcher.SealedIDs{"cardtraderId": {"501", "502"}})
+	backend.SortSealed()
+	backend.IndexSets()
+
+	ct, err := NewScraperSealed(backend, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	productMap := ct.buildProductMap(map[int]*Blueprint{
+		501: {ID: 501, Name: "Mystery Assortment"},
+		502: {ID: 502, Name: "Mystery Assortment"},
+	})
+	for _, id := range []int{501, 502} {
+		if !slices.Equal(productMap[id], []string{"gd05-box"}) {
+			t.Errorf("blueprint %d: got %v, want [gd05-box]", id, productMap[id])
 		}
 	}
 }
