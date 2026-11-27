@@ -830,6 +830,31 @@ A derived token pair (`Identifiers["derivedTokenPair"]`) is filed under its
 own name, either face first, and in each face's bucket, where a search finds
 it; `entry4Name` passes over it at every step, the fallback included.
 
+**Store ids on sealed products.** A sealed scraper finds a product by the
+store's own id where the datastore carries one. Magic's products carry one id
+per name in `Card.Identifiers`, from MTGJSON. The eight datastore loaders read
+a sealed entry's `externalLinks` as `matcher.SealedLinks` and hand its `IDs()`
+to `AddSealed`: `tcgplayerProductId` and five store id names, `mcmId`
+(Cardmarket), `cardtraderId` (CardTrader), `csiId` (Cool Stuff Inc), `scgId`
+(Star City Games) and `miniaturemarketId` (Miniature Market), each of which
+may hold several ids for one product. `tcgPlayerId` decodes as strictly as it
+always has; a store list that is not a list, or an element that is not that
+store's kind of id, is left out rather than failing the load. `Identifiers`
+keeps only the first id of each name, so code reading it sees one. Three
+accessors read every id:
+`SealedIdentifiers(uuid, idName)` lists one product's ids under a name (nil
+when it has none; a product `AddSealed` did not file answers its one
+`Identifiers` id), `BuildSealedProductMap(idName)` indexes the products by
+every numeric id, with Magic's Secret Lair foil fallback, and
+`BuildSealedIDMap(idName)` is the same index for ids that are not numbers,
+with no Secret Lair path. A slice in either map holds every product sharing
+the id, sorted by name. Outside Magic, those five stores' sealed scrapers try
+the id first, per product. Cool Stuff Inc, Star City Games and Miniature
+Market fall back to the product's name when it misses. CardTrader falls back
+to the TCGplayer id its blueprint carries, then to the name. Cardmarket falls
+back to its print-run index, then to the TCGplayer id the CardTrader bridge
+links it to, then to the name.
+
 Sealed products are modeled end-to-end, in `matcher/sealed`, whose
 functions take the backend first:
 
