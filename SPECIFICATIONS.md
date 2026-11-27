@@ -201,8 +201,9 @@ inventory:
    or **0** when the difference is not positive (the powers are NaN there;
    the website's negative modes reach these rows with `MinSpread` -30),
    where the quantity weight is 1 for qty ≤ 1 and is exported as
-   `QuantityWeight(qty)`: ten copies weigh 1.25, a hundred 1.5, so a stack
-   of copies does not lift a thin spread over a wide one. The return weighs more
+   `ProfitabilityQuantityWeight(qty)`: ten copies weigh 1.25, a hundred
+   1.5, so a stack of copies does not lift a thin spread over a wide one.
+   The return weighs more
    than the profit: 0.50 → 1 outranks 50 → 55, and 25 → 30 outranks
    5 → 6. `k` is `ProfitabilityConstant`, added to the price the return is
    measured on to dampen cheap cards (default 0). The exported
