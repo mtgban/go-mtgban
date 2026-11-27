@@ -937,11 +937,12 @@ breadth over depth** - a few fixture table tests for the gnarliest
 preprocessors catch the realistic break; `cardmarket` and `cardtrader` have
 grown well past table-test fixtures into dozens of narrow, named `*_test.go`
 files each. `abugames`, `cardgamecorner`, `cardkingdom`, `cardmarket`,
-`gamenerdz`, `mintcard`, `mtgseattle`, `starcitygames`, and `tcgplayer` have a
+`gamenerdz`, `mintcard`, `mtgseattle`, `starcitygames`, `tcgplayer`, and
+`toamagic` have a
 `preprocess_test.go` to copy the table-test shape from; about a dozen more
 packages carry tests of some other shape (a `*_test.go` covering a specific
-fix) without one, and `cardsphere`, `mtgstocks`, `secretdeskorrigans`, and
-`toamagic` have none.
+fix) without one, and `cardsphere`, `mtgstocks`, and `secretdeskorrigans`
+have none.
 
 **CI provisions all nine datastores.** `.github/workflows/ci.yml` runs one
 `cache-<game>` job per game. Only `cache-datastore` (Magic) uses the reusable
@@ -1053,7 +1054,7 @@ grade is filed at the best offer at it or below, the one PLD skips included,
 `CreditMultiplier 1.1`), `vegassingles` (buylist alone, read from Hippolink by
 TCGplayer product id), `manaleak` (GBP), `miniaturemarket` (sealed-only),
 and the unregistered `secretdeskorrigans` (CAD, French) and `toamagic`
-(Spanish), which bantool does not run.
+(retail alone, English), which bantool does not run.
 
 `sealedev` builds sealed-EV "scrapers" from matcher probabilities or
 5,000-run booster simulations priced against the MTGBAN API (a product made of
