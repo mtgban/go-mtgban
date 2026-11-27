@@ -19,6 +19,13 @@ var reNotes = regexp.MustCompile(`^[(（]([^)）]*)[)）]`)
 // "稲妻/Lightning Bolt(A25)", in place of their pack code.
 var reTrailingEdition = regexp.MustCompile(`[(（]([^)）]+)[)）]\s*$`)
 
+// reTitle splits a store title into its grade, or the slab a graded copy
+// sits in, the notes and names, the language and the set:
+// "[EX+](FOIL)稲妻/Lightning Bolt《英語》【M10】", "〔PSA9鑑定済〕(FOIL)...". A
+// listing on sale opens with "☆SALE☆", and a one-off copy carries a lot
+// number after the set, "#296".
+var reTitle = regexp.MustCompile(`^(?:☆SALE☆)?(?:\[([A-Z+]+)\]|(〔[A-Za-z]+[0-9.]+鑑定済〕))?(.*)《(.*)》【(.*)】(?:#\d+)?$`)
+
 // reNumber is a note that is the printing's collector number, "(0001)".
 var reNumber = regexp.MustCompile(`^0*([0-9]+)$`)
 
@@ -137,9 +144,13 @@ var boxedEditions = map[string]string{
 
 // languages reads the row's language; English needs no word.
 var languages = map[string]string{
-	"日本語":   "Japanese",
-	"英語":    "",
-	"イタリア語": "Italian",
+	"日本語":      "Japanese",
+	"英語":       "",
+	"イタリア語":    "Italian",
+	"フランス語":    "French",
+	"スペイン語":    "Spanish",
+	"ポルトガル語":   "Portuguese (Brazil)",
+	"ファイレクシア語": "Phyrexian",
 }
 
 // fullArt is the note the store files both borderless and extended art
@@ -151,9 +162,10 @@ const fullArt = "フルアート"
 // is not the product the printing's id stands for.
 var japaneseOnly = []string{"日限定イラスト", blackBorder}
 
-// preprocess turns a buylist row into the card it prices.
-func preprocess(b *matcher.Backend, row BuyingPrice) (*matcher.InputCard, error) {
-	name := row.Name
+// preprocess turns the store's naming of a card into the card: a title
+// carrying notes and names, a set's code or name, and a language.
+func preprocess(b *matcher.Backend, title, pack, lang string) (*matcher.InputCard, error) {
+	name := title
 	var notes []string
 	for {
 		m := reNotes.FindStringSubmatch(name)
@@ -164,7 +176,7 @@ func preprocess(b *matcher.Backend, row BuyingPrice) (*matcher.InputCard, error)
 		name = name[len(m[0]):]
 	}
 
-	edition := row.PackCode
+	edition := pack
 	if slices.Contains(unprintedEditions, edition) {
 		return nil, matcher.ErrUnsupported
 	}
@@ -218,9 +230,9 @@ func preprocess(b *matcher.Backend, row BuyingPrice) (*matcher.InputCard, error)
 		}
 	}
 
-	language, found := languages[row.Language]
+	language, found := languages[lang]
 	if !found {
-		return nil, fmt.Errorf("unknown language %q", row.Language)
+		return nil, fmt.Errorf("unknown language %q", lang)
 	}
 	if language == "Japanese" && !slices.ContainsFunc(notes, func(note string) bool {
 		return slices.Contains(japaneseOnly, note)
@@ -256,7 +268,7 @@ func preprocess(b *matcher.Backend, row BuyingPrice) (*matcher.InputCard, error)
 		case note == blackBorder:
 			code, found := blackBorderEditions[edition]
 			if !found {
-				return nil, fmt.Errorf("no black-bordered %s in %q", edition, row.Name)
+				return nil, fmt.Errorf("no black-bordered %s in %q", edition, title)
 			}
 			edition = code
 		case note == fullArt && numbered:
@@ -265,7 +277,7 @@ func preprocess(b *matcher.Backend, row BuyingPrice) (*matcher.InputCard, error)
 			// A PRM row's search leaves the promo sets once it reads a
 			// treatment, so the row names the one promo that has it.
 			if promoWildcard && len(printings) > 1 {
-				return nil, fmt.Errorf("several full-art promos of %s for %q", name, row.Name)
+				return nil, fmt.Errorf("several full-art promos of %s for %q", name, title)
 			}
 			if promoWildcard && len(printings) == 1 {
 				edition = printings[0].SetCode
@@ -274,7 +286,7 @@ func preprocess(b *matcher.Backend, row BuyingPrice) (*matcher.InputCard, error)
 				continue
 			}
 			if treatment == "" && len(printingsIn(b, name, edition, "")) > 1 {
-				return nil, fmt.Errorf("no full-art %s in %s for %q", name, edition, row.Name)
+				return nil, fmt.Errorf("no full-art %s in %s for %q", name, edition, title)
 			}
 			variants = append(variants, treatment)
 		case isTreatment:
@@ -290,7 +302,7 @@ func preprocess(b *matcher.Backend, row BuyingPrice) (*matcher.InputCard, error)
 			note = strings.TrimSuffix(note, "年")
 			// An untranslated treatment would price the plain printing.
 			if hasJapanese(note) {
-				return nil, fmt.Errorf("unknown note %q in %q", note, row.Name)
+				return nil, fmt.Errorf("unknown note %q in %q", note, title)
 			}
 			variants = append(variants, note)
 		}

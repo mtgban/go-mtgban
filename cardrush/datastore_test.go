@@ -8,6 +8,7 @@ import (
 
 	"github.com/mtgban/go-mtgban/internal/datastore"
 	"github.com/mtgban/go-mtgban/matcher"
+	"github.com/mtgban/go-mtgban/mtgban"
 
 	_ "github.com/mtgban/go-mtgban/matcher/magic"
 )
@@ -72,8 +73,7 @@ func TestPreprocess(t *testing.T) {
 		{"PRM", "(FOIL)(フルアート)セラの天使/Serra Angel", "英語", "PW24", "1"},
 		{"FCA", "クリスタルタワーを目指して/To the Crystal Tower　//　謎めいた命令/Cryptic Command", "英語", "FCA", "29"},
 	} {
-		row := BuyingPrice{PackCode: tc.pack, Name: tc.name, Language: tc.language}
-		card, err := preprocess(b, row)
+		card, err := preprocess(b, tc.name, tc.pack, tc.language)
 		if err != nil {
 			t.Errorf("%s: %v", tc.name, err)
 			continue
@@ -97,7 +97,7 @@ func TestPreprocess(t *testing.T) {
 // though its rows carry no FOIL note.
 func TestFoilPack(t *testing.T) {
 	b := withMagic(t)
-	card, err := preprocess(b, BuyingPrice{PackCode: "Reprint Cards(Mystery Booster FOIL)", Name: "らせんの円錐/Helix Pinnacle", Language: "英語"})
+	card, err := preprocess(b, "らせんの円錐/Helix Pinnacle", "Reprint Cards(Mystery Booster FOIL)", "英語")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -125,9 +125,60 @@ func TestPreprocessRefuses(t *testing.T) {
 		// Full art in a set whose printings of the card have none.
 		{"M10", "(フルアート)島/Island", "英語", false},
 	} {
-		_, err := preprocess(b, BuyingPrice{PackCode: tc.pack, Name: tc.name, Language: tc.language})
+		_, err := preprocess(b, tc.name, tc.pack, tc.language)
 		if err == nil || errors.Is(err, matcher.ErrUnsupported) != tc.unsupported {
 			t.Errorf("%s: got %v", tc.name, err)
 		}
+	}
+}
+
+// TestAddProduct runs store listings through the path Load takes and checks
+// the printing, the grade and the slab each is sold as.
+func TestAddProduct(t *testing.T) {
+	cr := NewScraper(withMagic(t))
+	for _, tc := range []struct {
+		title, set, number string
+		grade              mtgban.Condition
+	}{
+		{"☆SALE☆[EX+]霊気拠点/Aether Hub《英語》【KLD】", "KLD", "242", mtgban.SP},
+		{"[HPLD]思考囲い/Thoughtseize《英語》【THS】", "THS", "107", mtgban.HP},
+		{"[PLD]稲妻/Lightning Bolt《英語》【LEB】#292", "LEB", "162", mtgban.MP},
+		{"メムナイト/Memnite(SOM)《英語》【Reprint Cards(The List)】", "PLST", "SOM-174", mtgban.NM},
+	} {
+		id := tc.title
+		cr.addProduct(Product{ID: id, Title: tc.title, Price: 100, Stock: 1}, 1)
+		var found bool
+		for cardID, entries := range cr.inventory {
+			for _, entry := range entries {
+				if entry.OriginalID != id {
+					continue
+				}
+				found = true
+				co, err := cr.backend.GetUUID(cardID)
+				if err != nil {
+					t.Fatal(err)
+				}
+				if co.SetCode != tc.set || co.Number != tc.number || entry.Conditions != tc.grade {
+					t.Errorf("%s sold as %s %s %s, want %s %s %s", tc.title, co.SetCode, co.Number, entry.Conditions, tc.set, tc.number, tc.grade)
+				}
+			}
+		}
+		if !found {
+			t.Errorf("%s not sold", tc.title)
+		}
+	}
+
+	// Neither a sealed box, a slab nor a listing with no price is sold.
+	before := len(cr.inventory)
+	for _, product := range []Product{
+		{Title: "(4個セット・日本語)FINAL FANTASY 統率者デッキ《-》【未開封BOX】", Price: 100},
+		{Title: "〔BGS9.5鑑定済〕(ネオンピンクFOIL)旅するチョコボ/Traveling Chocobo《英語》【FIN】", Price: 100},
+		{Title: "死滅都市の執政/Necropolis Regent《英語》【RTR】"},
+	} {
+		product.ID, product.Stock = product.Title, 1
+		cr.addProduct(product, 1)
+	}
+	if len(cr.inventory) != before {
+		t.Error("a sealed box, a slab or an unpriced listing was sold")
 	}
 }
