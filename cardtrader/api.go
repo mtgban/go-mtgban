@@ -281,7 +281,7 @@ type Blueprint struct {
 	TCGplayerID int    `json:"tcg_player_id"`
 	// Every Cardmarket product this blueprint sells as, the language
 	// variants included: cardtrader is the one source linking the two
-	// marketplaces' ids, which the sealed bridge in bantool leans on.
+	// marketplaces' ids, which SealedBridge leans on.
 	CardMarketIDs []int `json:"card_market_ids"`
 
 	Expansion struct {
