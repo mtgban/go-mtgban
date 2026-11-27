@@ -371,7 +371,7 @@ func sealedPruneBackend() *matcher.Backend {
 			"OGN": {Name: "Origins", Code: "OGN"},
 		},
 	}
-	backend.AddSealed("ogn-box", "Booster Box", "OGN", "", 0)
+	backend.AddSealed("ogn-box", "Booster Box", "OGN", "", nil)
 	backend.SortSealed()
 	backend.IndexSets()
 	return backend
