@@ -88,6 +88,7 @@ type DatastoreSealed struct {
 	ExternalLinks struct {
 		TcgPlayerID int `json:"tcgPlayerId"`
 	} `json:"externalLinks"`
+	Identifiers map[string]string `json:"identifiers"`
 }
 
 // Load reads a Gundam datastore from r and returns a Backend for it, or an
@@ -267,7 +268,7 @@ func (payload *Datastore) newBackend() *matcher.Backend {
 	// Sealed products live in the sealed namespace throughout; AddSealed is
 	// what files them there.
 	for _, product := range payload.Sealed {
-		b.AddSealed(product.ID, product.Name, product.SetCode, product.Image, product.ExternalLinks.TcgPlayerID)
+		b.AddSealed(product.ID, product.Name, product.SetCode, product.Image, matcher.SealedIdentifiers(product.Identifiers, product.ExternalLinks.TcgPlayerID))
 	}
 	b.Complete(Rules{})
 

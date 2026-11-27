@@ -162,8 +162,8 @@ func sealedRunsBackend() *matcher.Backend {
 			"CRU": {Name: "Crucible of War", Code: "CRU"},
 		},
 	}
-	backend.AddSealed("cru-1e", "Crucible of War Booster Box [1st Edition]", "CRU", "", 0)
-	backend.AddSealed("cru-unl", "Crucible of War Booster Box [Unlimited Edition]", "CRU", "", 0)
+	backend.AddSealed("cru-1e", "Crucible of War Booster Box [1st Edition]", "CRU", "", nil)
+	backend.AddSealed("cru-unl", "Crucible of War Booster Box [Unlimited Edition]", "CRU", "", nil)
 	backend.SortSealed()
 	backend.IndexSets()
 	return backend
@@ -284,7 +284,7 @@ func sealedAccessoryBackend() *matcher.Backend {
 			"SLV": {Name: "Sleeves Promos", Code: "SLV"},
 		},
 	}
-	backend.AddSealed("cru-box", "Crucible of War Booster Box", "CRU", "", 0)
+	backend.AddSealed("cru-box", "Crucible of War Booster Box", "CRU", "", nil)
 	backend.SortSealed()
 	backend.IndexSets()
 	return backend
@@ -358,7 +358,7 @@ func sealedSubsumedBackend() *matcher.Backend {
 			"BND": {Name: "Bundle Promos", Code: "BND"},
 		},
 	}
-	backend.AddSealed("cru-box", "Booster Box", "CRU", "", 0)
+	backend.AddSealed("cru-box", "Booster Box", "CRU", "", nil)
 	backend.SortSealed()
 	backend.IndexSets()
 	return backend
@@ -377,8 +377,8 @@ func sealedShelfCodeBackend() *matcher.Backend {
 			"ST10": {Name: "Starter Deck 10: Generation Pulse", Code: "ST10"},
 		},
 	}
-	backend.AddSealed("gd05-case", "Freedom Ascension Booster Box Case", "GD05", "", 0)
-	backend.AddSealed("st10-deck", "Starter Deck 10: Generation Pulse", "ST10", "", 0)
+	backend.AddSealed("gd05-case", "Freedom Ascension Booster Box Case", "GD05", "", nil)
+	backend.AddSealed("st10-deck", "Starter Deck 10: Generation Pulse", "ST10", "", nil)
 	backend.SortSealed()
 	backend.IndexSets()
 	return backend

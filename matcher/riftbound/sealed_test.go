@@ -1,6 +1,7 @@
 package riftbound
 
 import (
+	"maps"
 	"slices"
 	"strings"
 	"testing"
@@ -36,7 +37,8 @@ const sealedFixture = `{"data": {
 				"name": "Origins Booster Box",
 				"setCode": "OGN",
 				"image": "https://example.com/box.jpg",
-				"externalLinks": {"tcgPlayerId": 600001}
+				"externalLinks": {"tcgPlayerId": 600001},
+				"identifiers": {"mcmId": "7", "scgId": "S1"}
 			},
 			{
 				"id": "acc-600002",
@@ -211,5 +213,33 @@ func TestSealedZeroProductId(t *testing.T) {
 	productMap := b.BuildSealedProductMap("tcgplayerProductId")
 	if got, found := productMap[0]; found {
 		t.Errorf("productMap[0] = %v, want absent", got)
+	}
+}
+
+// TestSealedIdentifiers pins that a sealed entry's identifiers object lands
+// on the product beside the TCGplayer id its externalLinks carry.
+func TestSealedIdentifiers(t *testing.T) {
+	b := loadSealedFixture(t)
+	want := map[string]string{"tcgplayerProductId": "600001", "mcmId": "7", "scgId": "S1"}
+	co, err := b.GetUUID("ogn-600001")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !maps.Equal(co.Identifiers, want) {
+		t.Errorf("Identifiers = %v, want %v", co.Identifiers, want)
+	}
+}
+
+// TestSealedWithoutIdentifiers pins that an entry with no identifiers object,
+// as every datastore publishes today, still carries its TCGplayer id.
+func TestSealedWithoutIdentifiers(t *testing.T) {
+	b := loadSealedFixture(t)
+	want := map[string]string{"tcgplayerProductId": "600002"}
+	co, err := b.GetUUID("acc-600002")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !maps.Equal(co.Identifiers, want) {
+		t.Errorf("Identifiers = %v, want %v", co.Identifiers, want)
 	}
 }
