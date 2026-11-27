@@ -228,6 +228,11 @@ type responseChan struct {
 	cardID   string
 	invEntry *mtgban.InventoryEntry
 	relaxed  bool
+
+	// storeID and via say which sealed product a row is and how it was
+	// placed, for the line a sealed run ends on.
+	storeID string
+	via     mtgban.SealedVia
 }
 
 func (csi *Coolstuffinc) printf(format string, a ...any) {

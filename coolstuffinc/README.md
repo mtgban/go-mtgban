@@ -68,6 +68,18 @@ Three feeds, all live.
   to resolve and drops out. Lorcana's sealed carries no `ItemSet` facet at
   all, which is why the sealed search goes by name rather than by shelf.
 
+`MatchSealedCatalog` reports that matching without pricing anything, for
+every sealed game but Magic: the same ten searches and the buylist's boxes,
+one `mtgban.SealedMatch` per CSI id, decided by `matchProduct`, the function
+`Load` prices through. An out-of-stock row is still reported. The search
+mixes card rows in, so a search row is reported only when it is placed: a
+skipped or refused one is left out. Every buylist box is reported, placed,
+skipped or refused. A row of either feed with no id is left out. When the
+two feeds place one id on different products, the export refuses that id
+and names both products, while the scraper prices each feed's own answer.
+A lost search, searches answering no row at all, or rows none of which
+carries a product id (the markup may have moved it), is an error.
+
 Every request the package makes (the search POSTs and pages, the edition
 lists, the Magic sealed pages and the buylist download) treats a non-2xx
 answer as an error (`checkStatus`). A retail walk that loses any edition,
