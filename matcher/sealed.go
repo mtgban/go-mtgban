@@ -1,20 +1,24 @@
 package matcher
 
 import (
-	"fmt"
+	"encoding/json"
 	"regexp"
+	"slices"
 	"sort"
+	"strconv"
 	"strings"
 )
 
 // Sealed-name resolution: storefronts name sealed products in their own
-// vocabulary, and only Magic gets marketplace ids from its datastore, so
-// the other games resolve a vendor's product name against the sealed
-// namespace. Tuned against the real Cardmarket and StarCityGames catalogs
-// for Riftbound and Lorcana; every rule below exists because its absence
-// mismatched a real product, and the discipline throughout is unique or
-// nothing: a wrong sealed match silently reroutes a product's whole price
-// history, while a dropped one only loses coverage.
+// vocabulary. Magic's sealed products get every store's id from its
+// datastore and are matched by id alone; the other games carry a TCGplayer
+// id and whatever store ids their datastore publishes, and a store product
+// with no id there is resolved against the sealed namespace by name. Tuned
+// against the real Cardmarket and StarCityGames catalogs for Riftbound and
+// Lorcana; every rule below exists because its absence mismatched a real
+// product, and the discipline throughout is unique or nothing: a wrong
+// sealed match silently reroutes a product's whole price history, while a
+// dropped one only loses coverage.
 
 var sealedTokenRe = regexp.MustCompile(`[a-z0-9]+`)
 var sealedCountRe = regexp.MustCompile(`^\d+x?$`)
@@ -973,24 +977,183 @@ func SealedIsLanguageVariant(name string) bool {
 	return sealedMarksJapanPrinting(name)
 }
 
+// SealedIDs are a sealed product's ids in each store's own id space,
+// keyed by identifier name ("tcgplayerProductId", "mcmId", ...).
+type SealedIDs map[string][]string
+
+// SealedLinks decodes a sealed entry's externalLinks in every loader. Each
+// list is absent when empty.
+type SealedLinks struct {
+	TcgPlayerID        int      `json:"tcgPlayerId"`
+	CardmarketIDs      []int    `json:"cardmarketIds,omitempty"`
+	CardTraderIDs      []int    `json:"cardTraderIds,omitempty"`
+	CSIIDs             []string `json:"csiIds,omitempty"`
+	SCGIDs             []string `json:"scgIds,omitempty"`
+	MiniatureMarketIDs []string `json:"miniaturemarketIds,omitempty"`
+}
+
+// UnmarshalJSON reads tcgPlayerId as strictly as a plain int field, and each
+// store list tolerantly: a value that is not a list, or an element that is
+// not one of that store's ids, is left out rather than failing the load.
+func (l *SealedLinks) UnmarshalJSON(data []byte) error {
+	wire := struct {
+		TcgPlayerID        int             `json:"tcgPlayerId"`
+		CardmarketIDs      json.RawMessage `json:"cardmarketIds"`
+		CardTraderIDs      json.RawMessage `json:"cardTraderIds"`
+		CSIIDs             json.RawMessage `json:"csiIds"`
+		SCGIDs             json.RawMessage `json:"scgIds"`
+		MiniatureMarketIDs json.RawMessage `json:"miniaturemarketIds"`
+	}{TcgPlayerID: l.TcgPlayerID}
+	err := json.Unmarshal(data, &wire)
+	if err != nil {
+		return err
+	}
+	l.TcgPlayerID = wire.TcgPlayerID
+	l.CardmarketIDs = sealedIntIDs(wire.CardmarketIDs)
+	l.CardTraderIDs = sealedIntIDs(wire.CardTraderIDs)
+	l.CSIIDs = sealedStringIDs(wire.CSIIDs)
+	l.SCGIDs = sealedStringIDs(wire.SCGIDs)
+	l.MiniatureMarketIDs = sealedStringIDs(wire.MiniatureMarketIDs)
+	return nil
+}
+
+// sealedIntIDs reads a numeric store's list: each element a positive int,
+// written as a number or a string of digits.
+func sealedIntIDs(raw json.RawMessage) []int {
+	var ids []int
+	for _, elem := range sealedListElements(raw) {
+		text, _ := sealedIDText(elem)
+		if !sealedDigits(text) {
+			continue
+		}
+		id, err := strconv.Atoi(text)
+		if err != nil || id <= 0 {
+			continue
+		}
+		ids = append(ids, id)
+	}
+	return ids
+}
+
+// sealedStringIDs reads a string store's list: each element a non-empty
+// string as it is, or a number in its plain decimal spelling.
+func sealedStringIDs(raw json.RawMessage) []string {
+	var ids []string
+	for _, elem := range sealedListElements(raw) {
+		text, quoted := sealedIDText(elem)
+		if text == "" || (!quoted && !sealedDigits(text)) {
+			continue
+		}
+		ids = append(ids, text)
+	}
+	return ids
+}
+
+// sealedListElements splits a JSON list into its elements, or answers nil for
+// anything that is not a list.
+func sealedListElements(raw json.RawMessage) []json.RawMessage {
+	var elems []json.RawMessage
+	err := json.Unmarshal(raw, &elems)
+	if err != nil {
+		return nil
+	}
+	return elems
+}
+
+// sealedIDText is the text of a JSON string or number, and whether it was a
+// string. Any other value has none.
+func sealedIDText(elem json.RawMessage) (string, bool) {
+	if len(elem) == 0 {
+		return "", false
+	}
+	if elem[0] == '"' {
+		var text string
+		err := json.Unmarshal(elem, &text)
+		if err != nil {
+			return "", false
+		}
+		return text, true
+	}
+	if elem[0] == '-' || (elem[0] >= '0' && elem[0] <= '9') {
+		return string(elem), false
+	}
+	return "", false
+}
+
+// sealedDigits reports whether text is a non-empty run of ASCII digits.
+func sealedDigits(text string) bool {
+	if text == "" {
+		return false
+	}
+	for _, r := range text {
+		if r < '0' || r > '9' {
+			return false
+		}
+	}
+	return true
+}
+
+// IDs names the links by identifier, as decimal strings for the numeric
+// ones, dropping zero and empty values and any name left with none.
+func (l SealedLinks) IDs() SealedIDs {
+	ids := SealedIDs{}
+	ids.addInts("tcgplayerProductId", l.TcgPlayerID)
+	ids.addInts("mcmId", l.CardmarketIDs...)
+	ids.addInts("cardtraderId", l.CardTraderIDs...)
+	ids.addStrings("csiId", l.CSIIDs...)
+	ids.addStrings("scgId", l.SCGIDs...)
+	ids.addStrings("miniaturemarketId", l.MiniatureMarketIDs...)
+	return ids
+}
+
+func (ids SealedIDs) addInts(idName string, values ...int) {
+	for _, value := range values {
+		if value != 0 {
+			ids[idName] = append(ids[idName], strconv.Itoa(value))
+		}
+	}
+}
+
+func (ids SealedIDs) addStrings(idName string, values ...string) {
+	for _, value := range values {
+		if value != "" {
+			ids[idName] = append(ids[idName], value)
+		}
+	}
+}
+
 // AddSealed files a sealed product in the sealed namespace: its uuid in
 // AllSealedUUIDs and in its set's bucket, its name in the sealed name index,
-// and the product id as an identifier for BuildSealedProductMap rather than
-// in the external identifier index - which is how Magic keeps sealed out of
-// MatchID's reach.
+// and its store ids for SealedIdentifiers and the sealed map builders rather
+// than in the external identifier index - which is how Magic keeps sealed
+// out of MatchID's reach. Identifiers holds the first id of each name.
 //
 // A product whose set is unknown is dropped. A uuid a card already holds
 // keeps that card: the set still lists the product, because that listing is
 // what the sealed views read, but the name index and the uuid map answer for
 // what was already there.
 //
-// A zero product id carries no identifier at all rather than the zero value,
-// which would give BuildSealedProductMap one shared key for every unlinked
-// listing to funnel onto.
-func (b *Backend) AddSealed(uuid, name, setCode, image string, tcgplayerProductID int) {
+// Empty and repeated ids are dropped, and a product left with none carries
+// no Identifiers at all rather than a zero value, which would give the map
+// builders one shared key for every unlinked listing to funnel onto.
+func (b *Backend) AddSealed(uuid, name, setCode, image string, ids SealedIDs) {
 	set := b.Sets[setCode]
 	if set == nil {
 		return
+	}
+
+	filed := SealedIDs{}
+	for idName, values := range ids {
+		var kept []string
+		for _, value := range values {
+			if value == "" || slices.Contains(kept, value) {
+				continue
+			}
+			kept = append(kept, value)
+		}
+		if kept != nil {
+			filed[idName] = kept
+		}
 	}
 
 	card := Card{
@@ -1004,9 +1167,10 @@ func (b *Backend) AddSealed(uuid, name, setCode, image string, tcgplayerProductI
 		},
 		Language: "English",
 	}
-	if tcgplayerProductID != 0 {
-		card.Identifiers = map[string]string{
-			"tcgplayerProductId": fmt.Sprint(tcgplayerProductID),
+	if len(filed) > 0 {
+		card.Identifiers = map[string]string{}
+		for idName, kept := range filed {
+			card.Identifiers[idName] = kept[0]
 		}
 	}
 
@@ -1053,6 +1217,13 @@ func (b *Backend) AddSealed(uuid, name, setCode, image string, tcgplayerProductI
 	}
 	b.AllSealedUUIDs = append(b.AllSealedUUIDs, uuid)
 	b.SetSealedUUIDs[setCode] = append(b.SetSealedUUIDs[setCode], uuid)
+
+	if len(filed) > 0 {
+		if b.sealedIDs == nil {
+			b.sealedIDs = map[string]SealedIDs{}
+		}
+		b.sealedIDs[uuid] = filed
+	}
 }
 
 // SortSealed puts the sealed indexes in order, once every product is filed.

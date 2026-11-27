@@ -382,6 +382,12 @@ keeps it:
   `language` and `watermark` where the game has them. Lorcana's `images` is
   the one upstream field read instead, for a thumbnail the common `image`
   lacks.
+- A sealed entry's `externalLinks` decode as `matcher.SealedLinks`:
+  `tcgPlayerId` and the store id lists (`cardmarketIds`, `cardTraderIds`,
+  `csiIds`, `scgIds`, `miniaturemarketIds`), each absent when empty. The
+  loader hands `IDs()` to `AddSealed`; `Identifiers` keeps the first id of
+  each name, and `SealedIdentifiers`, `BuildSealedProductMap` and
+  `BuildSealedIDMap` read every one.
 - `IsOversized` comes from the game's oversized promo type. `Language` is
   `cmp.Or(card.Language, "English")`, since core's filter drops a
   non-English candidate. `AllSets` is sorted before `IndexSets`.

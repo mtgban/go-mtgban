@@ -401,10 +401,34 @@ func (b *Backend) HasPrinting(name, field, value string, editions ...string) boo
 	return false
 }
 
-// BuildSealedProductMap indexes the sealed products by one of their outside
-// identifiers, skipping any product that does not carry it. A slice usually
-// holds a single uuid, but an id shared by a foil and a nonfoil product holds
-// both, foil last.
+// SealedIdentifiers returns every id a sealed product holds under idName, or
+// nil when it holds none. A product AddSealed did not file, as Magic's are,
+// answers its one id from Identifiers.
+func (b *Backend) SealedIdentifiers(uuid, idName string) []string {
+	co, found := b.UUIDs[uuid]
+	if !found || !co.Sealed {
+		return nil
+	}
+	return slices.Clone(b.sealedIDsOf(uuid, co, idName))
+}
+
+// sealedIDsOf is SealedIdentifiers without the copy or the sealed check,
+// for the map builders, which walk AllSealedUUIDs.
+func (b *Backend) sealedIDsOf(uuid string, co *CardObject, idName string) []string {
+	if ids, found := b.sealedIDs[uuid]; found {
+		return ids[idName]
+	}
+	id := co.Identifiers[idName]
+	if id == "" {
+		return nil
+	}
+	return []string{id}
+}
+
+// BuildSealedProductMap indexes the sealed products by every one of their
+// outside identifiers under idName, skipping any product that carries none
+// and any id that is not a number. A slice usually holds a single uuid, but
+// an id shared by a foil and a nonfoil product holds both, foil last.
 func (b *Backend) BuildSealedProductMap(idName string) map[int][]string {
 	productMap := map[int][]string{}
 	for _, uuid := range b.AllSealedUUIDs {
@@ -412,25 +436,52 @@ func (b *Backend) BuildSealedProductMap(idName string) map[int][]string {
 		if err != nil {
 			continue
 		}
-		id := co.Identifiers[idName]
-		if id == "" {
-			id = b.secretLairFoilID(co, idName)
+		ids := b.sealedIDsOf(uuid, co, idName)
+		if ids == nil {
+			ids = []string{b.secretLairFoilID(co, idName)}
 		}
 
-		idNum, err := strconv.Atoi(id)
+		// Two spellings of one number ("07", "7") file the product once
+		var keys []int
+		for _, id := range ids {
+			idNum, err := strconv.Atoi(id)
+			if err != nil || slices.Contains(keys, idNum) {
+				continue
+			}
+			keys = append(keys, idNum)
+			productMap[idNum] = append(productMap[idNum], uuid)
+			b.sortSealedByName(productMap[idNum])
+		}
+	}
+	return productMap
+}
+
+// BuildSealedIDMap is BuildSealedProductMap for stores whose ids are not
+// numbers. It has no Secret Lair foil path: a product is found only by the
+// ids it carries.
+func (b *Backend) BuildSealedIDMap(idName string) map[string][]string {
+	idMap := map[string][]string{}
+	for _, uuid := range b.AllSealedUUIDs {
+		co, err := b.GetUUID(uuid)
 		if err != nil {
 			continue
 		}
-		productMap[idNum] = append(productMap[idNum], uuid)
-
-		// Preserve Foil variant at the end of the slice
-		sort.Slice(productMap[idNum], func(i, j int) bool {
-			coI := b.UUIDs[productMap[idNum][i]]
-			coJ := b.UUIDs[productMap[idNum][j]]
-			return coI.Name < coJ.Name
-		})
+		for _, id := range b.sealedIDsOf(uuid, co, idName) {
+			idMap[id] = append(idMap[id], uuid)
+			b.sortSealedByName(idMap[id])
+		}
 	}
-	return productMap
+	return idMap
+}
+
+// sortSealedByName orders the uuids sharing one id by product name, which
+// leaves a Foil variant at the end of the slice.
+func (b *Backend) sortSealedByName(uuids []string) {
+	sort.Slice(uuids, func(i, j int) bool {
+		coI := b.UUIDs[uuids[i]]
+		coJ := b.UUIDs[uuids[j]]
+		return coI.Name < coJ.Name
+	})
 }
 
 // secretLairFoilTags are the words a Secret Lair foil drop adds to the name

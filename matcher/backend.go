@@ -371,6 +371,10 @@ type Backend struct {
 	seenLowerSealed     map[string]bool
 	seenCanonicalSealed map[string]bool
 
+	// Map of sealed uuid : every id AddSealed filed for it, read through
+	// sealedIDsOf. Magic's products carry none and answer from Identifiers.
+	sealedIDs map[string]SealedIDs
+
 	// Slice with every uniquely normalized product name
 	AllSealed []string
 	// Slice with every unique product name, as defined by mtgjson

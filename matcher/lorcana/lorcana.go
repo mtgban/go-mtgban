@@ -160,14 +160,12 @@ type AllCards struct {
 	// minting a set entry for the groups upstream has no set for. A
 	// datastore without it loads with no sealed products.
 	Sealed []struct {
-		ID            string `json:"id"`
-		Name          string `json:"name"`
-		SetCode       string `json:"setCode"`
-		ReleaseDate   string `json:"releaseDate"`
-		Image         string `json:"image"`
-		ExternalLinks struct {
-			TcgPlayerID int `json:"tcgPlayerId"`
-		} `json:"externalLinks"`
+		ID            string              `json:"id"`
+		Name          string              `json:"name"`
+		SetCode       string              `json:"setCode"`
+		ReleaseDate   string              `json:"releaseDate"`
+		Image         string              `json:"image"`
+		ExternalLinks matcher.SealedLinks `json:"externalLinks"`
 	} `json:"sealed,omitempty"`
 
 	// treatments are the promo types each printing carries, by uuid, which
@@ -650,7 +648,7 @@ func (ac *AllCards) newBackend() *matcher.Backend {
 				ReleaseDateTime: releaseDateTime,
 			}
 		}
-		b.AddSealed(product.ID, product.Name, product.SetCode, product.Image, product.ExternalLinks.TcgPlayerID)
+		b.AddSealed(product.ID, product.Name, product.SetCode, product.Image, product.ExternalLinks.IDs())
 	}
 
 	b.Complete(Rules{treatments: ac.treatments})

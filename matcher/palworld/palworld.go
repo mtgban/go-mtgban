@@ -107,14 +107,12 @@ type DatastoreCard struct {
 
 // DatastoreSealed is one sealed product as the datastore publishes it.
 type DatastoreSealed struct {
-	ID            string `json:"id"`
-	Name          string `json:"name"`
-	SetCode       string `json:"setCode"`
-	ReleaseDate   string `json:"releaseDate"`
-	Image         string `json:"image"`
-	ExternalLinks struct {
-		TcgPlayerID int `json:"tcgPlayerId"`
-	} `json:"externalLinks"`
+	ID            string              `json:"id"`
+	Name          string              `json:"name"`
+	SetCode       string              `json:"setCode"`
+	ReleaseDate   string              `json:"releaseDate"`
+	Image         string              `json:"image"`
+	ExternalLinks matcher.SealedLinks `json:"externalLinks"`
 }
 
 // Load reads a Palworld datastore from r and returns a Backend for it, or
@@ -285,7 +283,7 @@ func (payload *Datastore) newBackend() *matcher.Backend {
 	}
 
 	for _, product := range payload.Sealed {
-		b.AddSealed(product.ID, product.Name, product.SetCode, product.Image, product.ExternalLinks.TcgPlayerID)
+		b.AddSealed(product.ID, product.Name, product.SetCode, product.Image, product.ExternalLinks.IDs())
 	}
 	b.Complete(Rules{})
 

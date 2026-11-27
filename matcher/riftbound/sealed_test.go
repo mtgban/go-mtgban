@@ -1,6 +1,7 @@
 package riftbound
 
 import (
+	"maps"
 	"slices"
 	"strings"
 	"testing"
@@ -36,7 +37,7 @@ const sealedFixture = `{"data": {
 				"name": "Origins Booster Box",
 				"setCode": "OGN",
 				"image": "https://example.com/box.jpg",
-				"externalLinks": {"tcgPlayerId": 600001}
+				"externalLinks": {"tcgPlayerId": 600001, "cardmarketIds": [7, 9], "scgIds": ["S1"]}
 			},
 			{
 				"id": "acc-600002",
@@ -211,5 +212,36 @@ func TestSealedZeroProductId(t *testing.T) {
 	productMap := b.BuildSealedProductMap("tcgplayerProductId")
 	if got, found := productMap[0]; found {
 		t.Errorf("productMap[0] = %v, want absent", got)
+	}
+}
+
+// TestSealedStoreIDs pins that a sealed entry's store ids load beside its
+// TCGplayer id, and that an entry carrying only the TCGplayer id loads as
+// every datastore publishes it today.
+func TestSealedStoreIDs(t *testing.T) {
+	b := loadSealedFixture(t)
+
+	for idName, want := range map[string][]string{
+		"tcgplayerProductId": {"600001"},
+		"mcmId":              {"7", "9"},
+		"scgId":              {"S1"},
+	} {
+		got := b.SealedIdentifiers("ogn-600001", idName)
+		if !slices.Equal(got, want) {
+			t.Errorf("SealedIdentifiers(%s) = %v, want %v", idName, got, want)
+		}
+	}
+
+	co, err := b.GetUUID("acc-600002")
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := map[string]string{"tcgplayerProductId": "600002"}
+	if !maps.Equal(co.Identifiers, want) {
+		t.Errorf("Identifiers = %v, want %v", co.Identifiers, want)
+	}
+	got := b.SealedIdentifiers("acc-600002", "mcmId")
+	if got != nil {
+		t.Errorf("SealedIdentifiers(mcmId) = %v, want nil", got)
 	}
 }

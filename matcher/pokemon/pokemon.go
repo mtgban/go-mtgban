@@ -155,13 +155,11 @@ type DatastoreCard struct {
 // DatastoreSealed is a sealed product, which carries no printing of its own
 // and hangs off the set that issued it.
 type DatastoreSealed struct {
-	ID            string `json:"id"`
-	Name          string `json:"name"`
-	SetCode       string `json:"setCode"`
-	Image         string `json:"image"`
-	ExternalLinks struct {
-		TcgPlayerID int `json:"tcgPlayerId"`
-	} `json:"externalLinks"`
+	ID            string              `json:"id"`
+	Name          string              `json:"name"`
+	SetCode       string              `json:"setCode"`
+	Image         string              `json:"image"`
+	ExternalLinks matcher.SealedLinks `json:"externalLinks"`
 }
 
 // Load reads a Pokemon datastore from r and returns a Backend for it, or an
@@ -422,12 +420,12 @@ func (payload *Datastore) newBackend() *matcher.Backend {
 	}
 
 	// Sealed products live in the sealed namespace throughout - uuids in
-	// AllSealedUUIDs, names in the sealed name index, and the product id
-	// as an identifier for BuildSealedProductMap rather than the external
+	// AllSealedUUIDs, names in the sealed name index, and the store ids
+	// for BuildSealedProductMap rather than the external
 	// identifier index, mirroring how Magic keeps sealed out of MatchID's
 	// reach - and AddSealed is what files them there.
 	for _, product := range payload.Sealed {
-		b.AddSealed(product.ID, product.Name, product.SetCode, product.Image, product.ExternalLinks.TcgPlayerID)
+		b.AddSealed(product.ID, product.Name, product.SetCode, product.Image, product.ExternalLinks.IDs())
 	}
 	b.Complete(NewRules(b))
 
