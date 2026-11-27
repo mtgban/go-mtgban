@@ -148,7 +148,7 @@ vendor's own naming through one unexported map, and reports `Game` back from
 the backend. The vendor's spellings stay exported - each package's API
 helpers take one - but nothing outside has to know them to ask for a game. The scrapers that serve more than one game are
 cardmarket, cardtrader, coolstuffinc, gamenerdz, miniaturemarket,
-starcitygames, strikezone, tcgplayer's `TCGGame`/`TCGGameIndex`/`TCGSYPList`,
+starcitygames, stompinggrounds, strikezone, tcgplayer's `TCGGame`/`TCGGameIndex`/`TCGSYPList`,
 and vegassingles. The behavior flags are `MetadataOnly` (index
 prices only, no conditions or quantities), `NoQuantityInventory`,
 `SealedMode`, `GradedMode` (a singles seller of slabs only, every entry
@@ -1003,6 +1003,7 @@ row.
 | `merlion` | Public buylist CSV | Riftbound buylist-only; matches by the TCGplayer id in each product link, and reads the finish out of the condition column |
 | `arcanafrisia` | Public buylist endpoint | Buylist-only EU vendor, shorthand `AF`; matches by Scryfall id and maps the store's NM/EX/GD grades onto NM/SP/MP |
 | `trolltrader` | Public Shopify storefront, one request a second | UK store, shorthand `TTC`, Magic retail alone (GBP, `NoQuantityInventory`); matches by MTGJSON set code and collector number; see [trolltrader/README.md](trolltrader/README.md) |
+| `stompinggrounds` | Public Shopify storefront, read through the Storefront API, which answers without a token | Singles, shorthand `SG`, in Magic, Flesh and Blood, Lorcana, One Piece, Pokemon and Riftbound, retail alone (`NoQuantityInventory`); matched by the TCGplayer or Scryfall id each product's photo is named after, and in Magic by title and SKU number where the photo names no id the datastore carries |
 | `cardsphere` | Session cookie (gentle 3s) | Unregistered, not run by bantool; buylist-only; `BuyPrice ×0.87` fee **and** `CreditMultiplier 1.1` |
 | `mtgstocks` | Public API, fixed `curl` User-Agent | Unregistered, not run by bantool; MetadataOnly index (average/market interests) |
 

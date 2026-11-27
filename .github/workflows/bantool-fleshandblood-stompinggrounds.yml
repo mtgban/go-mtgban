@@ -1,0 +1,26 @@
+name: fleshandblood / stompinggrounds
+
+on:
+  workflow_dispatch: {}
+  repository_dispatch:
+    types: [fleshandblood-stompinggrounds, fleshandblood-all]
+  schedule:
+    - cron: "5 7,19 * * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bantool-stompinggrounds
+  cancel-in-progress: false
+  queue: max
+
+jobs:
+  deploy:
+    name: ${{ github.workflow }}
+    uses: ./.github/workflows/run-bantool.yml
+    with:
+      store: stompinggrounds
+      game: "fleshandblood"
+      datastore-filepath: b2://mtgban-datastore/fleshandblood/fleshandblood.json.xz
+    secrets: inherit

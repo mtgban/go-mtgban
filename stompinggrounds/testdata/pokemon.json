@@ -1,0 +1,62 @@
+[
+ {
+  "id": "gid://shopify/Product/10112829227294",
+  "handle": "fennekin-080-holofoil-me-mega-evolution-promo-promo",
+  "title": "Fennekin 080  - Holofoil ME Mega Evolution Promo - Promo",
+  "featuredImage": {
+   "url": "https://cdn.shopify.com/s/files/1/0794/9162/9342/files/694694_d30c7d35-bcde-43f8-8500-3ad96a846a2a.jpg"
+  },
+  "variants": {
+   "nodes": [
+    {
+     "id": "gid://shopify/ProductVariant/51883682857246",
+     "title": "Near Mint",
+     "sku": "PKM-MMEP-080-H-22PGZIUTWK-1",
+     "availableForSale": true,
+     "price": {
+      "amount": "2.5"
+     }
+    },
+    {
+     "id": "gid://shopify/ProductVariant/51883682890014",
+     "title": "Lightly Played",
+     "sku": "PKM-MMEP-080-H-22PGZIUTWK-2",
+     "availableForSale": true,
+     "price": {
+      "amount": "2.5"
+     }
+    }
+   ]
+  }
+ },
+ {
+  "id": "gid://shopify/Product/8521028403486",
+  "handle": "raichu-29-62-fossil-1st-edition",
+  "title": "Raichu (29/62) [Fossil 1st Edition]",
+  "featuredImage": {
+   "url": "https://cdn.shopify.com/s/files/1/0794/9162/9342/files/106531.jpg"
+  },
+  "variants": {
+   "nodes": [
+    {
+     "id": "gid://shopify/ProductVariant/45945849774366",
+     "title": "Near Mint 1st Edition Normal",
+     "sku": "BASE3-29/62-1ST-EN-1NH-1",
+     "availableForSale": true,
+     "price": {
+      "amount": "27.5"
+     }
+    },
+    {
+     "id": "gid://shopify/ProductVariant/45945849807134",
+     "title": "Lightly Played 1st Edition Normal",
+     "sku": "BASE3-29/62-1ST-EN-1NH-2",
+     "availableForSale": true,
+     "price": {
+      "amount": "27.5"
+     }
+    }
+   ]
+  }
+ }
+]

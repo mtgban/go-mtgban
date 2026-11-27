@@ -1,0 +1,176 @@
+[
+ {
+  "id": "gid://shopify/Product/8523067130142",
+  "handle": "shifting-sky-eighth-edition",
+  "title": "Shifting Sky [Eighth Edition]",
+  "featuredImage": {
+   "url": "https://cdn.shopify.com/s/files/1/0794/9162/9342/files/76ffece9-d4d4-4adb-a87c-8be464b9040f_d03b548b-9e4e-4944-afe3-66ef3a50e269.png"
+  },
+  "variants": {
+   "nodes": [
+    {
+     "id": "gid://shopify/ProductVariant/45959249920286",
+     "title": "Lightly Played",
+     "sku": "8ED-100-EN-NF-2",
+     "availableForSale": true,
+     "price": {
+      "amount": "2.0"
+     }
+    }
+   ]
+  }
+ },
+ {
+  "id": "gid://shopify/Product/9960449442078",
+  "handle": "the-destined-black-mage-0447-borderless-final-fantasy-fic",
+  "title": "The Destined Black Mage 0447 (Borderless) [FINAL FANTASY] (FIC)",
+  "featuredImage": {
+   "url": "https://cdn.shopify.com/s/files/1/0794/9162/9342/files/635830_690a6e44-ae5e-462d-9bd3-807246adceee.jpg"
+  },
+  "variants": {
+   "nodes": [
+    {
+     "id": "gid://shopify/ProductVariant/50470790693150",
+     "title": "Near Mint",
+     "sku": null,
+     "availableForSale": true,
+     "price": {
+      "amount": "629.5"
+     }
+    },
+    {
+     "id": "gid://shopify/ProductVariant/50692387569950",
+     "title": "Lightly Played Foil",
+     "sku": null,
+     "availableForSale": true,
+     "price": {
+      "amount": "629.5"
+     }
+    }
+   ]
+  }
+ },
+ {
+  "id": "gid://shopify/Product/8521841705246",
+  "handle": "grief-modern-horizons-2",
+  "title": "Grief [Modern Horizons 2]",
+  "featuredImage": {
+   "url": "https://cdn.shopify.com/s/files/1/0794/9162/9342/files/9a8fcc75-ded9-5e9d-ab1b-985949acb057.jpg"
+  },
+  "variants": {
+   "nodes": [
+    {
+     "id": "gid://shopify/ProductVariant/45951949472030",
+     "title": "Near Mint",
+     "sku": "MH2-87-EN-NF-1",
+     "availableForSale": true,
+     "price": {
+      "amount": "3.0"
+     }
+    },
+    {
+     "id": "gid://shopify/ProductVariant/45951949504798",
+     "title": "Lightly Played",
+     "sku": "MH2-87-EN-NF-2",
+     "availableForSale": true,
+     "price": {
+      "amount": "3.0"
+     }
+    }
+   ]
+  }
+ },
+ {
+  "id": "gid://shopify/Product/10090831970590",
+  "handle": "seal-of-removal-mh2-269-modern-horizons-2-etched-foil",
+  "title": "Seal of Removal (MH2-269) - Modern Horizons 2 Etched Foil",
+  "featuredImage": {
+   "url": "https://cdn.shopify.com/s/files/1/0794/9162/9342/files/6dfc7060-e374-486f-8029-d3fdfe4b61e7_b088abca-3a16-4f47-a19c-03314c0bdc95.png"
+  },
+  "variants": {
+   "nodes": [
+    {
+     "id": "gid://shopify/ProductVariant/51811861463326",
+     "title": "Near Mint",
+     "sku": "MTG-MH2-269-EF-GYMVVZTC1B-1",
+     "availableForSale": true,
+     "price": {
+      "amount": "0.5"
+     }
+    }
+   ]
+  }
+ },
+ {
+  "id": "gid://shopify/Product/8522128556318",
+  "handle": "lucille-secret-lair-drop-promos",
+  "title": "Lucille [Secret Lair Drop Promos]",
+  "featuredImage": {
+   "url": "https://cdn.shopify.com/s/files/1/0794/9162/9342/files/d92f06af-47bd-4ede-a174-21be69387c1b_169d7eba-cb2b-4ee1-83d8-c84cb5f8bda6.png"
+  },
+  "variants": {
+   "nodes": [
+    {
+     "id": "gid://shopify/ProductVariant/45953903722782",
+     "title": "Lightly Played Foil",
+     "sku": "PSLD-581-EN-FO-2",
+     "availableForSale": true,
+     "price": {
+      "amount": "14.0"
+     }
+    }
+   ]
+  }
+ },
+ {
+  "id": "gid://shopify/Product/15895196991774",
+  "handle": "curse-marred-demon-borderless-fra-328-reality-fracture-foil",
+  "title": "Curse-Marred Demon (Borderless) (FRA-328) - Reality Fracture Foil",
+  "featuredImage": {
+   "url": "https://cdn.shopify.com/s/files/1/0794/9162/9342/files/717505.jpg"
+  },
+  "variants": {
+   "nodes": [
+    {
+     "id": "gid://shopify/ProductVariant/59961005211934",
+     "title": "Lightly Played",
+     "sku": "MTG-FRA-328-F-6PAQ3GOO3A-2",
+     "availableForSale": true,
+     "price": {
+      "amount": "195.0"
+     }
+    }
+   ]
+  }
+ },
+ {
+  "id": "gid://shopify/Product/8521451176222",
+  "handle": "teferis-puzzle-box-foil-etched-secret-lair-drop-series",
+  "title": "Teferi's Puzzle Box (Foil Etched) [Secret Lair Drop Series]",
+  "featuredImage": {
+   "url": "https://cdn.shopify.com/s/files/1/0794/9162/9342/files/b5fb88b2-5dc6-43de-8a38-1f8982ed395a.png"
+  },
+  "variants": {
+   "nodes": [
+    {
+     "id": "gid://shopify/ProductVariant/45949010051358",
+     "title": "Lightly Played Foil",
+     "sku": "SLD-368-EN-FO-2",
+     "availableForSale": true,
+     "price": {
+      "amount": "22.0"
+     }
+    },
+    {
+     "id": "gid://shopify/ProductVariant/45949010116894",
+     "title": "Heavily Played Foil",
+     "sku": "SLD-368-EN-FO-5",
+     "availableForSale": true,
+     "price": {
+      "amount": "16.5"
+     }
+    }
+   ]
+  }
+ }
+]
