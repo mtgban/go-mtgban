@@ -206,23 +206,9 @@ func (mkm *Sealed) Load(ctx context.Context) error {
 	}
 	mkm.exchangeRate = rate
 
-	lookup := sealedLookup{byID: mkm.backend.BuildSealedProductMap("mcmId")}
+	lookup := mkm.newLookup()
 	mkm.printf("Loaded %d sealed products", len(lookup.byID))
-
-	// What the datastore has no Cardmarket id for resolves by name instead,
-	// in every game but Magic. The TCGplayer bridge settles what an id can
-	// settle and the resolver catches the rest, but the bridge is an
-	// improvement on the name pass rather than a precondition for it:
-	// requiring one left every game whose datastore carries no mcmId priced
-	// at nothing at all unless CardTrader credentials happened to be
-	// configured beside them.
-	nameFallback := mkm.gameID != cm.GameMagic
-	if nameFallback {
-		lookup.holders = sealedHolders(lookup.byID)
-	}
-	if nameFallback && len(mkm.tcgBridge) > 0 {
-		tcgMap := mkm.backend.BuildSealedProductMap("tcgplayerProductId")
-		lookup.bridged = bridgedProducts(mkm.tcgBridge, tcgMap, lookup.byID)
+	if lookup.bridged != nil {
 		mkm.printf("Bridged %d sealed products through the TCGplayer id", len(lookup.bridged))
 	}
 
@@ -232,19 +218,7 @@ func (mkm *Sealed) Load(ctx context.Context) error {
 	}
 	mkm.printf("Loaded %d mkm products", len(productList))
 
-	// The products Cardmarket marks as an earlier print run, keyed by what
-	// the name says apart from that mark, so a plain name can be recognised
-	// as the run its marked sibling is not.
-	if nameFallback {
-		lookup.printRuns = newPrintRunIndex(mkm.backend)
-		lookup.earlyRuns = map[string]bool{}
-		for _, product := range productList {
-			if namesEarlyPrintRun(product.Name) {
-				lookup.earlyRuns[sealedBaseKey(product.Name)] = true
-			}
-		}
-	}
-
+	mkm.addPrintRuns(&lookup, productList)
 	placed := mkm.placeProducts(productList, lookup)
 	if placed.resolved > 0 {
 		mkm.printf("Resolved %d more sealed products by name", placed.resolved)
@@ -274,24 +248,103 @@ func (mkm *Sealed) Load(ctx context.Context) error {
 			}
 			return nil
 		},
-		func(result responseChan) {
-			err := mkm.inventory.AddStrict(result.cardID, &result.entry)
-			if err != nil {
-				_, cerr := mkm.backend.GetUUID(result.cardID)
-				if cerr != nil {
-					mkm.printf("%s - %s: %s", result.entry.OriginalID, cerr.Error(), result.cardID)
-					return
-				}
-				mkm.printf("%d - %s", result.ogID, err.Error())
-			}
-		},
+		mkm.addResult,
 		mkm.printf,
 	)
 
 	mkm.printf("Total number of requests: %d", mkm.client.RequestNo())
 	mkm.printf("Total number of products found: %d", len(mkm.inventory))
+	mkm.printPriced(placed)
 	mkm.inventoryDate = time.Now()
 	return nil
+}
+
+// addResult records one listing processProduct found.
+func (mkm *Sealed) addResult(result responseChan) {
+	err := mkm.inventory.AddStrict(result.cardID, &result.entry)
+	if err != nil {
+		_, cerr := mkm.backend.GetUUID(result.cardID)
+		if cerr != nil {
+			mkm.printf("%s - %s: %s", result.entry.OriginalID, cerr.Error(), result.cardID)
+			return
+		}
+		mkm.printf("%d - %s", result.ogID, err.Error())
+	}
+}
+
+// printPriced says how many Cardmarket products the run priced, by how each
+// was placed. The print runs count by name, since their index reads a name.
+func (mkm *Sealed) printPriced(placed sealedPlacement) {
+	byID, bridged, named := pricedProducts(mkm.inventory, placed)
+	mkm.printf("Priced %d products by id, %d through a bridge, %d by name", byID, bridged, named)
+}
+
+// pricedProducts counts the placed products the inventory holds an entry for,
+// each once however many entries it holds, by how it was placed.
+func pricedProducts(inventory mtgban.InventoryRecord, placed sealedPlacement) (byID, bridged, named int) {
+	priced := map[string]bool{}
+	for _, entries := range inventory {
+		for _, entry := range entries {
+			priced[entry.OriginalID] = true
+		}
+	}
+	for id := range placed.productMap {
+		if !priced[strconv.Itoa(id)] {
+			continue
+		}
+		switch placed.matches[id].Via {
+		case mtgban.SealedByID:
+			byID++
+		case mtgban.SealedByBridge:
+			bridged++
+		case mtgban.SealedByName:
+			named++
+		}
+	}
+	return byID, bridged, named
+}
+
+// nameFallback reports whether what the datastore has no Cardmarket id for
+// resolves by name instead, as it does in every game but Magic. The TCGplayer
+// bridge settles what an id can settle and the resolver catches the rest, but
+// the bridge is an improvement on the name pass rather than a precondition for
+// it: requiring one left every game whose datastore carries no mcmId priced at
+// nothing at all unless CardTrader credentials happened to be configured
+// beside them.
+func (mkm *Sealed) nameFallback() bool {
+	return mkm.gameID != cm.GameMagic
+}
+
+// newLookup is the part of matchProduct's lookup that needs no catalog: the
+// datastore's Cardmarket ids, and the bridge where the game falls back on
+// names and one was given, and the products no fallback may land on.
+func (mkm *Sealed) newLookup() sealedLookup {
+	lookup := sealedLookup{byID: mkm.backend.BuildSealedProductMap("mcmId")}
+	if !mkm.nameFallback() {
+		return lookup
+	}
+	lookup.holders = sealedHolders(lookup.byID)
+	if len(mkm.tcgBridge) > 0 {
+		tcgMap := mkm.backend.BuildSealedProductMap("tcgplayerProductId")
+		lookup.bridged = bridgedProducts(mkm.tcgBridge, tcgMap, lookup.byID)
+	}
+	return lookup
+}
+
+// addPrintRuns fills in the products Cardmarket marks as an earlier print run,
+// keyed by what the name says apart from that mark, so a plain name can be
+// recognised as the run its marked sibling is not.
+func (mkm *Sealed) addPrintRuns(lookup *sealedLookup, productList []cm.ProductList) {
+	if !mkm.nameFallback() {
+		return
+	}
+	lookup.printRuns = newPrintRunIndex(mkm.backend)
+	lookup.earlyRuns = map[string]bool{}
+	for _, product := range productList {
+		if namesEarlyPrintRun(product.Name) {
+			lookup.earlyRuns[sealedBaseKey(product.Name)] = true
+		}
+	}
 }
 
 // bridgedProducts is the bridge Load hands matchProduct: each Cardmarket id
@@ -335,7 +388,13 @@ type sealedPlacement struct {
 	resolved int
 	// dropped counts the products left unpriced, by reason.
 	dropped map[string]int
+	// matches holds what each product settled as, by Cardmarket id, with
+	// the pruned ones refused: what MatchSealedCatalog reports.
+	matches map[int]mtgban.SealedMatch
 }
+
+// subsumedReason is the refusal reported for a product the pruning dropped.
+const subsumedReason = "subsumed by another listing"
 
 // placeProducts settles every product of the catalog through matchProduct,
 // logging each one it cannot place, and prunes the names that reached a
@@ -347,11 +406,19 @@ func (mkm *Sealed) placeProducts(productList []cm.ProductList, lookup sealedLook
 	dropped := map[string]int{}
 	named := map[string][]int{}
 	names := map[int]string{}
+	matches := map[int]mtgban.SealedMatch{}
 	for _, product := range productList {
 		if mkm.targetProduct != "" && mkm.targetProduct != product.Name {
 			continue
 		}
 		match := mkm.matchProduct(product, lookup)
+		// A product listed twice is priced on its last placed row, so a
+		// later row placing nothing does not overwrite one that did.
+		shared := match.shared(product)
+		prev, seen := matches[product.IDProduct]
+		if !seen || prev.UUID == "" || shared.UUID != "" {
+			matches[product.IDProduct] = shared
+		}
 		switch match.how {
 		case settledSkipped:
 			if match.reason == sealedUnlinked {
@@ -381,35 +448,45 @@ func (mkm *Sealed) placeProducts(productList []cm.ProductList, lookup sealedLook
 		resolved -= subsumed
 		dropped["names a product built on another"] += subsumed
 	}
+	for id, match := range matches {
+		_, kept := productMap[id]
+		if match.UUID != "" && !kept {
+			match.UUID, match.Via, match.Reason = "", mtgban.SealedRefused, subsumedReason
+			matches[id] = match
+		}
+	}
 	return sealedPlacement{
 		productMap: productMap,
 		productIDs: productIDs,
 		resolved:   resolved,
 		dropped:    dropped,
+		matches:    matches,
 	}
 }
 
-// sealedUnlinked is the drop reason for a Magic product no id links.
+// sealedUnlinked is the drop reason for a Magic product no id links. It never
+// leaves the scraper: MatchSealedCatalog does not match Magic.
 const sealedUnlinked = "unlinked id"
 
 // sealedHoldsOwnID is the refusal of a listing that the bridge or its name
 // puts on a product whose Cardmarket id the datastore already lists.
 const sealedHoldsOwnID = "product holds its own Cardmarket id"
 
-// sealedSettled says how a Cardmarket product was settled.
-type sealedSettled int
+// sealedSettled says how a Cardmarket product was settled: the shared value
+// every sealed scraper reports.
+type sealedSettled = mtgban.SealedVia
 
 const (
 	// settledByID: the datastore holds the product's Cardmarket id.
-	settledByID sealedSettled = iota
+	settledByID = mtgban.SealedByID
 	// settledByBridge: its TCGplayer id, through the CardTrader bridge.
-	settledByBridge
+	settledByBridge = mtgban.SealedByBridge
 	// settledByName: its name, through the resolver or the print-run index.
-	settledByName
+	settledByName = mtgban.SealedByName
 	// settledSkipped: a rule refused it before anything was asked.
-	settledSkipped
+	settledSkipped = mtgban.SealedSkipped
 	// settledRefused: the resolver turned its name down.
-	settledRefused
+	settledRefused = mtgban.SealedRefused
 )
 
 // sealedLookup is what Load prepares for matchProduct: the datastore's
@@ -436,6 +513,21 @@ type sealedMatch struct {
 	// printRun marks a name the print-run index answered: like an id, it is
 	// never pruned and is not counted as resolved by name.
 	printRun bool
+}
+
+// shared is the answer as every sealed scraper reports it. Of several uuids,
+// it names the first, the one processProduct prices a nonfoil listing onto.
+func (match sealedMatch) shared(product cm.ProductList) mtgban.SealedMatch {
+	out := mtgban.SealedMatch{
+		StoreID: strconv.Itoa(product.IDProduct),
+		Name:    product.Name,
+		Via:     match.how,
+		Reason:  match.reason,
+	}
+	if len(match.uuids) > 0 {
+		out.UUID = match.uuids[0]
+	}
+	return out
 }
 
 // matchProduct settles one Cardmarket product: by the id the datastore holds,
@@ -497,6 +589,59 @@ func (mkm *Sealed) matchUnlinked(product cm.ProductList, lookup sealedLookup) se
 		return sealedMatch{how: settledRefused, reason: err.Error()}
 	}
 	return sealedMatch{uuids: []string{uuid}, how: settledByName}
+}
+
+// MatchSealedCatalog downloads Cardmarket's sealed product list for the
+// backend's game and reports where Load would place each product, through the
+// same matching and pruning, one match per product id sorted by id. It reads
+// no listing and needs no credential. bridge is the one WithBridge takes.
+// Magic is refused: its products are placed by id alone. A failed download,
+// or an empty list, is an error.
+func MatchSealedCatalog(ctx context.Context, b *matcher.Backend, bridge map[int]int) ([]mtgban.SealedMatch, error) {
+	mkm, err := newSealedMatcher(b, bridge)
+	if err != nil {
+		return nil, err
+	}
+	return mkm.matchSealedCatalog(ctx, cm.DownloadProductListSealed)
+}
+
+// matchSealedCatalog is the export over the list download hands back.
+func (mkm *Sealed) matchSealedCatalog(ctx context.Context, download func(context.Context, cm.Game) ([]cm.ProductList, error)) ([]mtgban.SealedMatch, error) {
+	productList, err := download(ctx, mkm.gameID)
+	if err != nil {
+		return nil, err
+	}
+	// An empty list is a download gone wrong, not a store selling nothing.
+	if len(productList) == 0 {
+		return nil, fmt.Errorf("empty sealed product list for %q", mkm.backend.Game)
+	}
+	return mkm.matchCatalog(productList), nil
+}
+
+// newSealedMatcher is a Sealed that can match but not price: it holds no
+// client, and logs nothing.
+func newSealedMatcher(b *matcher.Backend, bridge map[int]int) (*Sealed, error) {
+	id, found := mkmGames[b.Game]
+	if !found {
+		return nil, fmt.Errorf("unsupported game %q", b.Game)
+	}
+	if id == cm.GameMagic {
+		return nil, fmt.Errorf("sealed matching is not exported for %q, placed by id alone", b.Game)
+	}
+	return &Sealed{backend: b, gameID: id, tcgBridge: bridge}, nil
+}
+
+// matchCatalog is MatchSealedCatalog past the download: Load's lookup and
+// placing over the given catalog.
+func (mkm *Sealed) matchCatalog(productList []cm.ProductList) []mtgban.SealedMatch {
+	lookup := mkm.newLookup()
+	mkm.addPrintRuns(&lookup, productList)
+	placed := mkm.placeProducts(productList, lookup)
+	out := make([]mtgban.SealedMatch, 0, len(placed.matches))
+	for _, id := range slices.Sorted(maps.Keys(placed.matches)) {
+		out = append(out, placed.matches[id])
+	}
+	return out
 }
 
 // Inventory returns what Load collected. See mtgban.Seller.

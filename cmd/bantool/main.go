@@ -160,34 +160,19 @@ func enableStores(scrapers map[string]*scraperOption, game matcher.Game, store, 
 	return nil
 }
 
-// cardtraderBridge maps every Cardmarket product id to the TCGplayer id of
-// the same product, read off cardtrader's blueprints - the one source
-// linking the two marketplaces' ids - with the corrections that package
-// keeps for the ids it sends wrong or not at all. The blueprints cover singles and
-// sealed alike, so the same bridge serves both cardmarket scrapers; they
-// receive it as plain data, and the composition of the two vendors happens
-// here and nowhere else.
+// cardtraderBridge is cardtrader.SealedBridgeLogged under bantool's token,
+// logging and leaving out an expansion that fails to fetch: the
+// blueprints cover singles and sealed alike, so the same bridge serves both
+// cardmarket scrapers; they receive it as plain data, and the composition of
+// the two vendors happens here and nowhere else.
 func cardtraderBridge(game matcher.Game) (map[int]int, error) {
 	ctTokenBearer := os.Getenv("CARDTRADER_TOKEN_BEARER")
 	if ctTokenBearer == "" {
 		return nil, errors.New("missing CARDTRADER_TOKEN_BEARER env var")
 	}
-	client := cardtrader.NewCTAuthClient(ctTokenBearer)
-
-	blueprints, _, err := cardtrader.BlueprintsForGame(context.Background(), client, game, "", log.Printf)
+	bridge, err := cardtrader.SealedBridgeLogged(context.Background(), ctTokenBearer, game, log.Printf)
 	if err != nil {
 		return nil, err
-	}
-
-	bridge := map[int]int{}
-	for _, bp := range blueprints {
-		tcgID := bp.TCGplayerProductID()
-		if tcgID == 0 {
-			continue
-		}
-		for _, mkmID := range bp.CardMarketIDs {
-			bridge[mkmID] = tcgID
-		}
 	}
 	log.Printf("bridge: %d cardmarket ids linked to a tcgplayer id", len(bridge))
 	return bridge, nil

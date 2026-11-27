@@ -2,9 +2,11 @@ package cardtrader
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"maps"
 	"slices"
+	"strconv"
 	"strings"
 	"time"
 
@@ -35,15 +37,9 @@ type Sealed struct {
 // NewScraperSealed returns a sealed scraper for the datastore's game,
 // authenticated with a full API token.
 func NewScraperSealed(b *matcher.Backend, token string) (*Sealed, error) {
-	game := b.Game
-	id, found := ctGames[game]
-	// An unknown game would not error anywhere later: its listings would
-	// simply all fail the language read and the scraper would run empty.
-	// Palworld is the one game the shared table carries that this side has
-	// never been built for, so it is refused here rather than left out of
-	// the table the market scraper reads too.
-	if !found || game == matcher.GamePalworld {
-		return nil, fmt.Errorf("unsupported game %q", game)
+	id, err := sealedGameID(b.Game)
+	if err != nil {
+		return nil, err
 	}
 	ct := Sealed{}
 	ct.inventory = mtgban.InventoryRecord{}
@@ -143,63 +139,69 @@ func (ct *Sealed) processEntry(ctx context.Context, channel chan<- resultChan, e
 	return nil
 }
 
-// buildProductMap links each sealed blueprint to the datastore product it
-// prices. The datastore's own cardtraderId index settles a blueprint for
-// good; one it does not answer is routed through the TCGplayer id both
-// sides carry. The leftovers resolve by name, the way the cardmarket
-// sealed scraper resolves the same leftovers - except for Magic, whose
-// sealed namespace is too collision-prone to trust a name alone. Outside
-// Magic, neither fallback lands on a product that holds a cardtraderId of
-// its own.
-func (ct *Sealed) buildProductMap(blueprints map[int]*Blueprint) map[int][]string {
-	productMap := ct.backend.BuildSealedProductMap("cardtraderId")
-	ct.printf("Loaded %d sealed products", len(productMap))
+// sealedIndex is what the datastore's sealed identifiers say about a
+// blueprint: its own cardtraderId, and the TCGplayer id both sides carry.
+type sealedIndex struct {
+	byID  map[int][]string
+	byTCG map[int][]string
+	// holders is every product a cardtraderId reaches, outside Magic: no other
+	// blueprint is placed on one.
+	holders map[string]bool
+}
 
-	// The products a cardtraderId reaches, which no fallback may land on
-	holders := map[string]bool{}
-	if ct.gameID != GameMagic {
-		for _, uuids := range productMap {
-			for _, uuid := range uuids {
-				holders[uuid] = true
-			}
+// blueprintMatch is matchBlueprint's answer for one blueprint.
+type blueprintMatch struct {
+	// uuids is every product the blueprint prices: a foil listing goes on
+	// the second where there are two.
+	uuids []string
+	how   mtgban.SealedVia
+	// reason is the drop reason of a skipped blueprint, or the resolver's
+	// refusal.
+	reason string
+}
+
+// sealedUnlinked is the reason for a Magic blueprint no id links. Load never
+// counts it, and MatchSealedCatalog does not match Magic.
+const sealedUnlinked = "unlinked id"
+
+// subsumedReason is the refusal reported for a blueprint the pruning dropped.
+const subsumedReason = "subsumed by another listing"
+
+// matchBlueprint settles one sealed blueprint. The datastore's own
+// cardtraderId index settles a blueprint for good; one it does not answer is
+// routed through the TCGplayer id both sides carry. The leftovers resolve by
+// name, the way the cardmarket sealed scraper resolves the same leftovers -
+// except for Magic, whose sealed namespace is too collision-prone to trust a
+// name alone. Outside Magic, neither fallback lands on a product that holds
+// a cardtraderId of its own. An answer reads its own blueprint alone, so the
+// order the blueprints are asked in changes nothing.
+func (ct *Sealed) matchBlueprint(id int, bp *Blueprint, index sealedIndex) blueprintMatch {
+	if uuids, found := index.byID[id]; found {
+		return blueprintMatch{uuids: uuids, how: mtgban.SealedByID}
+	}
+	match := ct.matchUnlinked(bp, index)
+	if slices.ContainsFunc(match.uuids, func(uuid string) bool { return index.holders[uuid] }) {
+		return blueprintMatch{how: mtgban.SealedRefused, reason: sealedHoldsOwnID}
+	}
+	return match
+}
+
+// sealedHoldsOwnID is the refusal of a blueprint that its TCGplayer id or its
+// name puts on a product whose cardtraderId the datastore already lists.
+const sealedHoldsOwnID = "product holds its own CardTrader id"
+
+// matchUnlinked settles a blueprint whose id the datastore lacks.
+func (ct *Sealed) matchUnlinked(bp *Blueprint, index sealedIndex) blueprintMatch {
+	// An unlinked blueprint carries a zero id; the singles path skips
+	// those, and looking one up would funnel every such listing onto
+	// whatever product shares the missing link.
+	if bp.TCGplayerID != 0 {
+		if uuids, found := index.byTCG[bp.TCGplayerID]; found {
+			return blueprintMatch{uuids: uuids, how: mtgban.SealedByBridge}
 		}
 	}
-	dropped := map[string]int{}
-
-	tcgMap := ct.backend.BuildSealedProductMap("tcgplayerProductId")
-	var bridged int
-	var held []int
-	for id, bp := range blueprints {
-		if _, found := productMap[id]; found {
-			continue
-		}
-		// An unlinked blueprint carries a zero id; the singles path
-		// skips those, and looking one up would funnel every such
-		// listing onto whatever product shares the missing link.
-		if bp.TCGplayerID == 0 {
-			continue
-		}
-		uuids, found := tcgMap[bp.TCGplayerID]
-		if !found {
-			continue
-		}
-		if slices.ContainsFunc(uuids, func(uuid string) bool { return holders[uuid] }) {
-			held = append(held, id)
-			continue
-		}
-		productMap[id] = uuids
-		bridged++
-	}
-	ct.printf("Mapped %d sealed products through the TCGplayer id", bridged)
-	// Refused here for good: the name pass must not get a second try at it.
-	slices.Sort(held)
-	for _, id := range held {
-		ct.printf("%q (%d): %s", blueprints[id].Name, id, sealedHoldsOwnID)
-		dropped[sealedHoldsOwnID]++
-	}
-
 	if ct.gameID == GameMagic {
-		return productMap
+		return blueprintMatch{how: mtgban.SealedSkipped, reason: sealedUnlinked}
 	}
 
 	// Cardtrader links only some of its sealed blueprints to a
@@ -208,54 +210,122 @@ func (ct *Sealed) buildProductMap(blueprints map[int]*Blueprint) map[int][]strin
 	// named things. The accessories sharing the sealed side - binders,
 	// dice, sleeves, empty boxes - name no product of ours and drop
 	// out here.
-	var resolved int
-	named := map[string][]int{}
-	for id, bp := range blueprints {
-		if _, found := productMap[id]; found {
-			continue
+	skipped, why := sealedNamePassSkips(bp)
+	if skipped {
+		return blueprintMatch{how: mtgban.SealedSkipped, reason: why}
+	}
+	// The expansion is the other half of what CardTrader knows about
+	// a product: it shelves the two print runs of a Flesh and Blood
+	// set apart ("Crucible of War - Unlimited") while naming both
+	// blueprints the same, so a name that reaches both runs and
+	// refuses can still be settled by the shelf it sits on.
+	uuid, err := ct.backend.ResolveSealedWithHint(bp.Name, bp.Expansion.Name)
+	// The set code some storefronts open a sealed name with is the
+	// vendor's filing, not a word of the product: the resolver's
+	// vocabulary is built from set names and never sees a code, so
+	// the letters read as the vendor naming something else. Retried
+	// and never substituted, so the trim can turn a refusal into an
+	// answer and can never turn one answer into another.
+	if err != nil {
+		trimmed := sealedNameWithoutShelfCode(bp)
+		if trimmed != bp.Name {
+			uuid, err = ct.backend.ResolveSealedWithHint(trimmed, bp.Expansion.Name)
 		}
-		if slices.Contains(held, id) {
-			continue
-		}
-		if skipped, why := sealedNamePassSkips(bp); skipped {
-			ct.printf("%q (%d): %s", bp.Name, id, why)
-			dropped[why]++
-			continue
-		}
-		// The expansion is the other half of what CardTrader knows about
-		// a product: it shelves the two print runs of a Flesh and Blood
-		// set apart ("Crucible of War - Unlimited") while naming both
-		// blueprints the same, so a name that reaches both runs and
-		// refuses can still be settled by the shelf it sits on.
-		uuid, err := ct.backend.ResolveSealedWithHint(bp.Name, bp.Expansion.Name)
-		// The set code some storefronts open a sealed name with is the
-		// vendor's filing, not a word of the product: the resolver's
-		// vocabulary is built from set names and never sees a code, so
-		// the letters read as the vendor naming something else. Retried
-		// and never substituted, so the trim can turn a refusal into an
-		// answer and can never turn one answer into another.
-		if err != nil {
-			trimmed := sealedNameWithoutShelfCode(bp)
-			if trimmed != bp.Name {
-				uuid, err = ct.backend.ResolveSealedWithHint(trimmed, bp.Expansion.Name)
+	}
+	if err != nil {
+		return blueprintMatch{how: mtgban.SealedRefused, reason: err.Error()}
+	}
+	return blueprintMatch{uuids: []string{uuid}, how: mtgban.SealedByName}
+}
+
+// shared is the answer as every sealed scraper reports it. Of several uuids,
+// it names the first, the one processEntry prices a nonfoil listing onto.
+func (match blueprintMatch) shared(id int, bp *Blueprint) mtgban.SealedMatch {
+	out := mtgban.SealedMatch{
+		StoreID: strconv.Itoa(id),
+		Name:    bp.Name,
+		Via:     match.how,
+		Reason:  match.reason,
+	}
+	if len(match.uuids) > 0 {
+		out.UUID = match.uuids[0]
+	}
+	return out
+}
+
+// sealedPlacement is what placeBlueprints builds from the blueprints.
+type sealedPlacement struct {
+	// productMap is the products to price by blueprint id, every product
+	// the datastore's cardtraderIds name included.
+	productMap map[int][]string
+	// matches holds what each blueprint settled as, with the pruned ones
+	// refused: what MatchSealedCatalog reports.
+	matches map[int]mtgban.SealedMatch
+}
+
+// buildProductMap links each sealed blueprint to the datastore product it
+// prices, as placeBlueprints settles it.
+func (ct *Sealed) buildProductMap(blueprints map[int]*Blueprint) map[int][]string {
+	return ct.placeBlueprints(blueprints).productMap
+}
+
+// placeBlueprints settles every blueprint through matchBlueprint, logging
+// each one the name pass drops, and prunes the names that reached a product
+// another blueprint names in fewer words. Every blueprint is settled before
+// the pruning looks at any of them, as it was when the id, bridge and name
+// passes ran one after the other.
+func (ct *Sealed) placeBlueprints(blueprints map[int]*Blueprint) sealedPlacement {
+	productMap := ct.backend.BuildSealedProductMap("cardtraderId")
+	ct.printf("Loaded %d sealed products", len(productMap))
+	index := sealedIndex{
+		byID:  maps.Clone(productMap),
+		byTCG: ct.backend.BuildSealedProductMap("tcgplayerProductId"),
+	}
+	if ct.gameID != GameMagic {
+		index.holders = map[string]bool{}
+		for _, uuids := range index.byID {
+			for _, uuid := range uuids {
+				index.holders[uuid] = true
 			}
 		}
-		// A name the resolver turns down is the whole reason this
-		// scraper prices a fraction of the catalog, so say which
-		// name and which refusal, the way the singles path does.
-		if err != nil {
-			ct.printf("%q (%d): %s", bp.Name, id, err)
-			dropped[err.Error()]++
-			continue
+	}
+
+	ids := slices.Sorted(maps.Keys(blueprints))
+	settled := make(map[int]blueprintMatch, len(ids))
+	matches := make(map[int]mtgban.SealedMatch, len(ids))
+	var bridged int
+	for _, id := range ids {
+		match := ct.matchBlueprint(id, blueprints[id], index)
+		settled[id] = match
+		matches[id] = match.shared(id, blueprints[id])
+		if match.how == mtgban.SealedByBridge {
+			productMap[id] = match.uuids
+			bridged++
 		}
-		if holders[uuid] {
-			ct.printf("%q (%d): %s", bp.Name, id, sealedHoldsOwnID)
-			dropped[sealedHoldsOwnID]++
-			continue
+	}
+	ct.printf("Mapped %d sealed products through the TCGplayer id", bridged)
+
+	if ct.gameID == GameMagic {
+		return sealedPlacement{productMap: productMap, matches: matches}
+	}
+
+	var resolved int
+	dropped := map[string]int{}
+	named := map[string][]int{}
+	for _, id := range ids {
+		match := settled[id]
+		switch match.how {
+		case mtgban.SealedSkipped, mtgban.SealedRefused:
+			// A name the resolver turns down is the whole reason this
+			// scraper prices a fraction of the catalog, so say which
+			// name and which refusal, the way the singles path does.
+			ct.printf("%q (%d): %s", blueprints[id].Name, id, match.reason)
+			dropped[match.reason]++
+		case mtgban.SealedByName:
+			productMap[id] = match.uuids
+			named[match.uuids[0]] = append(named[match.uuids[0]], id)
+			resolved++
 		}
-		productMap[id] = []string{uuid}
-		named[uuid] = append(named[uuid], id)
-		resolved++
 	}
 	pruned := ct.pruneSubsumed(blueprints, productMap, named)
 	resolved -= pruned
@@ -269,12 +339,92 @@ func (ct *Sealed) buildProductMap(blueprints map[int]*Blueprint) map[int][]strin
 		ct.printf("Dropped %d blueprints: %s", dropped[reason], reason)
 	}
 
-	return productMap
+	for id, match := range matches {
+		_, kept := productMap[id]
+		if match.UUID != "" && !kept {
+			match.UUID, match.Via, match.Reason = "", mtgban.SealedRefused, subsumedReason
+			matches[id] = match
+		}
+	}
+	return sealedPlacement{productMap: productMap, matches: matches}
 }
 
-// sealedHoldsOwnID is the refusal of a blueprint that its TCGplayer id or its
-// name puts on a product whose cardtraderId the datastore already lists.
-const sealedHoldsOwnID = "product holds its own CardTrader id"
+// matchCatalog is MatchSealedCatalog past the fetch: one match per blueprint,
+// sorted by blueprint id.
+func (ct *Sealed) matchCatalog(blueprints map[int]*Blueprint) []mtgban.SealedMatch {
+	placed := ct.placeBlueprints(blueprints)
+	out := make([]mtgban.SealedMatch, 0, len(placed.matches))
+	for _, id := range slices.Sorted(maps.Keys(placed.matches)) {
+		out = append(out, placed.matches[id])
+	}
+	return out
+}
+
+// sealedGameID is the Card Trader catalog number of a game the sealed
+// scraper is built for.
+func sealedGameID(game matcher.Game) (int, error) {
+	id, found := ctGames[game]
+	// An unknown game would not error anywhere later: its listings would
+	// simply all fail the language read and the scraper would run empty.
+	// Palworld is the one game the shared table carries that this side has
+	// never been built for, so it is refused here rather than left out of
+	// the table the market scraper reads too.
+	if !found || game == matcher.GamePalworld {
+		return 0, fmt.Errorf("unsupported game %q", game)
+	}
+	return id, nil
+}
+
+// newSealedMatcher is the part of a sealed scraper the matching needs: the
+// backend and its game, which must not be Magic, whose sealed map is ids
+// alone. It holds no client and no credential.
+func newSealedMatcher(b *matcher.Backend) (*Sealed, error) {
+	id, err := sealedGameID(b.Game)
+	if err != nil {
+		return nil, err
+	}
+	if id == GameMagic {
+		return nil, fmt.Errorf("unsupported game %q", b.Game)
+	}
+	// API is strongly rated limited, as NewScraperSealed has it
+	return &Sealed{backend: b, gameID: id, maxConcurrency: 2}, nil
+}
+
+// MatchSealedCatalog fetches the sealed blueprints of the backend's game and
+// reports how each one is matched to the datastore, the way Load matches it,
+// pricing nothing. It refuses Magic and the games the sealed scraper is not
+// built for. It is strict where Load is tolerant: an expansion that fails to
+// fetch fails the call, naming how many were skipped and the first, rather
+// than leaving its blueprints out of the answer.
+func MatchSealedCatalog(ctx context.Context, b *matcher.Backend, token string) ([]mtgban.SealedMatch, error) {
+	ct, err := newSealedMatcher(b)
+	if err != nil {
+		return nil, err
+	}
+	if token == "" {
+		return nil, errors.New("missing Card Trader token")
+	}
+	return ct.matchSealedCatalog(ctx, NewCTAuthClient(token))
+}
+
+// matchSealedCatalog is the export's fetch and match, over client.
+func (ct *Sealed) matchSealedCatalog(ctx context.Context, client *CTAuthClient) ([]mtgban.SealedMatch, error) {
+	var skips expansionSkips
+	blueprintsRaw, expansionsRaw, err := BlueprintsForGameID(ctx, client, ct.gameID, "", ct.maxConcurrency, skips.logf)
+	if err != nil {
+		return nil, err
+	}
+	err = skips.err()
+	if err != nil {
+		return nil, err
+	}
+	blueprints, _ := FormatBlueprints(blueprintsRaw, expansionsRaw, true)
+	// An empty answer would read as every id of the game withdrawn.
+	if len(blueprints) == 0 {
+		return nil, fmt.Errorf("no sealed blueprints for %q", ct.backend.Game)
+	}
+	return ct.matchCatalog(blueprints), nil
+}
 
 // sealedNameWithoutShelfCode takes the letters of a set code off the head of a
 // product name, when they are the letters of the code its own shelf opens
@@ -406,7 +556,18 @@ func (ct *Sealed) Load(ctx context.Context) error {
 	blueprints, expansions := FormatBlueprints(blueprintsRaw, expansionsRaw, true)
 	ct.printf("Parsing %d expansions", len(expansions))
 
-	productMap := ct.buildProductMap(blueprints)
+	placed := ct.placeBlueprints(blueprints)
+	ct.priceSealed(ctx, placed, expansions)
+
+	ct.inventoryDate = time.Now()
+
+	return nil
+}
+
+// priceSealed reads every expansion's listings onto the placed blueprints,
+// then says how many blueprints it priced, by how each was placed.
+func (ct *Sealed) priceSealed(ctx context.Context, placed sealedPlacement, expansions map[int]string) {
+	productMap := placed.productMap
 
 	type expItem struct {
 		id   int
@@ -428,9 +589,41 @@ func (ct *Sealed) Load(ctx context.Context) error {
 		ct.printf,
 	)
 
-	ct.inventoryDate = time.Now()
+	byID, bridged, named := pricedBlueprints(ct.inventory, placed)
+	ct.printf("Priced %d products by id, %d through a bridge, %d by name", byID, bridged, named)
+}
 
-	return nil
+// pricedBlueprints counts the placed blueprints the inventory holds an entry
+// for, each once however many entries it holds, by how it was placed. A
+// blueprint the catalog did not list is placed by the datastore's id. It
+// undercounts by design: addCheapestOffer keeps one entry per uuid,
+// condition and storefront, so two blueprints priced onto one uuid can
+// leave one entry, and the blueprint it dropped is not counted.
+func pricedBlueprints(inventory mtgban.InventoryRecord, placed sealedPlacement) (byID, bridged, named int) {
+	priced := map[string]bool{}
+	for _, entries := range inventory {
+		for _, entry := range entries {
+			priced[entry.OriginalID] = true
+		}
+	}
+	for id := range placed.productMap {
+		if !priced[strconv.Itoa(id)] {
+			continue
+		}
+		via := mtgban.SealedByID
+		if match, found := placed.matches[id]; found {
+			via = match.Via
+		}
+		switch via {
+		case mtgban.SealedByID:
+			byID++
+		case mtgban.SealedByBridge:
+			bridged++
+		case mtgban.SealedByName:
+			named++
+		}
+	}
+	return byID, bridged, named
 }
 
 // Inventory returns what Load collected. See mtgban.Seller.

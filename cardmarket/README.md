@@ -26,6 +26,13 @@ that is a golden, pinned by `TestIndexMakesNoAuthenticatedCall`, and a gap
 in the published id map is never filled from the API. `Market`
 additionally needs `BAN_API_KEY` (see "The offline pre-filter").
 
+`MatchSealedCatalog` exports `Sealed`'s product matching for a tool outside
+the scrape: it downloads the public sealed product list and returns one
+`mtgban.SealedMatch` per Cardmarket id, sorted, through the very lookup,
+placing and pruning `Load` runs, so the two cannot disagree. It reads no
+listing and needs no credential. A print-run answer is reported by name, a
+pruned product as refused, and Magic, placed by id alone, is an error.
+
 ## The shared resolver
 
 `resolver.go` holds what `Index` and `Market` both need and neither owns

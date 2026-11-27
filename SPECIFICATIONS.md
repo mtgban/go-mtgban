@@ -846,6 +846,11 @@ the name. A fallback never lands on a product holding that store's id (for
 Cardmarket and CardTrader, one that is a number): the listing is refused as
 "product holds its own id" (each store words it its own way), logged and,
 where the scraper tallies drops, counted.
+Each of the five ends its run, for every game, on the line "Priced <n>
+products by id, <n> through a bridge, <n> by name", counting each store
+product it priced once. It counts distinct store products with a recorded
+price, which is why its total can differ from a scraper's older "Priced N"
+line, which counts uuids or listings.
 
 Sealed products are modeled end-to-end, in `matcher/sealed`, whose
 functions take the backend first:

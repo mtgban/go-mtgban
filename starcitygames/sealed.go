@@ -2,6 +2,7 @@ package starcitygames
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"maps"
 	"regexp"
@@ -30,6 +31,9 @@ type Sealed struct {
 	client     *SCGClient
 	backend    *matcher.Backend
 	gameID     int
+
+	// priced holds how each product a run priced was placed, by its sku.
+	priced map[string]mtgban.SealedVia
 }
 
 // pricedProducts counts the products a run came away with a price for, on
@@ -54,6 +58,30 @@ func (scg *Sealed) drop(reason string) {
 		scg.dropped = map[string]int{}
 	}
 	scg.dropped[reason]++
+}
+
+// markPriced records that a catalog product holds a price, and how it was
+// placed.
+func (scg *Sealed) markPriced(sku string, via mtgban.SealedVia) {
+	if scg.priced == nil {
+		scg.priced = map[string]mtgban.SealedVia{}
+	}
+	scg.priced[sku] = via
+}
+
+// pricedByVia counts the products of a run by how each was placed.
+func pricedByVia(priced map[string]mtgban.SealedVia) (byID, bridged, named int) {
+	for _, via := range priced {
+		switch via {
+		case mtgban.SealedByID:
+			byID++
+		case mtgban.SealedByBridge:
+			bridged++
+		case mtgban.SealedByName:
+			named++
+		}
+	}
+	return byID, bridged, named
 }
 
 // NewScraperSealed returns a sealed scraper for one game, using the given API
@@ -155,51 +183,25 @@ func (scg *Sealed) processProduct(p CatalogProduct) {
 	// This scraper handles sealed only; singles have their own scraper,
 	// and the catalog also carries supplies and bulk lots. product_type
 	// states it outright, where the sku prefix only implied it.
-	if p.ProductType != ProductTypeSealed {
-		return
-	}
-	if gameFromCatalog(p.Game) != scg.gameID {
+	if !scg.isSealedOf(p) {
 		return
 	}
 
-	// Sealed products are keyed by their SKU, which mtgban stores as the
-	// scgId; outside Magic a SKU the datastore does not carry resolves by
-	// name instead, English only, unique or nothing.
-	uuid, found := scg.productMap[p.SKU]
-	if !found {
-		if scg.backend.Game == matcher.GameMagic {
-			scg.drop("sku the datastore does not carry")
-			return
-		}
-		if p.Language != "" && p.Language != "English" {
-			scg.drop("not sold in English")
-			return
-		}
-		if matcher.SealedIsLanguageVariant(p.Name) {
-			scg.drop("language variant")
-			return
-		}
+	match := scg.matchProduct(p)
+	if match.UUID == "" {
 		// The name resolver is the whole reason this scraper prices a
 		// fraction of the sealed catalog for the products with no sku in the
 		// datastore, so say which name and which refusal, the way the
 		// singles path says which card it could not place. Magic is exempt:
 		// it is keyed by sku and never asks the resolver, so its whole
 		// unlisted catalog would be named here for nothing.
-		name := sealedProductName(p)
-		resolved, err := scg.backend.ResolveSealed(name)
-		if err != nil {
-			scg.printf("%q (sku=%s): %s", name, p.SKU, err)
-			scg.drop(err.Error())
-			return
+		if match.Via == mtgban.SealedRefused {
+			scg.printf("%q (sku=%s): %s", sealedProductName(p), p.SKU, match.Reason)
 		}
-		co, err := scg.backend.GetUUID(resolved)
-		if err == nil && co.Identifiers["scgId"] != "" {
-			scg.printf("%q (sku=%s): %s", name, p.SKU, sealedHoldsOwnID)
-			scg.drop(sealedHoldsOwnID)
-			return
-		}
-		uuid = resolved
+		scg.drop(match.Reason)
+		return
 	}
+	uuid := match.UUID
 
 	link := SCGProductURL(p.URL, "", scg.affiliate)
 
@@ -223,8 +225,11 @@ func (scg *Sealed) processProduct(p CatalogProduct) {
 				InstanceID: v.SKU,
 				URL:        SCGProductURL(p.URL, v.SKU, scg.affiliate),
 			}
-			if err := scg.inventory.Add(uuid, entry); err != nil {
+			err := scg.inventory.Add(uuid, entry)
+			if err != nil {
 				scg.printf("%s", err.Error())
+			} else {
+				scg.markPriced(p.SKU, match.Via)
 			}
 		}
 
@@ -240,17 +245,168 @@ func (scg *Sealed) processProduct(p CatalogProduct) {
 				URL:        buyURL,
 				OriginalID: v.SKU,
 			}
-			if err := scg.buylist.Add(uuid, entry); err != nil {
+			err = scg.buylist.Add(uuid, entry)
+			if err != nil {
 				scg.printf("%s", err.Error())
+			} else {
+				scg.markPriced(p.SKU, match.Via)
 			}
 		}
 	}
+}
+
+// sealedUnlisted is why a Magic product the datastore holds no sku for is
+// dropped; Magic sealed is matched by sku alone.
+const sealedUnlisted = "sku the datastore does not carry"
+
+// matchProduct decides which datastore product a sealed catalog product is,
+// before anything about its stock or price is read. Sealed products are keyed
+// by their SKU, which mtgban stores as the scgId; outside Magic a SKU the
+// datastore does not carry resolves by name instead, English only, unique or
+// nothing, and never onto a product that holds a SKU of its own.
+func (scg *Sealed) matchProduct(p CatalogProduct) mtgban.SealedMatch {
+	match := mtgban.SealedMatch{StoreID: p.SKU, Name: p.Name}
+	if uuid, found := scg.productMap[p.SKU]; found {
+		match.UUID = uuid
+		match.Via = mtgban.SealedByID
+		return match
+	}
+	if scg.backend.Game == matcher.GameMagic {
+		match.Via = mtgban.SealedSkipped
+		match.Reason = sealedUnlisted
+		return match
+	}
+	if p.Language != "" && p.Language != "English" {
+		match.Via = mtgban.SealedSkipped
+		match.Reason = "not sold in English"
+		return match
+	}
+	if matcher.SealedIsLanguageVariant(p.Name) {
+		match.Via = mtgban.SealedSkipped
+		match.Reason = "language variant"
+		return match
+	}
+	uuid, err := scg.backend.ResolveSealed(sealedProductName(p))
+	if err != nil {
+		match.Via = mtgban.SealedRefused
+		match.Reason = err.Error()
+		return match
+	}
+	co, err := scg.backend.GetUUID(uuid)
+	if err == nil && co.Identifiers["scgId"] != "" {
+		match.Via = mtgban.SealedRefused
+		match.Reason = sealedHoldsOwnID
+		return match
+	}
+	match.UUID = uuid
+	match.Via = mtgban.SealedByName
+	return match
+}
+
+// isSealedOf reports whether a catalog product is one this scraper reads:
+// sealed, of its game.
+func (scg *Sealed) isSealedOf(p CatalogProduct) bool {
+	return p.ProductType == ProductTypeSealed && gameFromCatalog(p.Game) == scg.gameID
+}
+
+// newSealedMatcher builds the scraper the export matches through, refusing
+// Magic, which is matched by sku alone, and every game the sealed scraper
+// is not registered for.
+func newSealedMatcher(b *matcher.Backend) (*Sealed, error) {
+	gameID, ok := scgGames[b.Game]
+	if !ok || !slices.Contains(starcitygamesGames, b.Game) {
+		return nil, fmt.Errorf("no sealed scraper for game %q", b.Game)
+	}
+	if b.Game == matcher.GameMagic {
+		return nil, errors.New("magic sealed is matched by sku alone")
+	}
+	return &Sealed{backend: b, gameID: gameID, productMap: buildProductMap(b)}, nil
+}
+
+// MatchSealedCatalog streams the catalog export the way Load does and
+// answers what the scraper's matching decides for each sealed product of the
+// backend's game, by sku. It prices nothing. A product with no sku, or one
+// so malformed its matching panics, is left out. A failed stream, or a
+// catalog holding no product of the game, is an error.
+func MatchSealedCatalog(ctx context.Context, b *matcher.Backend, apiKey string) ([]mtgban.SealedMatch, error) {
+	scg, err := newSealedMatcher(b)
+	if err != nil {
+		return nil, err
+	}
+	if apiKey == "" {
+		return nil, errors.New("missing Star City Games API key")
+	}
+	return scg.matchSealedCatalog(ctx, NewSCGClient(apiKey))
+}
+
+// matchSealedCatalog is the export's stream and match, over client.
+func (scg *Sealed) matchSealedCatalog(ctx context.Context, client *SCGClient) ([]mtgban.SealedMatch, error) {
+	var products []CatalogProduct
+	count, ofGame := 0, 0
+	err := client.StreamCatalog(ctx, func() {
+		products = nil
+		count, ofGame = 0, 0
+	}, func(p CatalogProduct) error {
+		if gameFromCatalog(p.Game) == scg.gameID {
+			ofGame++
+		}
+		if scg.isSealedOf(p) {
+			products = append(products, p)
+		}
+		count++
+		return nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("catalog load failed: %w", err)
+	}
+	if ofGame == 0 {
+		return nil, fmt.Errorf("none of %d catalog products maps to %s", count, scg.backend.Game)
+	}
+	return scg.matchCatalog(products), nil
+}
+
+// matchCatalog matches every sealed product of the game in the catalog, one
+// answer per sku, a placed answer kept over one placing nothing, sorted by
+// sku. A product with no sku, or whose matching panics, is left out.
+func (scg *Sealed) matchCatalog(products []CatalogProduct) []mtgban.SealedMatch {
+	answers := map[string]mtgban.SealedMatch{}
+	for _, p := range products {
+		if p.SKU == "" || !scg.isSealedOf(p) {
+			continue
+		}
+		prev, found := answers[p.SKU]
+		if found && prev.UUID != "" {
+			continue
+		}
+		match, ok := scg.matchOne(p)
+		if !ok || (found && match.UUID == "") {
+			continue
+		}
+		answers[p.SKU] = match
+	}
+	return slices.SortedFunc(maps.Values(answers), func(a, b mtgban.SealedMatch) int {
+		return strings.Compare(a.StoreID, b.StoreID)
+	})
+}
+
+// matchOne is matchProduct for the export, answering false for a malformed
+// product whose matching panics, as processProduct skips one: a refusal
+// would have the consumer take back an id the store never withdrew.
+func (scg *Sealed) matchOne(p CatalogProduct) (match mtgban.SealedMatch, ok bool) {
+	defer func() {
+		r := recover()
+		if r != nil {
+			match, ok = mtgban.SealedMatch{}, false
+		}
+	}()
+	return scg.matchProduct(p), true
 }
 
 // Load streams the single catalog export (authenticated with the API key) and
 // fills the sealed inventory and buylist in one pass.
 func (scg *Sealed) Load(ctx context.Context) error {
 	scg.productMap = buildProductMap(scg.backend)
+	scg.priced = nil
 
 	setIDs, err := scg.client.SetIDs(ctx, scg.gameID)
 	if err != nil {
@@ -264,6 +420,7 @@ func (scg *Sealed) Load(ctx context.Context) error {
 		scg.inventory = mtgban.InventoryRecord{}
 		scg.buylist = mtgban.BuylistRecord{}
 		scg.dropped = nil
+		scg.priced = nil
 		count, ofGame = 0, 0
 	}, func(p CatalogProduct) error {
 		if gameFromCatalog(p.Game) == scg.gameID {
@@ -292,6 +449,8 @@ func (scg *Sealed) Load(ctx context.Context) error {
 		scg.printf("Dropped %d products: %s", scg.dropped[reason], reason)
 	}
 	scg.printf("Priced %d sealed products", scg.pricedProducts())
+	byID, bridged, named := pricedByVia(scg.priced)
+	scg.printf("Priced %d products by id, %d through a bridge, %d by name", byID, bridged, named)
 
 	now := time.Now()
 	scg.inventoryDate = now
