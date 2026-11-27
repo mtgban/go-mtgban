@@ -40,6 +40,16 @@ type Sealed struct {
 	backend *matcher.Backend
 }
 
+// sealedHoldsOwnID is the refusal of a row whose name reaches a product the
+// datastore already lists an id for.
+const sealedHoldsOwnID = "product holds its own id"
+
+// holdsOwnID reports whether the datastore gives the product a csiId.
+func (csi *Sealed) holdsOwnID(uuid string) bool {
+	co, err := csi.backend.GetUUID(uuid)
+	return err == nil && co.Identifiers["csiId"] != ""
+}
+
 // NewScraperSealed returns a sealed scraper for the datastore's game.
 func NewScraperSealed(b *matcher.Backend) (*Sealed, error) {
 	game := b.Game
@@ -54,18 +64,16 @@ func NewScraperSealed(b *matcher.Backend) (*Sealed, error) {
 	csi.maxConcurrency = defaultConcurrency
 
 	csi.productMap = map[string]string{}
-	if game == matcher.GameMagic {
-		for _, uuid := range b.GetSealedUUIDs() {
-			co, err := b.GetUUID(uuid)
-			if err != nil {
-				continue
-			}
-			id, found := co.Identifiers["csiId"]
-			if !found {
-				continue
-			}
-			csi.productMap[id] = co.UUID
+	for _, uuid := range b.GetSealedUUIDs() {
+		co, err := b.GetUUID(uuid)
+		if err != nil {
+			continue
 		}
+		id, found := co.Identifiers["csiId"]
+		if !found {
+			continue
+		}
+		csi.productMap[id] = co.UUID
 	}
 	csi.shelf = shelf
 	csi.backend = b
@@ -263,9 +271,9 @@ func (csi *Sealed) parseBL(ctx context.Context) error {
 		u.RawQuery = v.Encode()
 		link := u.String()
 
-		// Magic products carry the catalog id the datastore knows; the
-		// other games resolve the offer by name, unique or nothing,
-		// skipping the language variants the datastores never carry.
+		// A product is found by the catalog id the datastore knows; outside
+		// Magic an unknown one resolves by name, unique or nothing, skipping
+		// the language variants the datastores never carry.
 		uuid, found := csi.productMap[product.PID]
 		if !found {
 			if csi.backend.Game == matcher.GameMagic {
@@ -276,6 +284,10 @@ func (csi *Sealed) parseBL(ctx context.Context) error {
 			}
 			resolved, err := csi.backend.ResolveSealed(product.Name)
 			if err != nil {
+				continue
+			}
+			if csi.holdsOwnID(resolved) {
+				csi.printf("%q (%s): %s", product.Name, product.PID, sealedHoldsOwnID)
 				continue
 			}
 			uuid = resolved
@@ -329,8 +341,8 @@ func (csi *Sealed) SetConfig(opt mtgban.ScraperOptions) {
 func (csi *Sealed) Load(ctx context.Context) error {
 	// The saved-query page and the buylist exist for Magic alone; the
 	// other games ride the same set-facet search the singles use, with
-	// the sealed-name resolver telling the sealed rows apart from the
-	// card ones.
+	// the product ids and the sealed-name resolver telling the sealed
+	// rows apart from the card ones.
 	if csi.backend.Game != matcher.GameMagic {
 		var errs []error
 		if !csi.disableRetail {
@@ -366,8 +378,8 @@ func (csi *Sealed) Load(ctx context.Context) error {
 }
 
 // scrapeBysets walks every set of the game through the same search the
-// singles scraper uses; the sealed rows resolve through the sealed-name
-// resolver, the card rows resolve to nothing and drop out.
+// singles scraper uses; the sealed rows resolve by id or through the
+// sealed-name resolver, the card rows resolve to nothing and drop out.
 func (csi *Sealed) scrapeBysets(ctx context.Context) error {
 	// One search per sealed-product word: the store's own names carry
 	// them ("Booster Box", "Illumineer's Trove"), and a handful of
@@ -461,9 +473,9 @@ func searchSealed(ctx context.Context, client *http.Client, shelf, query string)
 }
 
 // processSealedSearch pages through one query's results, pricing every
-// row the sealed-name resolver recognizes. English only: language-variant
-// names are skipped before resolution. It answers how many rows the search
-// returned, priced or not.
+// row whose id the datastore carries or whose name the sealed-name resolver
+// recognizes. English only: language-variant names are skipped before
+// resolution. It answers how many rows the search returned, priced or not.
 func (csi *Sealed) processSealedSearch(ctx context.Context, channel chan<- responseChan, query string) (int, error) {
 	result, err := searchSealed(ctx, csi.client, csi.shelf, query)
 	if err != nil {
@@ -491,26 +503,36 @@ func (csi *Sealed) processSealedSearch(ctx context.Context, channel chan<- respo
 		rows := doc.Find(searchRowSelector)
 		found += rows.Length()
 		rows.Each(func(i int, s *goquery.Selection) {
-			productName := strings.TrimSpace(s.Find(`span[itemprop="name"]`).Text())
-			if csi.backend.Game == matcher.GameYuGiOh {
-				// The storefront leads its yugioh sealed listings with the
-				// game's own name, which the canonical names never carry.
-				productName = strings.TrimPrefix(productName, "Yu-Gi-Oh!")
-				productName = strings.TrimPrefix(strings.TrimSpace(productName), "- ")
-			}
-			if csi.backend.Game == matcher.GameLorcana {
-				productName = lorcanaSealedWords.Replace(productName)
-			}
-			if productName == "" || matcher.SealedIsLanguageVariant(productName) {
-				return
-			}
-			uuid, err := csi.backend.ResolveSealed(productName)
-			if err != nil {
-				// A card row, or a product the datastore does not carry
-				return
+			// An id the datastore carries settles the row; the others
+			// are placed by name.
+			pid, _ := s.Find(`span[class="rating-display "]`).Attr("data-pid")
+			uuid, known := csi.productMap[pid]
+			if !known {
+				productName := strings.TrimSpace(s.Find(`span[itemprop="name"]`).Text())
+				if csi.backend.Game == matcher.GameYuGiOh {
+					// The storefront leads its yugioh sealed listings with the
+					// game's own name, which the canonical names never carry.
+					productName = strings.TrimPrefix(productName, "Yu-Gi-Oh!")
+					productName = strings.TrimPrefix(strings.TrimSpace(productName), "- ")
+				}
+				if csi.backend.Game == matcher.GameLorcana {
+					productName = lorcanaSealedWords.Replace(productName)
+				}
+				if productName == "" || matcher.SealedIsLanguageVariant(productName) {
+					return
+				}
+				resolved, err := csi.backend.ResolveSealed(productName)
+				if err != nil {
+					// A card row, or a product the datastore does not carry
+					return
+				}
+				if csi.holdsOwnID(resolved) {
+					csi.printf("%q (%s): %s", productName, pid, sealedHoldsOwnID)
+					return
+				}
+				uuid = resolved
 			}
 
-			pid, _ := s.Find(`span[class="rating-display "]`).Attr("data-pid")
 			link := "https://www.coolstuffinc.com/p/" + pid
 			if csi.partner != "" {
 				link += "?utm_referrer=" + csi.partner
