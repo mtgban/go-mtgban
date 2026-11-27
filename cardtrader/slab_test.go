@@ -80,6 +80,11 @@ func TestCTSlab(t *testing.T) {
 		{"graded 9 by GRAAD", "GRAAD", 9, "", mtgban.NM},
 		{"[AiGrad 8.5] BGS 8", "AiGrading", 8.5, "", mtgban.NM},
 		{"AiGrading 10", "AiGrading", 10, "", mtgban.NM},
+		{"AI GRADING 9.5", "AiGrading", 9.5, "", mtgban.NM},
+		{"ai grading 10", "AiGrading", 10, "", mtgban.NM},
+		{"AI GRADING -8-", "AiGrading", 8, "", mtgban.NM},
+		{"GRAAD GRADATA 10", "GRAAD", 10, "", mtgban.NM},
+		{"GRAAD grading 10/10", "GRAAD", 10, "", mtgban.NM},
 
 		// Wordings no listing in the capture carries
 		{"PSA 1st Edition 9", "PSA", 0, "PSA 1st Edition 9", ""},

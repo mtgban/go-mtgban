@@ -118,7 +118,7 @@ func ctCondition(s string) (mtgban.Condition, error) {
 }
 
 const (
-	slabGraderExpr = `(PSA|BGS|BEC?KETT?|CGC|CERTIFIED\s+GUARANTY\s+COMPANY|GRAAD|AIGRAD(?:ING)?|TAG)`
+	slabGraderExpr = `(PSA|BGS|BEC?KETT?|CGC|CERTIFIED\s+GUARANTY\s+COMPANY|GRAAD|AI\s*GRAD(?:ING)?|TAG)`
 	slabScoreExpr  = `(10(?:[.,’]\d+)?|[1-9](?:[.,’]\d+)?)`
 
 	// A score ends short of any letter, digit or ordinal mark, past the quad and
@@ -129,7 +129,7 @@ const (
 // reSlab reads a grader and its score off a listing's description, the only
 // place Card Trader names them: "[PSA 10.0 Gem-Mint]", "bgs 8,5", "CGC grade 9".
 var reSlab = regexp.MustCompile(`(?i)\b` + slabGraderExpr + `[\s:\]-]*` +
-	`(?:(?:GEM|MINT|MT|NEAR|NM|EX|VG|GOOD|FAIR|FR|POOR|PR|PR[IE]STINE|BLACK|LABEL|UNIVERSAL|GRADED|GRADE|VOTO)[\s:+-]+)*` +
+	`(?:(?:GEM|MINT|MT|NEAR|NM|EX|VG|GOOD|FAIR|FR|POOR|PR|PR[IE]STINE|BLACK|LABEL|UNIVERSAL|GRADED|GRADE|GRADING|GRADAT[AO]|VOTO)[\s:+-]+)*` +
 	slabScoreExpr + slabScoreEnd)
 
 // reSlabScoreFirst reads a score worded ahead of its grader: "Graded 9 by
@@ -143,7 +143,7 @@ var reSlabScoreFirst = regexp.MustCompile(`(?i)(?:\b(?:GRADED?|GRADAT[AO])\s+` +
 // reSlabGrader is the first grader a description names, which may compare
 // its slab to another's: "GRAAD 10, PSA 10 equivalent". TAG is a word of its
 // own in lower case.
-var reSlabGrader = regexp.MustCompile(`(?:^|[^\pL])((?i:PSA|BGS|BEC?KETT?|CGC|CERTIFIED\s+GUARANTY\s+COMPANY|GRAAD|AIGRAD(?:ING)?)|TAG)(?:[^\pL]|$)`)
+var reSlabGrader = regexp.MustCompile(`(?:^|[^\pL])((?i:PSA|BGS|BEC?KETT?|CGC|CERTIFIED\s+GUARANTY\s+COMPANY|GRAAD|AI\s*GRAD(?:ING)?)|TAG)(?:[^\pL]|$)`)
 
 // slabLabels are the labels a grader sets apart from its plain 10, the higher
 // first: a Black Label is worded as a Pristine too.
@@ -238,7 +238,7 @@ func slabGrader(name string) string {
 	switch {
 	case name == "PSA", name == "BGS", name == "CGC", name == "TAG", name == "GRAAD":
 		return name
-	case strings.HasPrefix(name, "AIGRAD"):
+	case strings.HasPrefix(name, "AI"):
 		return "AiGrading"
 	case strings.HasPrefix(name, "CERTIFIED"):
 		return "CGC"
