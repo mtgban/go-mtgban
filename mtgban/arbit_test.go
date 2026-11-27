@@ -64,14 +64,13 @@ func TestArbitReportsTheTrade(t *testing.T) {
 	if got.AbsoluteDifference != 15 {
 		t.Errorf("AbsoluteDifference = %v, want 15", got.AbsoluteDifference)
 	}
-	want := math.Pow(5, 0.4) * math.Pow(5.0/10.0, 0.6) * math.Pow(3, 0.25)
+	want := math.Pow(5, 0.4) * math.Pow(5.0/10.0, 0.6) * (1 + math.Log10(3)/4)
 	if math.Abs(got.Profitability-want) > 1e-9 {
 		t.Errorf("Profitability = %v, want %v", got.Profitability, want)
 	}
 }
 
-// A single copy is not multiplied by the fourth root of one unit, which would
-// be the same number, but the branch is what says so.
+// A single copy takes no quantity weight.
 func TestArbitDoesNotScaleASingleCopy(t *testing.T) {
 	b := backendFor(plainCard())
 
@@ -85,6 +84,20 @@ func TestArbitDoesNotScaleASingleCopy(t *testing.T) {
 	want := math.Pow(5, 0.4) * math.Pow(5.0/10.0, 0.6)
 	if math.Abs(entries[0].Profitability-want) > 1e-9 {
 		t.Errorf("Profitability = %v, want %v", entries[0].Profitability, want)
+	}
+}
+
+// TestProfitabilityQuantityDoesNotLiftAThinSpread pins the quantity weight
+// on a real pair of rows: eleven copies at a 14% spread rank under one copy
+// at 43%, while each added copy still counts.
+func TestProfitabilityQuantityDoesNotLiftAThinSpread(t *testing.T) {
+	stack := Profitability(6.99, 8.00, 11, 0)
+	single := Profitability(1.35, 1.93, 1, 0)
+	if stack >= single {
+		t.Errorf("11 copies at +$1.01 score %v, want under one copy at +$0.58 (%v)", stack, single)
+	}
+	if more := Profitability(6.99, 8.00, 12, 0); more <= stack {
+		t.Errorf("12 copies score %v, want over 11 copies (%v)", more, stack)
 	}
 }
 

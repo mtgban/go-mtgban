@@ -197,10 +197,12 @@ inventory:
    `WriteBuylistToCSV`) applies for itself when it wants store-credit
    pricing.
 5. Tradable `qty = min(invQty, blQty)` (buylist quantity 0 = unlimited).
-   **Profitability** = `difference^0.4 · (difference / (sell + k))^0.6 · qty^(1/4)`,
+   **Profitability** = `difference^0.4 · (difference / (sell + k))^0.6 · (1 + log10(qty)/4)`,
    or **0** when the difference is not positive (the powers are NaN there;
    the website's negative modes reach these rows with `MinSpread` -30),
-   where `qty^(1/4)` is applied only when qty > 1. The return weighs more
+   where the quantity weight is 1 for qty ≤ 1 and is exported as
+   `QuantityWeight(qty)`: ten copies weigh 1.25, a hundred 1.5, so a stack
+   of copies does not lift a thin spread over a wide one. The return weighs more
    than the profit: 0.50 → 1 outranks 50 → 55, and 25 → 30 outranks
    5 → 6. `k` is `ProfitabilityConstant`, added to the price the return is
    measured on to dampen cheap cards (default 0). The exported

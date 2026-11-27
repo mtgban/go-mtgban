@@ -318,24 +318,31 @@ func asks(entry InventoryEntry, regraded float64) quote {
 // Profitability scores a trade that buys at sell and sells at buy, so that one
 // can be ranked against another:
 //
-//	Difference^0.4 * (Difference / (Sell + k))^0.6 * Units^(1/4)
+//	Difference^0.4 * (Difference / (Sell + k))^0.6 * QuantityWeight(Units)
 //
 // The return it makes on the price weighs more than the profit, so a
 // large return on a cheap card outranks a thin one on an expensive card,
 // while of two trades at the same return the larger one wins. k dampens
-// cheap cards by adding to the price the return is measured on. The units
-// term applies above one copy, and a trade that pays nothing scores zero.
+// cheap cards by adding to the price the return is measured on. A trade
+// that pays nothing scores zero.
 func Profitability(sell, buy float64, qty int, k float64) float64 {
 	difference := buy - sell
 	price := sell + k
 	if sell <= 0 || price <= 0 || difference <= 0 {
 		return 0
 	}
-	index := math.Pow(difference, 0.4) * math.Pow(difference/price, 0.6)
-	if qty > 1 {
-		index *= math.Pow(float64(qty), 0.25)
+	return math.Pow(difference, 0.4) * math.Pow(difference/price, 0.6) * QuantityWeight(qty)
+}
+
+// QuantityWeight is the factor Profitability gives a trade of qty copies:
+// 1 + log10(qty)/4, so ten copies weigh 1.25 and a hundred 1.5. It grows
+// slowly enough that a stack of copies does not lift a thin spread over a
+// wide one, and a single copy, or an unknown quantity, weighs 1.
+func QuantityWeight(qty int) float64 {
+	if qty <= 1 {
+		return 1
 	}
-	return index
+	return 1 + math.Log10(float64(qty))/4
 }
 
 // arbitrage is the comparison both reports are: what a copy costs against
