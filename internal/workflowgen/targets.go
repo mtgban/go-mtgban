@@ -45,6 +45,7 @@ var targets = []workflow{
 	{Game: "magic", Store: "abugames", Cron: "31 7,15,23 * * *"},
 	{Game: "magic", Store: "abugames_sealed", Cron: "32 19 * * *"},
 	{Game: "magic", Store: "arcanafrisia", Cron: "40 10 * * *"},
+	{Game: "magic", Store: "bazaarofmagic", Cron: "25 2 * * *", Group: "bantool-bazaarofmagic"},
 	{Game: "magic", Store: "cardgamecorner", Cron: "39 19 * * *", Group: "bantool-cardgamecorner"},
 	{Game: "magic", Store: "cardkingdom", Cron: "0 * * * *", Affiliate: "CK_PARTNER"},
 	{Game: "magic", Store: "cardkingdom_graded", Cron: "2 */12 * * *", Affiliate: "CK_PARTNER"},

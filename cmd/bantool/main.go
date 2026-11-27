@@ -42,6 +42,7 @@ import (
 
 	_ "github.com/mtgban/go-mtgban/abugames"
 	_ "github.com/mtgban/go-mtgban/arcanafrisia"
+	_ "github.com/mtgban/go-mtgban/bazaarofmagic"
 	_ "github.com/mtgban/go-mtgban/cardkingdom"
 	_ "github.com/mtgban/go-mtgban/coolstuffinc"
 	_ "github.com/mtgban/go-mtgban/gamenerdz"
