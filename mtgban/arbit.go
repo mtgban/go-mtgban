@@ -318,7 +318,7 @@ func asks(entry InventoryEntry, regraded float64) quote {
 // Profitability scores a trade that buys at sell and sells at buy, so that one
 // can be ranked against another:
 //
-//	Difference^0.4 * (Difference / (Sell + k))^0.6 * QuantityWeight(Units)
+//	Difference^0.4 * (Difference / (Sell + k))^0.6 * ProfitabilityQuantityWeight(Units)
 //
 // The return it makes on the price weighs more than the profit, so a
 // large return on a cheap card outranks a thin one on an expensive card,
@@ -331,14 +331,14 @@ func Profitability(sell, buy float64, qty int, k float64) float64 {
 	if sell <= 0 || price <= 0 || difference <= 0 {
 		return 0
 	}
-	return math.Pow(difference, 0.4) * math.Pow(difference/price, 0.6) * QuantityWeight(qty)
+	return math.Pow(difference, 0.4) * math.Pow(difference/price, 0.6) * ProfitabilityQuantityWeight(qty)
 }
 
-// QuantityWeight is the factor Profitability gives a trade of qty copies:
-// 1 + log10(qty)/4, so ten copies weigh 1.25 and a hundred 1.5. It grows
-// slowly enough that a stack of copies does not lift a thin spread over a
-// wide one, and a single copy, or an unknown quantity, weighs 1.
-func QuantityWeight(qty int) float64 {
+// ProfitabilityQuantityWeight is the factor Profitability gives a trade of
+// qty copies: 1 + log10(qty)/4, so ten copies weigh 1.25 and a hundred 1.5.
+// It grows slowly enough that a stack of copies does not lift a thin spread
+// over a wide one, and a single copy, or an unknown quantity, weighs 1.
+func ProfitabilityQuantityWeight(qty int) float64 {
 	if qty <= 1 {
 		return 1
 	}
