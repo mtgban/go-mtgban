@@ -1051,7 +1051,9 @@ grade is filed at the best offer at it or below, the one PLD skips included,
 `InfoForScraper`, graded slabs as `ABUGraded`), `mtgseattle`
 (`CreditMultiplier 1.33`), `mintcard` (rides TCG SKUs,
 `CreditMultiplier 1.1`), `vegassingles` (buylist alone, read from Hippolink by
-TCGplayer product id), `manaleak` (GBP), `miniaturemarket` (sealed-only),
+TCGplayer product id), `manaleak` (GBP), `bazaarofmagic` (EUR, Dutch,
+`CreditMultiplier 1.3`, every set walked under the 2,880-row cap each
+listing stops at), `miniaturemarket` (sealed-only),
 and the unregistered `secretdeskorrigans` (CAD, French) and `toamagic`
 (Spanish), which bantool does not run.
 
