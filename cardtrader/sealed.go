@@ -148,13 +148,27 @@ func (ct *Sealed) processEntry(ctx context.Context, channel chan<- resultChan, e
 // good; one it does not answer is routed through the TCGplayer id both
 // sides carry. The leftovers resolve by name, the way the cardmarket
 // sealed scraper resolves the same leftovers - except for Magic, whose
-// sealed namespace is too collision-prone to trust a name alone.
+// sealed namespace is too collision-prone to trust a name alone. Outside
+// Magic, neither fallback lands on a product that holds a cardtraderId of
+// its own.
 func (ct *Sealed) buildProductMap(blueprints map[int]*Blueprint) map[int][]string {
 	productMap := ct.backend.BuildSealedProductMap("cardtraderId")
 	ct.printf("Loaded %d sealed products", len(productMap))
 
+	// The products a cardtraderId reaches, which no fallback may land on
+	holders := map[string]bool{}
+	if ct.gameID != GameMagic {
+		for _, uuids := range productMap {
+			for _, uuid := range uuids {
+				holders[uuid] = true
+			}
+		}
+	}
+	dropped := map[string]int{}
+
 	tcgMap := ct.backend.BuildSealedProductMap("tcgplayerProductId")
 	var bridged int
+	var held []int
 	for id, bp := range blueprints {
 		if _, found := productMap[id]; found {
 			continue
@@ -169,10 +183,20 @@ func (ct *Sealed) buildProductMap(blueprints map[int]*Blueprint) map[int][]strin
 		if !found {
 			continue
 		}
+		if slices.ContainsFunc(uuids, func(uuid string) bool { return holders[uuid] }) {
+			held = append(held, id)
+			continue
+		}
 		productMap[id] = uuids
 		bridged++
 	}
 	ct.printf("Mapped %d sealed products through the TCGplayer id", bridged)
+	// Refused here for good: the name pass must not get a second try at it.
+	slices.Sort(held)
+	for _, id := range held {
+		ct.printf("%q (%d): %s", blueprints[id].Name, id, sealedHoldsOwnID)
+		dropped[sealedHoldsOwnID]++
+	}
 
 	if ct.gameID == GameMagic {
 		return productMap
@@ -185,10 +209,12 @@ func (ct *Sealed) buildProductMap(blueprints map[int]*Blueprint) map[int][]strin
 	// dice, sleeves, empty boxes - name no product of ours and drop
 	// out here.
 	var resolved int
-	dropped := map[string]int{}
 	named := map[string][]int{}
 	for id, bp := range blueprints {
 		if _, found := productMap[id]; found {
+			continue
+		}
+		if slices.Contains(held, id) {
 			continue
 		}
 		if skipped, why := sealedNamePassSkips(bp); skipped {
@@ -222,6 +248,11 @@ func (ct *Sealed) buildProductMap(blueprints map[int]*Blueprint) map[int][]strin
 			dropped[err.Error()]++
 			continue
 		}
+		if holders[uuid] {
+			ct.printf("%q (%d): %s", bp.Name, id, sealedHoldsOwnID)
+			dropped[sealedHoldsOwnID]++
+			continue
+		}
 		productMap[id] = []string{uuid}
 		named[uuid] = append(named[uuid], id)
 		resolved++
@@ -240,6 +271,10 @@ func (ct *Sealed) buildProductMap(blueprints map[int]*Blueprint) map[int][]strin
 
 	return productMap
 }
+
+// sealedHoldsOwnID is the refusal of a blueprint that its TCGplayer id or its
+// name puts on a product whose cardtraderId the datastore already lists.
+const sealedHoldsOwnID = "product holds its own CardTrader id"
 
 // sealedNameWithoutShelfCode takes the letters of a set code off the head of a
 // product name, when they are the letters of the code its own shelf opens

@@ -367,3 +367,37 @@ func TestResolveGundamPremiumCollection(t *testing.T) {
 		})
 	}
 }
+
+// TestResolveListingKeepsOffAnIDsProduct pins that a name reaching a product
+// with a miniaturemarketId is refused under a reason of its own, while a
+// product with none is still found by name.
+func TestResolveListingKeepsOffAnIDsProduct(t *testing.T) {
+	b := &matcher.Backend{
+		Game:           matcher.GameGundam,
+		UUIDs:          map[string]*matcher.CardObject{},
+		Hashes:         map[string][]string{},
+		SetSealedUUIDs: map[string][]string{},
+		Sets: map[string]*matcher.Set{
+			"GD05": {Name: "Freedom Ascension", Code: "GD05"},
+		},
+	}
+	b.AddSealed("gd05-box", "Freedom Ascension Booster Box", "GD05", "",
+		map[string]string{"miniaturemarketId": "111"})
+	b.AddSealed("gd05-pack", "Freedom Ascension Booster Pack", "GD05", "", nil)
+	b.SortSealed()
+	b.IndexSets()
+
+	mm, err := NewScraperSealed(b)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	uuid, drop := mm.resolveListing("999", "Freedom Ascension Booster Box")
+	if uuid != "" || drop != sealedHoldsOwnID {
+		t.Errorf("the box by name: resolveListing = (%q, %q), want the refusal %q", uuid, drop, sealedHoldsOwnID)
+	}
+	uuid, drop = mm.resolveListing("998", "Freedom Ascension Booster Pack")
+	if uuid != "gd05-pack" {
+		t.Errorf("the pack by name: resolveListing = (%q, %q), want gd05-pack", uuid, drop)
+	}
+}
