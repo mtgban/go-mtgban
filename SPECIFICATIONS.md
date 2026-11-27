@@ -1002,6 +1002,7 @@ row.
 | `manapool` | Public JSON API | Three scrapers: `Manapool` (aggregate, `MatchID` by Scryfall id, `NoQuantityInventory`), `Index` (`MetadataOnly`) and `Sealed` |
 | `merlion` | Public buylist CSV | Riftbound buylist-only; matches by the TCGplayer id in each product link, and reads the finish out of the condition column |
 | `arcanafrisia` | Public buylist endpoint | Buylist-only EU vendor, shorthand `AF`; matches by Scryfall id and maps the store's NM/EX/GD grades onto NM/SP/MP |
+| `cardrush` | Public buylist page, its rows read from the page's Next.js data | Buylist-only Japanese store, shorthand `CR`, Magic alone (JPY); no identifiers, so each row is read from its set code and the treatment notes ahead of the name, and only English copies and printings made only in Japanese are priced |
 | `trolltrader` | Public Shopify storefront, one request a second | UK store, shorthand `TTC`, Magic retail alone (GBP, `NoQuantityInventory`); matches by MTGJSON set code and collector number; see [trolltrader/README.md](trolltrader/README.md) |
 | `cardsphere` | Session cookie (gentle 3s) | Unregistered, not run by bantool; buylist-only; `BuyPrice ×0.87` fee **and** `CreditMultiplier 1.1` |
 | `mtgstocks` | Public API, fixed `curl` User-Agent | Unregistered, not run by bantool; MetadataOnly index (average/market interests) |
