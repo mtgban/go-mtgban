@@ -25,6 +25,7 @@ const (
 	// buylist takes the same filters under the Magic category.
 	singlesURL = baseURL + "/query"
 	buylistURL = baseURL + "/buylist/singles"
+	sealedURL  = baseURL + "/c/magic-the-gathering/1000382"
 	searchURL  = baseURL + "/search"
 
 	magicCategory = "1000382"
@@ -124,6 +125,13 @@ func BuylistQuery(code string) url.Values {
 	v := url.Values{}
 	v.Set("expansion", magicCategory)
 	v.Set("sets[]", code)
+	return v
+}
+
+// SealedQuery lists the in-stock sealed Magic product.
+func SealedQuery() url.Values {
+	v := url.Values{}
+	v.Set("display", "stock")
 	return v
 }
 

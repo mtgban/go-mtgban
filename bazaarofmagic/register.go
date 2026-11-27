@@ -17,4 +17,10 @@ func init() {
 			}
 			return scraper, nil
 		})
+	mtgban.Register("bazaarofmagic_sealed", []matcher.Game{matcher.GameMagic},
+		func(b *matcher.Backend, opts mtgban.Options) (mtgban.Scraper, error) {
+			scraper := NewScraperSealed(b)
+			scraper.logCallback = opts.LogCallback
+			return scraper, nil
+		})
 }
