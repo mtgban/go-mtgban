@@ -185,7 +185,7 @@ func (toa *TOAMagic) processProduct(ctx context.Context, channel chan<- response
 			return
 		}
 
-		theCard, err := preprocess(cardName, edition, variant)
+		theCard, err := preprocess(toa.backend, cardName, edition, variant)
 		if err != nil {
 			return
 		}
