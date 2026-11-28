@@ -116,6 +116,11 @@ func preprocess(b *matcher.Backend, cardName, edition, variant string) (*matcher
 			edition = "PLST"
 			variant = number
 		}
+	case "Secret Lair Drop Series":
+		code, number := secretLairSet(b, cardName)
+		if code != "" {
+			edition, variant = b.Sets[code].Name, cmp.Or(number, variant)
+		}
 	case "Archenemy Nicol Bolas":
 		if cardName == "Highland Lake" || cardName == "Submerged Boneyard" {
 			return nil, errors.New("does not exist")
@@ -205,6 +210,39 @@ func hasDoubleExposure(b *matcher.Backend, cardName string) bool {
 		}
 	}
 	return false
+}
+
+// secretLairSet answers the one Secret Lair set printing cardName when Secret
+// Lair Drop does not, since the store files Showdown and Countdown cards
+// there too, and the card's number when that set prints it once.
+func secretLairSet(b *matcher.Backend, cardName string) (string, string) {
+	ids, _ := b.SearchEquals(cardName)
+	var codes, numbers []string
+	for _, id := range ids {
+		co, err := b.GetUUID(id)
+		if err != nil {
+			continue
+		}
+		if co.SetCode == "SLD" {
+			return "", ""
+		}
+		if !strings.HasPrefix(co.Edition, "Secret Lair") {
+			continue
+		}
+		if !slices.Contains(codes, co.SetCode) {
+			codes = append(codes, co.SetCode)
+		}
+		if !slices.Contains(numbers, co.Number) {
+			numbers = append(numbers, co.Number)
+		}
+	}
+	if len(codes) != 1 {
+		return "", ""
+	}
+	if len(numbers) != 1 {
+		return codes[0], ""
+	}
+	return codes[0], numbers[0]
 }
 
 // plstNumber answers the PLST printing of cardName reprinted from the set
