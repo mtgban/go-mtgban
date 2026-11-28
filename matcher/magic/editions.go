@@ -66,12 +66,14 @@ var EditionTable = map[string]string{
 	"The Hobbit: Eternal-Legal": "The Hobbit Eternal",
 
 	"Teenage Mutant Ninja Turtles Eternal":                "Teenage Mutant Ninja Turtles Commander",
+	"Teenage Mutant Ninja Turtles: Eternal-Legal":         "Teenage Mutant Ninja Turtles Commander",
 	"Teenage Mutant Ninja Turtles: Source Material Cards": "Teenage Mutant Ninja Turtles Source Material",
 
 	"Outlaws of Thunder Junction Breaking News":  "Breaking News",
 	"Outlaws of Thunder Junction The Big Score":  "The Big Score",
 	"Outlaws of Thunder Junction: Breaking News": "Breaking News",
 	"Outlaws of Thunder Junction: The Big Score": "The Big Score",
+	"OTJ: Breaking News":                         "Breaking News",
 
 	// FDN
 	"Foundations: Beginner Box":                            "Foundations",
@@ -79,6 +81,10 @@ var EditionTable = map[string]string{
 	"Magic: The Gathering Foundations":                     "Foundations",
 	"Magic: The Gathering Foundations: Beginner Box":       "Foundations",
 	"Magic: The Gathering Foundations: Starter Collection": "Foundations",
+
+	"Jumpstart Foundations": "Foundations Jumpstart",
+
+	"MTG: Special Guests": "Special Guests",
 
 	// BRR
 	"Retro Frame Artifacts":                    "The Brothers' War Retro Artifacts",
